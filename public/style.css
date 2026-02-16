@@ -1,0 +1,387 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+    /* Default Colors */
+    --primary-color: #1e3a8a;
+    --secondary-color: #3b82f6;
+    --bg-color: #f8fafc; /* Softer, slightly blue-ish grey (less bright) */
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --button-text: #ffffff;
+    --sidebar-width: 280px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* =========================================
+   2. NAVBAR & HAMBURGER
+   ========================================= */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px; /* Reduced padding for mobile */
+    background-color: var(--card-bg);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Hamburger Icon */
+.hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    transition: 0.3s;
+}
+
+.nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* =========================================
+   3. SIDEBAR (The Drawer)
+   ========================================= */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Hidden by default */
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--card-bg);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.active {
+    left: 0; /* Slide in */
+}
+
+.sidebar-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+.sidebar-links {
+    list-style: none;
+    padding: 20px;
+}
+
+.sidebar-links li {
+    margin-bottom: 15px;
+}
+
+.sidebar-links a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+    padding: 10px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+
+.sidebar-links a:hover, .sidebar-links a.active {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* =========================================
+   4. DASHBOARD CONTENT & RESPONSIVENESS
+   ========================================= */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px; /* Smaller padding for mobile */
+}
+
+.hero-section {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.hero-section h1 {
+    font-size: clamp(32px, 5vw, 48px); /* Responsive Font Size */
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    line-height: 1.2;
+}
+
+.hero-section .subtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 25px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Green "Get Started" Button */
+.btn-get-started {
+    background-color: #22c55e;
+    color: white;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
+3);
+    transition: transform 0.2s;
+}
+
+.btn-get-started:hover {
+    transform: scale(1.05);
+}
+
+/* Features Grid */
+.features-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+    padding-bottom: 10px;
+}
+
+.features-grid {
+    display: grid;
+    /* This makes it responsive: 1 column on phone, 2 on tablet, 4 on desktop */
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+    gap: 20px;
+}
+
+.feature-card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Feature Hover Effect (Light Mode) */
+.feature-card:hover {
+    background-color: var(--primary-color);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.feature-card:hover h3, 
+.feature-card:hover p,
+.feature-card:hover .icon {
+    color: white;
+}
+
+.feature-card .icon { font-size: 32px; margin-bottom: 10px; }
+.feature-card h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-color); }
+.feature-card p { font-size: 14px; color: #666; line-height: 1.5; }
+
+/* Footer Responsive */
+.footer-content {
+    display: flex;
+    flex-direction: column; /* Stack vertically on mobile */
+    gap: 20px;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .footer-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+}
+
+/* =========================================
+   5. THEME OVERRIDES (Dark & Custom)
+   ========================================= */
+
+/* Dark Mode */
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e5e7eb;
+    --primary-color: #60a5fa; /* Lighter blue for better contrast */
+}
+
+[data-theme="dark"] .sidebar-header,
+[data-theme="dark"] .sidebar-footer {
+    border-color: #333;
+}
+
+[data-theme="dark"] .feature-card {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+/* Specific Dark Mode Hover Fix */
+[data-theme="dark"] .feature-card:hover {
+    background-color: var(--primary-color); /* Turns Blue */
+}
+
+[data-theme="dark"] .feature-card:hover h3, 
+[data-theme="dark"] .feature-card:hover p {
+    color: #ffffff; /* Text turns white */
+}
+
+[data-theme="dark"] .feature-card p {
+    color: #aaa;
+}
+
+/* --- AUTHENTICATION PAGES (Login/Signup) --- */
+
+/* Centers the box on the screen */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f9; /* Light grey background */
+}
+
+/* The white card itself */
+.auth-box {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* Typography inside the box */
+.auth-box h2 {
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.auth-box p {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+/* Inputs */
+.input-group {
+    text-align: left;
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: #444;
+    font-weight: 600;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #fafafa;
+}
+
+/* Button */
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #2563eb; /* Blue color */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.switch-auth {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}

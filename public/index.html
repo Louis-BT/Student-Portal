@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. GLOBAL STYLES --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background: white; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        /* --- 2. NAVIGATION BAR --- */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 40px; background: white; border-bottom: 1px solid #f1f5f9;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 1.5rem; font-weight: 700; color: #2563eb; }
+        .nav-links a {
+            text-decoration: none; color: #64748b; margin-left: 30px; font-weight: 600;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: #2563eb; }
+        .btn-primary {
+            background: #2563eb; color: white; padding: 10px 20px; border-radius: 8px;
+            text-decoration: none; font-weight: 600; transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #1d4ed8; }
+
+        /* --- 3. HERO SECTION --- */
+        .hero {
+            text-align: center; padding: 100px 20px; max-width: 800px; margin: 0 auto; flex: 1;
+        }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; line-height: 1.2; color: #0f172a; }
+        .hero p { font-size: 1.2rem; color: #64748b; margin-bottom: 40px; }
+        
+        /* --- 4. FEATURES GRID --- */
+        .features {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px; padding: 60px 40px; background: #f8fafc;
+        }
+        .feature-card {
+            background: white; padding: 30px; border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center;
+            transition: transform 0.2s;
+        }
+        .feature-card:hover { transform: translateY(-5px); }
+        .feature-icon { font-size: 40px; margin-bottom: 20px; display: block; }
+
+        /* --- 5. FOOTER & CONTACT INFO --- */
+        .footer {
+            background: #1e293b; color: white; padding: 60px 40px 20px;
+            margin-top: auto;
+        }
+        .footer-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px; max-width: 1200px; margin: 0 auto 40px;
+        }
+        .footer-col h3 { color: #38bdf8; margin-bottom: 20px; }
+        .footer-col p { color: #94a3b8; line-height: 1.6; margin: 5px 0; }
+        .footer-col a { color: #cbd5e1; text-decoration: none; display: block; margin-bottom: 10px; }
+        .footer-col a:hover { color: white; }
+
+        .copyright {
+            text-align: center; border-top: 1px solid #334155; padding-top: 20px; color: #64748b; font-size: 0.9rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar { padding: 15px 20px; }
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">🎓 Student Portal</div>
+        
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="#features">Features</a>
+            <a href="#contact">Contact</a>
+            <a href="/login" style="margin-left: 30px;">Login</a>
+            <a href="/signup" class="btn-primary">Get Started</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Your Academic Life,<br>Simplified.</h1>
+        <p>Manage your GPA, register your semester/trimester courses, and get other impactful and important news all in one place.</p>
+        <div>
+            <a href="/signup" class="btn-primary" style="font-size: 1.2rem; padding: 15px 30px;">Create Account</a>
+            <a href="/login" style="margin-left: 20px; text-decoration: none; color: #2563eb; font-weight: 600;">Log In &rarr;</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <h3>GPA Calculator</h3>
+            <p>Track your academic performance with our built-in grade point scale calculator.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">📢</span>
+            <h3>Campus News</h3>
+            <p>Get real-time updates from the Admin directly on your dashboard.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">📚</span>
+            <h3>Course Manager</h3>
+            <p>Easily register and manage your semester/trimester courses online.</p>
+        </div>
+    </section>
+
+    <footer class="footer" id="contact">
+        <div class="footer-grid">
+            
+            <div class="footer-col">
+                <h3>About This Portal</h3>
+                <p>Assisting students to navigate through their academics smarter and with ease.</p>
+                <p>📧 Support: <b>admin@portalsupport.com</b></p>
+            </div>
+            
+            <div class="footer-col">
+                <h3>Quick Links</h3>
+                <a href="/login">Student Login</a>
+                <a href="/signup">Create Account</a>
+                <a href="#features">Features</a>
+            </div>
+
+            <div class="footer-col">
+                <h3>Developer Contact</h3>
+                <p>Built by:</p>
+                <p style="color: white; font-weight: bold;">[Louis Baffoe-Tachie]</p>
+                
+                <p>For technical inquiries:</p>
+                <p>📞 <b>[+233 59 457 8434]</b></p>
+                
+                <p>📧 <b>[baffoetachie@gmail.com]</b></p>
+            </div>
+        </div>
+
+        <div class="copyright">
+            &copy; <script>document.write(new Date().getFullYear())</script> Student Portal. All rights reserved.
+        </div>
+    </footer>
+
+</body>
+</html>

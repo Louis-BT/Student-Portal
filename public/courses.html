@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Course Registration</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .course-container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .course-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        
+        .course-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .course-item:hover { background: #f8fafc; border-color: #2563eb; }
+        
+        input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
+        
+        .btn-register {
+            background: #2563eb; color: white; width: 100%;
+            padding: 15px; border: none; border-radius: 8px;
+            font-size: 1.1rem; margin-top: 30px; cursor: pointer;
+        }
+        .btn-register:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">🎓 Student Portal</div>
+        <a href="/dashboard" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">&larr; Back to Dashboard</a>
+    </nav>
+
+    <main class="course-container">
+        <h1>Course Registration 📚</h1>
+        <p style="color: #666;">Select the courses you want to register for this semester, please.</p>
+
+        <form id="regForm">
+            <div class="course-list">
+                <label class="course-item"><input type="checkbox" value="Web Development" class="subject"> Web Development</label>
+                <label class="course-item"><input type="checkbox" value="Data Structures" class="subject"> Data Structures</label>
+                <label class="course-item"><input type="checkbox" value="Database Systems" class="subject"> Database Systems</label>
+                <label class="course-item"><input type="checkbox" value="Python Programming" class="subject"> Python Programming</label>
+                
+                <label class="course-item"><input type="checkbox" value="Calculus I" class="subject"> Calculus I</label>
+                <label class="course-item"><input type="checkbox" value="Leadership Skills" class="subject"> Leadership Skills</label>
+                <label class="course-item"><input type="checkbox" value="French 101" class="subject"> French 101</label>
+                <label class="course-item"><input type="checkbox" value="Physics" class="subject"> Physics</label>
+            </div>
+
+            <button type="submit" class="btn-register" id="saveBtn">Register Courses</button>
+            <p id="msg" style="text-align: center; margin-top: 15px; color: green; display: none;">Registration Successful!</p>
+        </form>
+    </main>
+
+    <script src="theme.js"></script>
+    <script>
+        // 1. Load existing courses when page opens
+        fetch('/api/user')
+            .then(res => res.json())
+            .then(data => {
+                if (data.courses) {
+                    const savedCourses = JSON.parse(data.courses); // Convert string back to list
+                    const checkboxes = document.querySelectorAll('.subject');
+                    
+                    // Check the boxes that were saved previously
+                    checkboxes.forEach(box => {
+                        if (savedCourses.includes(box.value)) {
+                            box.checked = true;
+                        }
+                    });
+                }
+            });
+
+        // 2. Save courses when button clicked
+        document.getElementById('regForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Collect all checked boxes
+            const checkboxes = document.querySelectorAll('.subject:checked');
+            const selectedCourses = Array.from(checkboxes).map(box => box.value);
+
+            // Send to Server
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "Saving...";
+
+            fetch('/api/save-courses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courses: selectedCourses })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.innerText = "✅ Registered";
+                document.getElementById('msg').style.display = 'block';
+                setTimeout(() => btn.innerText = "Register Courses", 2000);
+            });
+        });
+    </script>
+</body>
+</html>

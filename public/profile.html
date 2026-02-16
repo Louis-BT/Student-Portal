@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .profile-container { max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .profile-header { background: #2563eb; padding: 40px; text-align: center; color: white; }
+        
+        /* 📸 IMAGE STYLES */
+        .avatar-img { 
+            width: 120px; height: 120px; border-radius: 50%; object-fit: cover; 
+            border: 4px solid rgba(255,255,255,0.5); background: white; 
+            display: block; margin: 0 auto 15px auto; 
+        }
+
+        /* 📸 UPLOAD BUTTON STYLES */
+        .upload-wrapper { position: relative; display: inline-block; margin-top: 10px; }
+        .btn-upload { 
+            border: 1px solid white; color: white; background-color: rgba(255,255,255,0.2); 
+            padding: 5px 15px; border-radius: 20px; cursor: pointer; 
+        }
+        .upload-wrapper input[type=file] { 
+            position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; 
+        }
+
+        .profile-body { padding: 30px; }
+        .info-group { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; }
+        
+        /* Tag Styles */
+        .tag { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; margin: 5px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎓 Student Portal</div>
+        <a href="/dashboard" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">&larr; Back to Dashboard</a>
+    </nav>
+
+    <main class="profile-container">
+        <div class="profile-header">
+            <img src="" id="profile-img" class="avatar-img" alt="Profile Picture">
+            
+            <h1 id="p-name">Loading...</h1>
+            <p id="p-email" style="opacity: 0.9;">student@example.com</p>
+
+            <form action="/api/upload" method="POST" enctype="multipart/form-data" class="upload-wrapper">
+                <button class="btn-upload">📷 Change Profile Picture</button>
+                <input type="file" name="avatar" accept="image/*" onchange="this.form.submit()">
+            </form>
+        </div>
+
+        <div class="profile-body">
+            <div class="info-group">
+                <span class="info-label">Student ID</span><span class="info-value" id="p-id">...</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Current GPA</span><span class="info-value" id="p-gpa" style="color: #2563eb; font-weight: bold;">0.00</span>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px;">Registered Courses 📚</h3>
+                <div id="course-tags"><p style="color: #999;">No courses registered yet.</p></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="theme.js"></script>
+    <script>
+        fetch('/api/user')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('p-name').textContent = data.username;
+                document.getElementById('p-email').textContent = data.email;
+                document.getElementById('p-id').textContent = "#" + data.id.toString().padStart(4, '0');
+                if (data.gpa) document.getElementById('p-gpa').textContent = Number(data.gpa).toFixed(2);
+
+                // 👇 IMAGE LOGIC: Check if user has a custom picture
+                const img = document.getElementById('profile-img');
+                if (data.profile_pic && data.profile_pic !== 'default.png') {
+                    img.src = '/uploads/' + data.profile_pic;
+                } else {
+                    // Fallback to initials if no picture
+                    img.src = 'https://ui-avatars.com/api/?name=' + data.username + '&background=ffffff&color=2563eb&size=128';
+                }
+
+                // Course Logic
+                if (data.courses) {
+                    const courses = JSON.parse(data.courses);
+                    const container = document.getElementById('course-tags');
+                    if (courses.length > 0) {
+                        container.innerHTML = '';
+                        courses.forEach(course => {
+                            const tag = document.createElement('span');
+                            tag.className = 'tag';
+                            tag.textContent = course;
+                            container.appendChild(tag);
+                        });
+                    }
+                }
+            });
+    </script>
+</body>
+</html>
