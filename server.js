@@ -104,6 +104,13 @@ app.get('/courses', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'courses.html'));
 });
 
+app.get('/add-school-column', (req, res) => {
+    db.run("ALTER TABLE users ADD COLUMN institution TEXT", (err) => {
+        if (err) return res.send("Error or column exists: " + err.message);
+        res.send("Database updated! Now tracking institutions.");
+    });
+});
+
 // ============================================
 // 4️⃣ API
 // ============================================
@@ -172,14 +179,14 @@ app.delete('/api/admin/users/:id', isAdmin, (req, res) => {
 // 5️⃣ AUTH
 // ============================================
 app.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body;
+    const { name, email, password, institution } = req.body; // <--- Added institution here
     const hashedPassword = await bcrypt.hash(password, 10);
-    const date = new Date().toISOString();
-    let role = email === 'admin@portal.com' ? 'admin' : 'student';
 
-    db.run(`INSERT INTO users (username, email, password, date, gpa, gpa_history, courses, role, profile_pic) VALUES (?, ?, ?, ?, 0.00, '[]', '[]', ?, 'default.png')`, 
-    [username, email, hashedPassword, date, role], function(err) {
-        if (err) return res.send('<script>alert("User exists!"); window.location.href="/signup";</script>');
+    // Save to database
+    db.run(`INSERT INTO users (name, email, password, institution) VALUES (?, ?, ?, ?)`, 
+    [name, email, hashedPassword, institution], 
+    (err) => {
+        if (err) return res.send("Email already used.");
         res.redirect('/login');
     });
 });

@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | SRC Portal</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Student Dashboard | Student Portal</title>
+    <link rel="stylesheet" href="/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -98,56 +98,61 @@
 
     <div class="dashboard-wrapper">
         <aside class="sidebar">
-            <div class="sidebar-logo">🎓 SRC Portal</div>
+            <div class="sidebar-logo">Student Portal</div>
             <nav class="sidebar-nav">
-                <a href="/dashboard" class="active">🏠 Home</a>
-                <a href="/gpa">📊 GPA Calc</a>
-                <a href="/courses">📚 Courses</a>
-                <a href="/profile">👤 Profile</a>
-                <a href="/logout" style="margin-top: 20px; color: #f87171;">🚪 Logout</a>
+                <a href="/dashboard" class="active">Home</a>
+                <a href="/profile">Profile</a>
+                <a href="/courses">Courses</a>
+                <a href="/gpa"> GPA Calc</a>
+                
+                
+                <a href="/logout" style="margin-top: 20px; color: #f87171;"> Logout</a>
             </nav>
         </aside>
 
         <main class="main-content">
             <header class="top-header">
-                <h1 id="welcome-message">Welcome! 👋</h1>
+                <h1 id="welcome-message">Welcome!</h1>
                 <span id="nav-username" style="font-weight: 600; color: #64748b;">...</span>
+            <p style="color: #6b7280; margin-top: -10px;">
+    Student at <strong id="user-school" style="color: #2563eb;">...</strong>
+</p>
             </header>
 
             <div id="news-box" style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
-    <strong style="color: #10b981;">📢 Announcement:</strong>
+    <strong style="color: #10b981;">Announcement:</strong>
     <p id="announcement-text" style="color: #374151; margin: 5px 0 0 0;">Fetching latest update...</p>
 </div>
+            <div class="card" onclick="window.location.href='/profile'">
+                    <h3>My Profile</h3>
+                    <div style="font-size: 2rem; margin: 10px 0;"></div>
+                    <small style="color: #94a3b8;">Edit Details</small>
+                </div>
+            </div>
+            
+            <div class="card" onclick="window.location.href='/courses'">
+                    <h3>Registered Courses</h3>
+                    <p id="course-count" class="stat-num">0</p>
+                    <small style="color: #94a3b8;">Click to View</small>
+                </div>
+
             <div class="dashboard-grid">
                 <div class="card" onclick="window.location.href='/gpa'">
                     <h3>Current GPA</h3>
                     <p id="dashboard-gpa" class="stat-num">--</p>
                     <small style="color: #94a3b8;">Click to Update</small>
                 </div>
-                
-                <div class="card" onclick="window.location.href='/courses'">
-                    <h3>Registered Courses</h3>
-                    <p id="course-count" class="stat-num">0</p>
-                    <small style="color: #94a3b8;">Click to View</small>
-                </div>
-
-                <div class="card" onclick="window.location.href='/profile'">
-                    <h3>My Profile</h3>
-                    <div style="font-size: 2rem; margin: 10px 0;">👤</div>
-                    <small style="color: #94a3b8;">Edit Details</small>
-                </div>
-            </div>
 
             <div class="bottom-grid">
                 <div class="chart-section">
-                    <h3>📈 Academic Performance</h3>
+                    <h3>Academic Performance</h3>
                     <div style="position: relative; height: 300px;">
                         <canvas id="gpaChart"></canvas>
                     </div>
                 </div>
 
                 <div class="news-section">
-                    <h3>📢 Announcements</h3>
+                    <h3>Announcements</h3>
                     <div id="news-feed">
                         <p style="color: #94a3b8; font-size: 0.9rem;">Loading news...</p>
                     </div>
@@ -216,6 +221,8 @@ fetch('/api/announcements')
             } else {
                 feed.innerHTML = '<p style="color: #94a3b8;">No announcements yet.</p>';
             }
+            document.getElementById('username').innerText = data.name;
+document.getElementById('user-school').innerText = data.institution || "Tertiary Student"; // <--- Add this
         });
     </script>
 </body>
