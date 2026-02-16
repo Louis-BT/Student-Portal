@@ -1,2 +1,5 @@
 node_modules
-student_portal.db
+.env
+database.sqlite
+public/uploads/*
+!public/uploads/.gitkeep
