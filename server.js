@@ -40,6 +40,12 @@ db.serialize(() => {
         message TEXT,
         date TEXT
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS announcements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
 });
 
 // ============================================
@@ -191,5 +197,56 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/login')); });
+
+// --- NEW: Edit User Route ---
+app.post('/admin/edit-user', checkAdmin, (req, res) => {
+    const { id, name, email, gpa, cgpa } = req.body;
+    
+    // Admin posts a new message
+app.post('/admin/announce', checkAdmin, (req, res) => {
+    const { message } = req.body;
+    db.run(`INSERT INTO announcements (message) VALUES (?)`, [message], (err) => {
+        if (err) return res.status(500).send("Error saving announcement.");
+        res.redirect('/admin');
+    });
+});
+
+// Anyone can view the latest message
+app.get('/api/announcements', (req, res) => {
+    db.get(`SELECT message FROM announcements ORDER BY date DESC LIMIT 1`, (err, row) => {
+        if (err || !row) return res.json({ message: "Welcome to the Student Portal!" });
+        res.json(row);
+    });
+});
+    // Update the database
+    db.run(`UPDATE users SET name = ?, email = ?, gpa = ?, cgpa = ? WHERE id = ?`, 
+    [name, email, gpa, cgpa, id], 
+    (err) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Error updating user.");
+        }
+        res.redirect('/admin'); // Go back to dashboard
+    });
+});
+
+// --- ANNOUNCEMENT MANAGEMENT ROUTES ---
+
+// 1. Admin deletes a specific announcement
+app.get('/admin/delete-announcement/:id', checkAdmin, (req, res) => {
+    const announcementId = req.params.id;
+    db.run(`DELETE FROM announcements WHERE id = ?`, [announcementId], (err) => {
+        if (err) return res.status(500).send("Error deleting news.");
+        res.redirect('/admin'); // Refreshes the page after deleting
+    });
+});
+
+// 2. Fetch ALL announcements so the Admin can see them to delete them
+app.get('/api/all-announcements', checkAdmin, (req, res) => {
+    db.all(`SELECT * FROM announcements ORDER BY date DESC`, (err, rows) => {
+        if (err) return res.status(500).json([]);
+        res.json(rows);
+    });
+});
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

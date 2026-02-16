@@ -114,6 +114,10 @@
                 <span id="nav-username" style="font-weight: 600; color: #64748b;">...</span>
             </header>
 
+            <div id="news-box" style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
+    <strong style="color: #10b981;">📢 Announcement:</strong>
+    <p id="announcement-text" style="color: #374151; margin: 5px 0 0 0;">Fetching latest update...</p>
+</div>
             <div class="dashboard-grid">
                 <div class="card" onclick="window.location.href='/gpa'">
                     <h3>Current GPA</h3>
@@ -159,6 +163,13 @@
             document.getElementById('welcome-message').innerText = `Welcome, ${data.username} 👋`;
             document.getElementById('nav-username').innerText = data.username;
             
+            // Fetch the latest announcement from the server
+fetch('/api/announcements')
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('announcement-text').innerText = data.message;
+    })
+    .catch(err => console.error("Error loading news:", err));
             if (data.gpa) document.getElementById('dashboard-gpa').innerText = Number(data.gpa).toFixed(2);
             if (data.courses) document.getElementById('course-count').innerText = JSON.parse(data.courses).length;
 
