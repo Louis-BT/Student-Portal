@@ -1,259 +1,241 @@
+// ============================================
+// 1️⃣ IMPORTS & SETUP
+// ============================================
 const express = require('express');
-const bodyParser = require('body-parser');
-const session = require('express-session');
+const db = require('better-sqlite3')('database.sqlite'); // Using better-sqlite3 for speed
 const bcrypt = require('bcryptjs');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const session = require('express-session');
 const multer = require('multer');
-const fs = require('fs');
+const path = require('path');
+const fs = require('fs'); 
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// ============================================
-// 1️⃣ DATABASE SETUP (Now with News!)
-// ============================================
-const db = new sqlite3.Database('./student_portal.db', (err) => {
-    if (err) console.error("❌ DB Error:", err.message);
-    else console.log("✅ Connected to SQLite DB.");
-});
-
-db.serialize(() => {
-    // Users Table
-    db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        date TEXT,
-        gpa REAL DEFAULT 0.00,
-        gpa_history TEXT DEFAULT '[]',
-        courses TEXT DEFAULT '[]',
-        role TEXT DEFAULT 'student',
-        profile_pic TEXT DEFAULT 'default.png'
-    )`);
-
-    // 👇 NEW: News Table
-    db.run(`CREATE TABLE IF NOT EXISTS news (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        message TEXT,
-        date TEXT
-    )`);
-
-    db.run(`CREATE TABLE IF NOT EXISTS announcements (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    message TEXT,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP
-)`);
-});
-
-// ============================================
-// 2️⃣ CONFIGURATION
-// ============================================
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('public'));
-
+app.use(express.static('public')); // Serves HTML/CSS/Images
 app.use(session({
-    secret: "my_secret_key_123",
+    secret: 'secret-key-gnaas-portal',
     resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false }
+    saveUninitialized: false
 }));
 
+// ============================================
+// 2️⃣ FILE UPLOAD CONFIGURATION (Multer)
+// ============================================
+// Ensure uploads folder exists to prevent Render crash
+const uploadDir = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 const storage = multer.diskStorage({
-    destination: './public/uploads/', 
+    destination: function (req, file, cb) {
+        cb(null, uploadDir); 
+    },
     filename: function(req, file, cb) {
-        cb(null, 'user-' + Date.now() + path.extname(file.originalname));
+        // Naming: timestamp-filename (e.g. 174000-nss-guide.pdf)
+        cb(null, Date.now() + '-' + file.originalname);
     }
 });
 const upload = multer({ storage: storage });
 
-if (!fs.existsSync('./public/uploads')) fs.mkdirSync('./public/uploads');
+// ============================================
+// 3️⃣ DATABASE TABLES
+// ============================================
+// Users Table (Includes Institution & Profile Pic)
+db.run(`CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT,
+    email TEXT UNIQUE,
+    password TEXT,
+    role TEXT DEFAULT 'STUDENT',
+    gpa REAL DEFAULT 0.00,
+    cgpa REAL DEFAULT 0.00,
+    institution TEXT,
+    profile_pic TEXT
+)`);
 
-function isAdmin(req, res, next) {
-    if (req.session.user && req.session.user.role === 'admin') return next();
-    res.status(403).send("<h1>Access Denied</h1>");
+// Announcements Table (News)
+db.run(`CREATE TABLE IF NOT EXISTS announcements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message TEXT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// Resources Table (Downloads)
+db.run(`CREATE TABLE IF NOT EXISTS resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    category TEXT,
+    filename TEXT,
+    date DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
+// ============================================
+// 4️⃣ HELPER FUNCTIONS
+// ============================================
+function checkAdmin(req, res, next) {
+    if (req.session.role === 'ADMIN') {
+        next();
+    } else {
+        res.status(403).send("<h1>Access Denied: Admins Only</h1><a href='/login.html'>Go Back</a>");
+    }
 }
 
 // ============================================
-// 3️⃣ ROUTES
-// ============================================
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'signup.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-
-app.get('/dashboard', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    if (req.session.user.role === 'admin') return res.redirect('/admin');
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
-app.get('/admin', isAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/profile', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'public', 'profile.html'));
-});
-app.get('/gpa', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'public', 'gpa.html'));
-});
-app.get('/courses', (req, res) => {
-    if (!req.session.user) return res.redirect('/login');
-    res.sendFile(path.join(__dirname, 'public', 'courses.html'));
-});
-
-app.get('/add-school-column', (req, res) => {
-    db.run("ALTER TABLE users ADD COLUMN institution TEXT", (err) => {
-        if (err) return res.send("Error or column exists: " + err.message);
-        res.send("Database updated! Now tracking institutions.");
-    });
-});
-
-// ============================================
-// 4️⃣ API
-// ============================================
-app.get('/api/user', (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
-    db.get(`SELECT * FROM users WHERE id = ?`, [req.session.user.id], (err, row) => res.json(row));
-});
-
-// 👇 NEW: Get News (For Everyone)
-app.get('/api/news', (req, res) => {
-    // Get latest 5 news items, newest first
-    db.all(`SELECT * FROM news ORDER BY id DESC LIMIT 5`, [], (err, rows) => {
-        res.json(rows);
-    });
-});
-
-// 👇 NEW: Post News (Admin Only)
-app.post('/api/admin/news', isAdmin, (req, res) => {
-    const { title, message } = req.body;
-    const date = new Date().toLocaleDateString();
-    db.run(`INSERT INTO news (title, message, date) VALUES (?, ?, ?)`, [title, message, date], (err) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "News Posted!" });
-    });
-});
-
-// 👇 NEW: Delete News (Admin Only)
-app.delete('/api/admin/news/:id', isAdmin, (req, res) => {
-    db.run(`DELETE FROM news WHERE id = ?`, [req.params.id], (err) => {
-        res.json({ message: "News Deleted" });
-    });
-});
-
-app.post('/api/save-gpa', (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
-    const newGPA = req.body.gpa;
-    const userId = req.session.user.id;
-    db.get(`SELECT gpa_history FROM users WHERE id = ?`, [userId], (err, row) => {
-        let history = [];
-        if (row && row.gpa_history) try { history = JSON.parse(row.gpa_history); } catch(e) {}
-        history.push(newGPA);
-        db.run(`UPDATE users SET gpa = ?, gpa_history = ? WHERE id = ?`, [newGPA, JSON.stringify(history), userId], (err) => res.json({ message: "Saved" }));
-    });
-});
-
-app.post('/api/save-courses', (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
-    db.run(`UPDATE users SET courses = ? WHERE id = ?`, [JSON.stringify(req.body.courses), req.session.user.id], (err) => res.json({ message: "Saved" }));
-});
-
-app.post('/api/upload', upload.single('avatar'), (req, res) => {
-    if (!req.session.user) return res.status(401).json({ error: "Not logged in" });
-    db.run(`UPDATE users SET profile_pic = ? WHERE id = ?`, [req.file.filename, req.session.user.id], (err) => res.redirect('/profile'));
-});
-
-// Admin API
-app.get('/api/admin/users', isAdmin, (req, res) => {
-    db.all(`SELECT * FROM users`, [], (err, rows) => res.json(rows));
-});
-app.delete('/api/admin/users/:id', isAdmin, (req, res) => {
-    if (req.params.id == req.session.user.id) return res.status(400).json({ error: "Cannot delete self" });
-    db.run(`DELETE FROM users WHERE id = ?`, [req.params.id], (err) => res.json({ message: "Deleted" }));
-});
-
-// ============================================
-// 5️⃣ AUTH
+// 5️⃣ ROUTES: AUTHENTICATION
 // ============================================
 app.post('/signup', async (req, res) => {
-    const { name, email, password, institution } = req.body; // <--- Added institution here
+    const { name, email, password, institution } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save to database
-    db.run(`INSERT INTO users (name, email, password, institution) VALUES (?, ?, ?, ?)`, 
-    [name, email, hashedPassword, institution], 
-    (err) => {
-        if (err) return res.send("Email already used.");
-        res.redirect('/login');
-    });
+    
+    try {
+        db.run(`INSERT INTO users (name, email, password, institution) VALUES (?, ?, ?, ?)`, 
+        [name, email, hashedPassword, institution]);
+        res.redirect('/login.html');
+    } catch (err) {
+        res.send("Error: Email already used. <a href='/signup.html'>Try again</a>");
+    }
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
-        if (err || !user) return res.send('<script>alert("User not found!"); window.location.href="/login";</script>');
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.send('<script>alert("Wrong password!"); window.location.href="/login";</script>');
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+
+    if (user && await bcrypt.compare(password, user.password)) {
+        req.session.userId = user.id;
+        req.session.role = user.role;
+        req.session.institution = user.institution;
         
-        req.session.user = { id: user.id, username: user.username, email: user.email, role: user.role };
-        res.redirect(user.role === 'admin' ? '/admin' : '/dashboard');
-    });
+        if (user.role === 'ADMIN') {
+            res.redirect('/admin.html');
+        } else {
+            res.redirect('/dashboard.html');
+        }
+    } else {
+        res.send("Invalid email or password. <a href='/login.html'>Try again</a>");
+    }
 });
 
-app.get('/logout', (req, res) => { req.session.destroy(() => res.redirect('/login')); });
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
 
-// --- NEW: Edit User Route ---
+// ============================================
+// 6️⃣ ROUTES: DASHBOARD & USER DATA
+// ============================================
+app.get('/user-data', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({});
+    const user = db.prepare('SELECT name, email, gpa, cgpa, role, institution, profile_pic FROM users WHERE id = ?').get(req.session.userId);
+    res.json(user);
+});
+
+// Profile Picture Upload
+app.post('/upload-profile', upload.single('avatar'), (req, res) => {
+    if (!req.session.userId) return res.redirect('/login.html');
+    
+    const filename = req.file.filename;
+    db.run(`UPDATE users SET profile_pic = ? WHERE id = ?`, [filename, req.session.userId]);
+    res.redirect('/dashboard.html');
+});
+
+// ============================================
+// 7️⃣ ROUTES: ADMIN FEATURES
+// ============================================
+
+// Get all users
+app.get('/api/users', checkAdmin, (req, res) => {
+    const users = db.prepare('SELECT * FROM users').all();
+    res.json(users);
+});
+
+// Edit User Grades/Info
 app.post('/admin/edit-user', checkAdmin, (req, res) => {
     const { id, name, email, gpa, cgpa } = req.body;
-    
-    // Admin posts a new message
+    db.run(`UPDATE users SET name = ?, email = ?, gpa = ?, cgpa = ? WHERE id = ?`, 
+    [name, email, gpa, cgpa, id]);
+    res.redirect('/admin.html');
+});
+
+// Delete User
+app.get('/admin/delete/:id', checkAdmin, (req, res) => {
+    db.run('DELETE FROM users WHERE id = ?', [req.params.id]);
+    res.redirect('/admin.html');
+});
+
+// ============================================
+// 8️⃣ ROUTES: ANNOUNCEMENTS (NEWS)
+// ============================================
+
+// Post News
 app.post('/admin/announce', checkAdmin, (req, res) => {
     const { message } = req.body;
-    db.run(`INSERT INTO announcements (message) VALUES (?)`, [message], (err) => {
-        if (err) return res.status(500).send("Error saving announcement.");
-        res.redirect('/admin');
-    });
+    db.run(`INSERT INTO announcements (message) VALUES (?)`, [message]);
+    res.redirect('/admin.html');
 });
 
-// Anyone can view the latest message
+// Get Latest News (For Dashboard)
 app.get('/api/announcements', (req, res) => {
-    db.get(`SELECT message FROM announcements ORDER BY date DESC LIMIT 1`, (err, row) => {
-        if (err || !row) return res.json({ message: "Welcome to the Student Portal!" });
-        res.json(row);
-    });
-});
-    // Update the database
-    db.run(`UPDATE users SET name = ?, email = ?, gpa = ?, cgpa = ? WHERE id = ?`, 
-    [name, email, gpa, cgpa, id], 
-    (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Error updating user.");
-        }
-        res.redirect('/admin'); // Go back to dashboard
-    });
+    const news = db.prepare(`SELECT message FROM announcements ORDER BY date DESC LIMIT 1`).get();
+    res.json(news || { message: "Welcome to the National Tertiary Portal!" });
 });
 
-// --- ANNOUNCEMENT MANAGEMENT ROUTES ---
-
-// 1. Admin deletes a specific announcement
-app.get('/admin/delete-announcement/:id', checkAdmin, (req, res) => {
-    const announcementId = req.params.id;
-    db.run(`DELETE FROM announcements WHERE id = ?`, [announcementId], (err) => {
-        if (err) return res.status(500).send("Error deleting news.");
-        res.redirect('/admin'); // Refreshes the page after deleting
-    });
-});
-
-// 2. Fetch ALL announcements so the Admin can see them to delete them
+// Get All News (For Admin List)
 app.get('/api/all-announcements', checkAdmin, (req, res) => {
-    db.all(`SELECT * FROM announcements ORDER BY date DESC`, (err, rows) => {
-        if (err) return res.status(500).json([]);
-        res.json(rows);
-    });
+    const news = db.prepare(`SELECT * FROM announcements ORDER BY date DESC`).all();
+    res.json(news);
 });
 
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+// Delete News
+app.get('/admin/delete-announcement/:id', checkAdmin, (req, res) => {
+    db.run(`DELETE FROM announcements WHERE id = ?`, [req.params.id]);
+    res.redirect('/admin.html');
+});
+
+// ============================================
+// 9️⃣ ROUTES: NATIONAL RESOURCES (DOWNLOADS)
+// ============================================
+
+// Upload Resource
+app.post('/admin/upload-resource', upload.single('document'), (req, res) => {
+    const { title, category } = req.body;
+    const filename = req.file.filename;
+
+    db.run(`INSERT INTO resources (title, category, filename) VALUES (?, ?, ?)`, 
+    [title, category, filename]);
+    res.redirect('/admin.html');
+});
+
+// Get List of Resources
+app.get('/api/resources', (req, res) => {
+    const files = db.prepare("SELECT * FROM resources ORDER BY date DESC").all();
+    res.json(files);
+});
+
+// Download File
+app.get('/download/:filename', (req, res) => {
+    const file = path.join(uploadDir, req.params.filename);
+    res.download(file); 
+});
+
+// ============================================
+// 🔟 DATABASE FIXER (Run once if needed)
+// ============================================
+app.get('/fix-db', (req, res) => {
+    try {
+        db.run("ALTER TABLE users ADD COLUMN institution TEXT");
+        db.run("ALTER TABLE users ADD COLUMN profile_pic TEXT");
+        res.send("Database Updated! Columns added.");
+    } catch (e) {
+        res.send("Database is already up to date.");
+    }
+});
+
+// Start Server
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
