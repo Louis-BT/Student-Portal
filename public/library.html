@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource Library | Student Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .library-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        /* HEADER & SEARCH */
+        .lib-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-bar {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            max-width: 600px;
+        }
+
+        .search-bar input {
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        .btn-upload {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-upload:hover { opacity: 0.9; }
+
+        /* RESOURCE GRID */
+        .resource-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        .resource-card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
+
+        .file-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .res-title { font-weight: 700; color: var(--text-color); margin-bottom: 5px; }
+        .res-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; }
+        
+        .badge-uni {
+            background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;
+        }
+
+        .btn-download {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .btn-download:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">National Library</div>
+        <div style="display: flex; gap: 15px;">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/logout" style="color: red;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="library-container">
+        
+        <div class="lib-header">
+            <div>
+                <h2 style="color: var(--primary-color); margin: 0;">Resource Hub</h2>
+                <p style="color: var(--text-muted); margin: 5px 0 0 0;">Past Questions, Slides & Books from all Universities.</p>
+            </div>
+            
+            <button class="btn-upload" onclick="openModal()">
+                <span></span> Upload Material
+            </button>
+        </div>
+
+        <div class="search-bar" style="margin-bottom: 30px;">
+            <input type="text" id="searchInput" placeholder="Search by Course Name, Code, or University (e.g. 'Calculus KNUST')...">
+        </div>
+
+        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
+            <select id="uniFilter" onchange="filterResources()" style="padding: 8px; border-radius: 8px; width: auto;">
+                <option value="All">All Universities</option>
+                <option value="UG">University of Ghana (Legon)</option>
+                <option value="KNUST">KNUST</option>
+                <option value="UCC">UCC</option>
+                <option value="UMaT">UMaT</option>
+                <option value="UPSA">UPSA</option>
+            </select>
+        </div>
+
+        <div id="resource-grid" class="resource-grid">
+            <p>Loading resources...</p>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <h3>📤 Upload Study Material</h3>
+            <form id="uploadForm">
+                <div style="margin-bottom: 15px;">
+                    <label>File Title</label>
+                    <input type="text" name="title" placeholder="e.g. UGRC 150 Past Questions 2024" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label>University</label>
+                        <select name="university">
+                            <option value="UG">Legon</option>
+                            <option value="KNUST">KNUST</option>
+                            <option value="UCC">UCC</option>
+                            <option value="UMaT">UMaT</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Course Code</label>
+                        <input type="text" name="course_code" placeholder="e.g. MATH 121" required>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label>Select Document (PDF, Word, PPT)</label>
+                    <input type="file" name="document" accept=".pdf,.doc,.docx,.ppt,.pptx" required style="padding: 10px;">
+                </div>
+
+                <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" onclick="closeModal()" style="padding: 10px; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    <button type="submit" style="padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. MODAL LOGIC ---
+        const modal = document.getElementById('uploadModal');
+        function openModal() { modal.style.display = 'flex'; }
+        function closeModal() { modal.style.display = 'none'; }
+
+        // --- 2. UPLOAD LOGIC ---
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            fetch('/api/upload-resource', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("Upload Successful!");
+                closeModal();
+                loadResources(); // Refresh grid
+            });
+        });
+
+        // --- 3. FETCH & DISPLAY LOGIC ---
+        let allResources = [];
+
+        function loadResources() {
+            fetch('/api/resources')
+            .then(res => res.json())
+            .then(data => {
+                allResources = data;
+                renderResources(data);
+            });
+        }
+
+        function renderResources(list) {
+            const grid = document.getElementById('resource-grid');
+            if(list.length === 0) {
+                grid.innerHTML = '<p>No resources found.</p>';
+                return;
+            }
+
+            grid.innerHTML = list.map(res => {
+                // Determine Icon
+                let icon = '📄';
+                if(res.file_type === '.pdf') icon = '📕';
+                else if(res.file_type.includes('doc')) icon = '📝';
+                else if(res.file_type.includes('ppt')) icon = '📊';
+
+                return `
+                <div class="resource-card">
+                    <span class="file-icon">${icon}</span>
+                    <div class="res-title">${res.title}</div>
+                    <div class="res-meta">
+                        <span class="badge-uni">${res.university}</span> • ${res.course_code}
+                    </div>
+                    <div style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                        Uploaded by ${res.uploaded_by}
+                    </div>
+                    <a href="/uploads/${res.file_path}" download class="btn-download">⬇️ Download</a>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // --- 4. SEARCH & FILTER LOGIC ---
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = allResources.filter(r => 
+                r.title.toLowerCase().includes(val) || 
+                r.course_code.toLowerCase().includes(val) ||
+                r.university.toLowerCase().includes(val)
+            );
+            renderResources(filtered);
+        });
+
+        function filterResources() {
+            const uni = document.getElementById('uniFilter').value;
+            if(uni === 'All') renderResources(allResources);
+            else {
+                const filtered = allResources.filter(r => r.university === uni);
+                renderResources(filtered);
+            }
+        }
+
+        // Load on start
+        loadResources();
+    </script>
+</body>
+</html>

@@ -2,106 +2,330 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Course Registration</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Registration | Student Portal</title>
+    <link rel="stylesheet" href="style.css"> <script src="/theme.js"></script> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        .course-container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .course-list { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        /* PAGE LAYOUT */
+        .reg-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        h1 { color: var(--primary-color); margin-bottom: 5px; }
+        p.subtitle { color: var(--text-muted); margin-bottom: 30px; }
+
+        /* --- 1. THE SEARCH BAR & INPUTS --- */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr auto; /* Search | Code | Add Button */
+            gap: 15px;
+            align-items: start;
+            position: relative; /* For dropdown positioning */
+        }
+
+        /* Search Input Styling */
+        .search-wrapper { position: relative; width: 100%; }
         
-        .course-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border: 1px solid #eee;
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        /* HOVER & FOCUS EFFECTS */
+        input:hover {
+            border-color: #93c5fd; /* Light Blue on Hover */
+        }
+
+        input:focus {
+            border-color: var(--primary-color); /* Dark Blue on Click */
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); /* Glow effect */
+        }
+
+        /* --- 2. THE SEARCHABLE DROPDOWN --- */
+        .suggestions-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: none; /* Hidden by default */
+            margin-top: 5px;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
             cursor: pointer;
-            transition: 0.2s;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-color);
+            transition: background 0.2s;
         }
-        .course-item:hover { background: #f8fafc; border-color: #2563eb; }
-        
-        input[type="checkbox"] { transform: scale(1.5); margin-right: 15px; cursor: pointer; }
-        
-        .btn-register {
-            background: #2563eb; color: white; width: 100%;
-            padding: 15px; border: none; border-radius: 8px;
-            font-size: 1.1rem; margin-top: 30px; cursor: pointer;
+
+        .suggestion-item:hover {
+            background-color: var(--primary-color);
+            color: white;
         }
-        .btn-register:hover { background: #1d4ed8; }
+
+        .suggestion-item strong { color: inherit; }
+
+        /* --- BUTTONS --- */
+        .btn-add {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            height: 46px; /* Match input height */
+            transition: transform 0.2s;
+        }
+        .btn-add:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* --- TABLE --- */
+        .reg-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        .reg-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color); color: var(--text-muted); }
+        .reg-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-color); }
+        
+        .btn-delete {
+            background: #fee2e2; color: #ef4444; border: none;
+            padding: 5px 10px; border-radius: 6px; cursor: pointer;
+        }
+        .btn-delete:hover { background: #fecaca; }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .input-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo">🎓 Student Portal</div>
-        <a href="/dashboard" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">&larr; Back to Dashboard</a>
+        <div class="logo">🎓 Academic Portal</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="/dashboard.html">Dashboard</a>
+            <select onchange="setTheme(this.value)" style="padding: 5px; width: auto;">
+                <option value="system">💻 System</option>
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+            </select>
+        </div>
     </nav>
 
-    <main class="course-container">
-        <h1>Course Registration 📚</h1>
-        <p style="color: #666;">Select the courses you want to register for this semester, please.</p>
+    <div class="reg-container">
+        <h1>Course Registration</h1>
+        <p class="subtitle">Search and register for your semester/trimester courses below.</p>
 
-        <form id="regForm">
-            <div class="course-list">
-                <label class="course-item"><input type="checkbox" value="Web Development" class="subject"> Web Development</label>
-                <label class="course-item"><input type="checkbox" value="Data Structures" class="subject"> Data Structures</label>
-                <label class="course-item"><input type="checkbox" value="Database Systems" class="subject"> Database Systems</label>
-                <label class="course-item"><input type="checkbox" value="Python Programming" class="subject"> Python Programming</label>
-                
-                <label class="course-item"><input type="checkbox" value="Calculus I" class="subject"> Calculus I</label>
-                <label class="course-item"><input type="checkbox" value="Leadership Skills" class="subject"> Leadership Skills</label>
-                <label class="course-item"><input type="checkbox" value="French 101" class="subject"> French 101</label>
-                <label class="course-item"><input type="checkbox" value="Physics" class="subject"> Physics</label>
+        <div class="input-grid">
+            
+            <div class="search-wrapper">
+                <input type="text" id="courseSearch" placeholder="🔍 Search Course (e.g. African Studies...)" autocomplete="off">
+                <div id="suggestions" class="suggestions-list"></div>
             </div>
 
-            <button type="submit" class="btn-register" id="saveBtn">Register Courses</button>
-            <p id="msg" style="text-align: center; margin-top: 15px; color: green; display: none;">Registration Successful!</p>
-        </form>
-    </main>
+            <div>
+                <input type="text" id="courseCode" placeholder="Code (e.g. UGRC 110)" style="text-transform: uppercase;">
+            </div>
 
-    <script src="theme.js"></script>
+            <button class="btn-add" onclick="registerCourse()">+ Add</button>
+        </div>
+
+        <table class="reg-table">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Code</th>
+                    <th style="width: 60%;">Course Title</th>
+                    <th style="width: 20%;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="reg-body">
+                </tbody>
+        </table>
+
+        <div style="margin-top: 30px; text-align: right;">
+            <button onclick="saveRegistration()" style="background: #22c55e; color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: bold;">
+                💾 Confirm Registration
+            </button>
+        </div>
+    </div>
+
     <script>
-        // 1. Load existing courses when page opens
-        fetch('/api/user')
-            .then(res => res.json())
-            .then(data => {
-                if (data.courses) {
-                    const savedCourses = JSON.parse(data.courses); // Convert string back to list
-                    const checkboxes = document.querySelectorAll('.subject');
+        // --- 1. MOCK DATABASE OF GHANAIAN COURSES ---
+        // This simulates a database of courses common in Ghana (UG, KNUST, UCC, etc.)
+        const courseDatabase = [
+            "African Studies: Culture and Development",
+            "Academic Writing I",
+            "Academic Writing II",
+            "Communication Skills",
+            "Introduction to Computer Science",
+            "Calculus I",
+            "Calculus II",
+            "Linear Algebra",
+            "Principles of Economics (Micro)",
+            "Principles of Economics (Macro)",
+            "Financial Accounting I",
+            "Business Law",
+            "Information Technology Skills",
+            "Introduction to Psychology",
+            "Fundamentals of Nursing",
+            "Human Anatomy",
+            "Graphic Design Fundamentals",
+            "Engineering Mathematics",
+            "Physics for Engineers",
+            "Chemistry I",
+            "Introduction to Sociology",
+            "Political Science: Introduction",
+            "French for Beginners",
+            "Marketing Management",
+            "Human Resource Management",
+            "Entrepreneurship & Innovation",
+            "Environmental Science",
+            "Data Structures & Algorithms"
+        ];
+
+        // --- 2. SEARCH BAR LOGIC ---
+        const searchInput = document.getElementById('courseSearch');
+        const suggestionsBox = document.getElementById('suggestions');
+        const codeInput = document.getElementById('courseCode');
+
+        // Listen for typing
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            suggestionsBox.innerHTML = ''; // Clear previous
+
+            if (query.length < 1) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Filter the list
+            const matches = courseDatabase.filter(course => course.toLowerCase().includes(query));
+
+            if (matches.length > 0) {
+                suggestionsBox.style.display = 'block';
+                matches.forEach(course => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    // Highlight the matching text
+                    div.innerHTML = course.replace(new RegExp(query, "gi"), (match) => `<strong>${match}</strong>`);
                     
-                    // Check the boxes that were saved previously
-                    checkboxes.forEach(box => {
-                        if (savedCourses.includes(box.value)) {
-                            box.checked = true;
-                        }
-                    });
-                }
+                    // Click to Select
+                    div.onclick = () => {
+                        searchInput.value = course;
+                        suggestionsBox.style.display = 'none';
+                        codeInput.focus(); // Jump to code input automatically
+                    };
+                    suggestionsBox.appendChild(div);
+                });
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // Hide dropdown if user clicks outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
+        // --- 3. ADD & REMOVE COURSES ---
+        function registerCourse() {
+            const name = searchInput.value;
+            const code = codeInput.value.toUpperCase();
+
+            if(!name || !code) {
+                alert("Please select a course and enter a code.");
+                return;
+            }
+
+            const tbody = document.getElementById('reg-body');
+            const row = document.createElement('tr');
+            
+            row.innerHTML = `
+                <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">${code}</span></td>
+                <td>${name}</td>
+                <td><button class="btn-delete" onclick="this.closest('tr').remove()">Remove</button></td>
+            `;
+            
+            tbody.appendChild(row);
+
+            // Clear inputs
+            searchInput.value = "";
+            codeInput.value = "";
+        }
+
+        // --- 4. LOAD & SAVE (Using existing Server API) ---
+        // Load saved courses on startup
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/user-data')
+                .then(res => res.json())
+                .then(user => {
+                    if (user.courses) {
+                        try {
+                            const courses = JSON.parse(user.courses);
+                            const tbody = document.getElementById('reg-body');
+                            courses.forEach(c => {
+                                const row = `<tr>
+                                    <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">${c.code || 'N/A'}</span></td>
+                                    <td>${c.name}</td>
+                                    <td><button class="btn-delete" onclick="this.closest('tr').remove()">Remove</button></td>
+                                </tr>`;
+                                tbody.innerHTML += row;
+                            });
+                        } catch(e) {}
+                    }
+                });
+        });
+
+        // Save to Database
+        function saveRegistration() {
+            const rows = document.querySelectorAll('#reg-body tr');
+            const courseList = [];
+
+            rows.forEach(row => {
+                const code = row.cells[0].innerText;
+                const name = row.cells[1].innerText;
+                courseList.push({ name: name, code: code });
             });
 
-        // 2. Save courses when button clicked
-        document.getElementById('regForm').addEventListener('submit', (e) => {
-            e.preventDefault();
+            // We reuse the /api/save-courses endpoint (assuming you want to store this in the same 'courses' column)
+            // Note: This overrides GPA courses if they share the same column. 
+            // Ideally, the server should have a separate 'registered_courses' column, 
+            // but for now, we save it as a JSON string.
             
-            // Collect all checked boxes
-            const checkboxes = document.querySelectorAll('.subject:checked');
-            const selectedCourses = Array.from(checkboxes).map(box => box.value);
-
-            // Send to Server
-            const btn = document.getElementById('saveBtn');
-            btn.innerText = "Saving...";
-
             fetch('/api/save-courses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courses: selectedCourses })
-            })
-            .then(res => res.json())
-            .then(data => {
-                btn.innerText = "✅ Registered";
-                document.getElementById('msg').style.display = 'block';
-                setTimeout(() => btn.innerText = "Register Courses", 2000);
+                body: JSON.stringify({ courses: courseList })
+            }).then(() => {
+                alert("✅ Registration Successful!");
             });
-        });
+        }
     </script>
 </body>
 </html>

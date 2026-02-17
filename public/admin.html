@@ -96,7 +96,7 @@
 
     <!-- Announcement Section -->
     <div class="news-section">
-        <h3>📢 Make Announcement</h3>
+        <h3>Make Announcement</h3>
 
         <div class="form-group">
             <input type="text" id="news-title" placeholder="Title">
@@ -135,7 +135,347 @@
 
 </main>
 
+<section style="background: white; padding: 25px; border-radius: 12px; margin-top: 30px; border: 1px solid #ddd;">
+    <h3 style="color: #b91c1c; border-bottom: 2px solid #eee; padding-bottom: 10px;">User Reports & Issues</h3>
+    
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+            <tr style="background: #f9f9f9; text-align: left;">
+                <th style="padding: 10px;">User</th>
+                <th style="padding: 10px;">Issue / Message</th>
+                <th style="padding: 10px;">Date</th>
+                <th style="padding: 10px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="reports-list">
+            </tbody>
+    </table>
+</section>
+
+<section style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+    <h2 style="color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0;">News & Announcements</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #475569;">Title</label>
+            <input type="text" id="newsTitle" placeholder="e.g. End of Semester Exams" 
+                   style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+        </div>
+        <div>
+            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #475569;">Category</label>
+            <select id="newsCategory" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                <option value="General">General</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Academic">Academic</option>
+                <option value="Event">Event</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #475569;">Message Body</label>
+        <textarea id="newsMessage" rows="4" placeholder="Enter the detailed announcement here..." 
+                  style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit;"></textarea>
+    </div>
+
+    <div style="text-align: right;">
+        <button onclick="publishNews()" 
+                style="background: #0f172a; color: white; padding: 10px 25px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+            Publish Announcement
+        </button>
+    </div>
+
+    <h3 style="color: #475569; margin-top: 30px;">Active Announcements</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #e2e8f0;">
+        <thead style="background: #f8fafc;">
+            <tr>
+                <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Date</th>
+                <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Title</th>
+                <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Category</th>
+                <th style="text-align: right; padding: 12px; border-bottom: 1px solid #e2e8f0;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="newsTableBody">
+            </tbody>
+    </table>
+</section>
+
+<section style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 30px;">
+        <h2 style="color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0;">Library Management</h2>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <p style="color: #64748b; margin: 0;">Monitor and delete inappropriate study materials.</p>
+            <button onclick="loadResources()" style="background: #e2e8f0; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Refresh List</button>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #e2e8f0;">
+            <thead style="background: #f8fafc;">
+                <tr>
+                    <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Date</th>
+                    <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Title & Course</th>
+                    <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">Uploaded By</th>
+                    <th style="text-align: left; padding: 12px; border-bottom: 1px solid #e2e8f0;">University</th>
+                    <th style="text-align: right; padding: 12px; border-bottom: 1px solid #e2e8f0;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="resourceTableBody">
+                </tbody>
+        </table>
+    </section>
+
+    <script>
+        // --- RESOURCE MANAGEMENT LOGIC ---
+
+        // 1. Fetch and Display Files
+        function loadResources() {
+            fetch('/api/resources')
+                .then(res => res.json())
+                .then(data => {
+                    const tbody = document.getElementById('resourceTableBody');
+                    tbody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="padding:15px; text-align:center; color:#64748b;">No files uploaded yet.</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        const dateStr = new Date(item.date).toLocaleDateString();
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.9rem;">${dateStr}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                    <a href="/uploads/${item.file_path}" target="_blank" style="font-weight: 600; color: #2563eb; text-decoration: none;">
+                                        ${item.title}
+                                    </a>
+                                    <div style="font-size: 0.8rem; color: #64748b;">${item.course_code}</div>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${item.uploaded_by || 'Unknown'}</td>
+                                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                    <span style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                        ${item.university}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                    <button onclick="deleteResource(${item.id})" 
+                                            style="background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        // 2. Delete Resource Logic
+        function deleteResource(id) {
+            if (!confirm("PERMANENT ACTION\n\nAre you sure you want to delete this file? It will be removed from the server immediately.")) return;
+
+            fetch(`/api/resources/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("File deleted successfully.");
+                        loadResources(); // Refresh table
+                    } else {
+                        alert("Error deleting file.");
+                    }
+                });
+        }
+
+        // Load resources when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            loadResources(); 
+        });
+    </script>
+
+    <section style="background: white; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 30px; border-left: 5px solid #f59e0b;">
+    <h2 style="color: #92400e; margin-top: 0;">🏅 Leadership Vetting</h2>
+    <p style="color: #64748b;">Review applications from students who want to join the Leadership Vanguard.</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <thead>
+            <tr style="background: #fffbeb; text-align: left;">
+                <th style="padding: 10px;">Name</th>
+                <th style="padding: 10px;">Role & Vision</th>
+                <th style="padding: 10px;">Status</th>
+                <th style="padding: 10px; text-align: right;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="leadership-table"></tbody>
+    </table>
+</section>
+
 <script>
+    // --- LEADERSHIP ADMIN LOGIC ---
+    function loadLeadershipApps() {
+        fetch('/api/admin/leadership-apps')
+            .then(res => res.json())
+            .then(apps => {
+                const tbody = document.getElementById('leadership-table');
+                tbody.innerHTML = '';
+                
+                if(apps.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='4' style='padding:15px; text-align:center;'>No applications pending.</td></tr>";
+                    return;
+                }
+
+                apps.forEach(app => {
+                    const statusColor = app.status === 'APPROVED' ? 'green' : (app.status === 'REJECTED' ? 'red' : 'orange');
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="padding: 10px; font-weight:bold;">${app.name}</td>
+                            <td style="padding: 10px;">
+                                <div style="font-weight:600; color:#444;">${app.position}</div>
+                                <div style="font-size:0.85rem; color:#666; font-style:italic;">"${app.vision}"</div>
+                            </td>
+                            <td style="padding: 10px; color:${statusColor}; font-weight:bold;">${app.status}</td>
+                            <td style="padding: 10px; text-align: right;">
+                                ${app.status === 'PENDING' ? `
+                                    <button onclick="reviewApp(${app.id}, ${app.user_id}, 'APPROVED')" style="background:#22c55e; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Approve</button>
+                                    <button onclick="reviewApp(${app.id}, ${app.user_id}, 'REJECTED')" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Reject</button>
+                                ` : '-'}
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    function reviewApp(id, userId, status) {
+        fetch('/api/admin/leadership-review', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, user_id: userId, status })
+        }).then(() => loadLeadershipApps());
+    }
+
+    // Load on startup
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLeadershipApps();
+        // ... (other load functions)
+    });
+</script>
+
+<script>
+    // 1. Fetch and Display News
+    function loadNews() {
+        fetch('/api/news')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('newsTableBody');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="padding:15px; text-align:center; color:#64748b;">No active announcements.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const dateStr = new Date(item.date).toLocaleDateString();
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">${dateStr}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; font-weight: 500;">${item.title}</td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
+                                <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;">${item.category}</span>
+                            </td>
+                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                <button onclick="deleteNews(${item.id})" style="color: #ef4444; background: none; border: none; cursor: pointer; font-weight: bold;">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+    }
+
+    // 2. Publish News Logic
+    function publishNews() {
+        const title = document.getElementById('newsTitle').value;
+        const category = document.getElementById('newsCategory').value;
+        const message = document.getElementById('newsMessage').value;
+
+        if (!title || !message) {
+            alert("Title and Message are required.");
+            return;
+        }
+
+        fetch('/api/news', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, message, category })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Clear form and reload table
+                document.getElementById('newsTitle').value = '';
+                document.getElementById('newsMessage').value = '';
+                loadNews();
+                alert("Announcement published successfully.");
+            } else {
+                alert("Error publishing news.");
+            }
+        });
+    }
+
+    // 3. Delete News Logic
+    function deleteNews(id) {
+        if (!confirm("Are you sure you want to delete this announcement?")) return;
+
+        fetch(`/api/news/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    loadNews();
+                }
+            });
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', loadNews);
+</script>
+
+<script>
+    // ... (Keep your existing Admin script) ...
+
+    // ADD THIS: Fetch Reports
+    fetch('/api/admin/reports')
+        .then(res => res.json())
+        .then(reports => {
+            const tbody = document.getElementById('reports-list');
+            if (reports.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='4' style='padding:15px; text-align:center;'>No active issues.</td></tr>";
+                return;
+            }
+
+            reports.forEach(r => {
+                const row = `<tr>
+                    <td style="padding:10px;"><strong>${r.user_name}</strong></td>
+                    <td style="padding:10px; color: #555;">${r.message}</td>
+                    <td style="padding:10px; font-size: 0.8rem;">${new Date(r.date).toLocaleDateString()}</td>
+                    <td style="padding:10px;">
+                        <button onclick="resolveTicket(${r.id})" style="background: #22c55e; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
+                            Resolve
+                        </button>
+                    </td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        });
+
+    // ADD THIS: Resolve Function
+    function resolveTicket(id) {
+        if(!confirm("Mark this issue as resolved (delete)?")) return;
+        fetch(`/api/admin/reports/${id}`, { method: 'DELETE' })
+            .then(() => window.location.reload());
+    }
+</script>
+
+<script>
+
 
     // Load Announcements
     fetch('/api/all-announcements')
@@ -212,7 +552,6 @@
             });
     }
 
-
     // Post News
     function postNews() {
 
@@ -246,6 +585,7 @@
     }
 
     loadUsers();
+
 
 </script>
 

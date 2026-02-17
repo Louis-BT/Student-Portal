@@ -1,15 +1,17 @@
 /* =========================================
-   1. VARIABLES & RESET
+   1. VARIABLES & RESET (DEFAULT / LIGHT THEME)
    ========================================= */
 :root {
-    /* Default Colors */
+    /* Default Colors (Light Mode) */
     --primary-color: #1e3a8a;
     --secondary-color: #3b82f6;
-    --bg-color: #f8fafc; /* Softer, slightly blue-ish grey (less bright) */
+    --bg-color: #f8fafc; /* Your specific light grey */
     --card-bg: #ffffff;
-    --text-color: #333;
-    --button-text: #ffffff;
+    --text-color: #333333;
+    --text-muted: #666666;
+    --border-color: #eeeeee; /* Added for theme switching */
     --sidebar-width: 280px;
+    --input-bg: #fafafa;
 }
 
 * {
@@ -33,12 +35,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px; /* Reduced padding for mobile */
+    padding: 15px 20px;
     background-color: var(--card-bg);
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
     z-index: 100;
+    border-bottom: 1px solid var(--border-color); /* Updated for dark mode */
 }
 
 .nav-left {
@@ -93,6 +96,7 @@ body {
     transition: 0.3s ease;
     display: flex;
     flex-direction: column;
+    border-right: 1px solid var(--border-color); /* Updated for dark mode */
 }
 
 .sidebar.active {
@@ -104,7 +108,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color); /* Updated */
 }
 
 .close-btn {
@@ -143,7 +147,7 @@ body {
 .sidebar-footer {
     margin-top: auto;
     padding: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-color); /* Updated */
 }
 
 .sidebar-overlay {
@@ -167,7 +171,7 @@ body {
 .dashboard-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px; /* Smaller padding for mobile */
+    padding: 20px;
 }
 
 .hero-section {
@@ -176,7 +180,7 @@ body {
 }
 
 .hero-section h1 {
-    font-size: clamp(32px, 5vw, 48px); /* Responsive Font Size */
+    font-size: clamp(32px, 5vw, 48px);
     font-weight: 800;
     color: var(--primary-color);
     margin-bottom: 15px;
@@ -185,7 +189,7 @@ body {
 
 .hero-section .subtitle {
     font-size: 16px;
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 25px;
     max-width: 600px;
     margin-left: auto;
@@ -202,8 +206,7 @@ body {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
-3);
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
     transition: transform 0.2s;
 }
 
@@ -216,13 +219,12 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
     font-size: 24px;
     margin-bottom: 20px;
     color: var(--primary-color);
-    border-bottom: 2px solid rgba(0,0,0,0.1);
+    border-bottom: 2px solid var(--border-color); /* Updated */
     padding-bottom: 10px;
 }
 
 .features-grid {
     display: grid;
-    /* This makes it responsive: 1 column on phone, 2 on tablet, 4 on desktop */
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
     gap: 20px;
 }
@@ -232,12 +234,12 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-/* Feature Hover Effect (Light Mode) */
+/* Feature Hover Effect */
 .feature-card:hover {
     background-color: var(--primary-color);
     transform: translateY(-5px);
@@ -252,12 +254,12 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
 
 .feature-card .icon { font-size: 32px; margin-bottom: 10px; }
 .feature-card h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-color); }
-.feature-card p { font-size: 14px; color: #666; line-height: 1.5; }
+.feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
 
 /* Footer Responsive */
 .footer-content {
     display: flex;
-    flex-direction: column; /* Stack vertically on mobile */
+    flex-direction: column;
     gap: 20px;
     text-align: center;
 }
@@ -271,55 +273,66 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
 }
 
 /* =========================================
-   5. THEME OVERRIDES (Dark & Custom)
+   5. THEME OVERRIDES (DARK & CUSTOM)
    ========================================= */
 
-/* Dark Mode */
+/* --- 🌙 DARK MODE --- */
 [data-theme="dark"] {
-    --bg-color: #121212;
-    --card-bg: #1e1e1e;
-    --text-color: #e5e7eb;
-    --primary-color: #60a5fa; /* Lighter blue for better contrast */
+    --bg-color: #121212;      /* Very Dark Grey Background */
+    --card-bg: #1e1e1e;       /* Slightly Lighter Grey Cards */
+    --text-color: #e5e7eb;    /* White/Grey Text */
+    --text-muted: #9ca3af;
+    --primary-color: #60a5fa; /* Lighter Blue for contrast */
+    --border-color: #333333;  /* Dark Borders */
+    --input-bg: #2d2d2d;
 }
 
-[data-theme="dark"] .sidebar-header,
-[data-theme="dark"] .sidebar-footer {
-    border-color: #333;
+/* --- 🎨 CUSTOM MODE --- */
+/* Uses dark background, but Primary Color is set by JS */
+[data-theme="custom"] {
+    --bg-color: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --text-color: #ffffff;
+    --text-muted: #aaaaaa;
+    --border-color: #444444;
+    --input-bg: #333333;
 }
 
-[data-theme="dark"] .feature-card {
-    background-color: #1e1e1e;
-    border-color: #333;
+/* --- Specific Fixes for Dark/Custom --- */
+
+/* Fix: Make hamburger menu white in dark mode */
+[data-theme="dark"] .hamburger span,
+[data-theme="custom"] .hamburger span {
+    background-color: var(--text-color);
 }
 
-/* Specific Dark Mode Hover Fix */
-[data-theme="dark"] .feature-card:hover {
-    background-color: var(--primary-color); /* Turns Blue */
+/* Fix: Auth/Login Box Colors */
+[data-theme="dark"] .auth-box,
+[data-theme="custom"] .auth-box {
+    background-color: var(--card-bg);
+    color: var(--text-color);
 }
 
-[data-theme="dark"] .feature-card:hover h3, 
-[data-theme="dark"] .feature-card:hover p {
-    color: #ffffff; /* Text turns white */
+[data-theme="dark"] input,
+[data-theme="custom"] input {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
 }
 
-[data-theme="dark"] .feature-card p {
-    color: #aaa;
-}
-
-/* --- AUTHENTICATION PAGES (Login/Signup) --- */
-
-/* Centers the box on the screen */
+/* =========================================
+   6. AUTHENTICATION PAGES (Login/Signup)
+   ========================================= */
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f9; /* Light grey background */
+    background-color: var(--bg-color); /* Uses variable now */
 }
 
-/* The white card itself */
 .auth-box {
-    background: white;
+    background: var(--card-bg); /* Uses variable now */
     padding: 2.5rem;
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
@@ -328,19 +341,17 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
     text-align: center;
 }
 
-/* Typography inside the box */
 .auth-box h2 {
     margin-bottom: 0.5rem;
-    color: #333;
+    color: var(--text-color); /* Uses variable now */
 }
 
 .auth-box p {
-    color: #666;
+    color: var(--text-muted); /* Uses variable now */
     margin-bottom: 2rem;
     font-size: 0.9rem;
 }
 
-/* Inputs */
 .input-group {
     text-align: left;
     margin-bottom: 1.2rem;
@@ -350,24 +361,25 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
     display: block;
     font-size: 0.85rem;
     margin-bottom: 0.5rem;
-    color: #444;
+    color: var(--text-color); /* Uses variable now */
     font-weight: 600;
 }
 
-.input-group input {
+.input-group input, 
+.input-group select {
     width: 100%;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color); /* Uses variable now */
     border-radius: 8px;
     font-size: 1rem;
-    background: #fafafa;
+    background: var(--input-bg); /* Uses variable now */
+    color: var(--text-color);
 }
 
-/* Button */
 .btn-primary {
     width: 100%;
     padding: 12px;
-    background-color: #2563eb; /* Blue color */
+    background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 8px;
@@ -378,10 +390,11 @@ box-shadow: 0 4px 15px rgba(34, 197, 94, 0.
 }
 
 .btn-primary:hover {
-    background-color: #1d4ed8;
+    opacity: 0.9;
 }
 
 .switch-auth {
     margin-top: 1.5rem;
     font-size: 0.9rem;
+    color: var(--text-color);
 }

@@ -1,82 +1,112 @@
-const themeSelect = document.getElementById('theme-select');
-const colorPicker = document.getElementById('custom-color');
-const root = document.documentElement;
+/**
+ * theme.js - The "Brain" of the Portal's Appearance
+ * Handles System, Light, Dark, and Custom themes.
+ */
 
-// 1. Load saved settings
-const savedTheme = localStorage.getItem('theme') || 'system';
-const savedColor = localStorage.getItem('customColor') || '#1e3a8a';
+// 1. Initialize on Page Load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'system';
+    
+    // Apply immediately
+    setTheme(savedTheme);
 
-// 2. Initialize
-applyTheme(savedTheme);
-if (themeSelect) themeSelect.value = savedTheme;
-if (colorPicker) colorPicker.value = savedColor;
+    // Sync Dropdowns (if they exist on the page)
+    const selectors = document.querySelectorAll('select[onchange="setTheme(this.value)"]');
+    selectors.forEach(sel => sel.value = savedTheme);
 
-// 3. Listen for changes
-if (themeSelect) {
-    themeSelect.addEventListener('change', () => {
-        const selected = themeSelect.value;
-        localStorage.setItem('theme', selected);
-        applyTheme(selected);
-    });
-}
+    // Sync Color Picker (if it exists)
+    const colorPicker = document.getElementById('custom-color');
+    if (colorPicker) {
+        colorPicker.value = localStorage.getItem('customColor') || '#2563eb';
+        colorPicker.addEventListener('input', (e) => {
+            handleCustomColorChange(e.target.value);
+        });
+    }
+});
 
-if (colorPicker) {
-    colorPicker.addEventListener('input', (e) => {
-        const color = e.target.value;
-        localStorage.setItem('customColor', color);
-        if (themeSelect.value === 'custom') {
-            applyCustomColor(color);
-        }
-    });
-}
+// 2. Main Theme Switcher Function (Global)
+window.setTheme = function(theme) {
+    // Save Preference
+    localStorage.setItem('theme', theme);
+    
+    const root = document.documentElement;
+    const colorPicker = document.getElementById('custom-color');
 
-function applyTheme(theme) {
-    // Show/Hide Color Picker
+    // Show/Hide Color Picker based on mode
     if (colorPicker) {
         colorPicker.style.display = (theme === 'custom') ? 'inline-block' : 'none';
     }
 
-    if (theme === 'custom') {
-        const color = localStorage.getItem('customColor') || '#1e3a8a';
-        applyCustomColor(color);
+    // --- LOGIC ---
+    if (theme === 'system') {
+        resetCustomStyles();
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
+    } 
+    else if (theme === 'light') {
+        resetCustomStyles();
+        root.setAttribute('data-theme', 'light');
+    } 
+    else if (theme === 'dark') {
+        resetCustomStyles();
+        root.setAttribute('data-theme', 'dark');
+    } 
+    else if (theme === 'custom') {
         root.setAttribute('data-theme', 'custom');
-    } 
-    else if (theme === 'system') {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-        resetBackground();
-    } 
-    else {
-        root.setAttribute('data-theme', theme);
-        resetBackground();
+        
+        // Retrieve saved color or ask user
+        let color = localStorage.getItem('customColor');
+        
+        if (!color) {
+            // If no color picker input exists, prompt the user
+            if (!document.getElementById('custom-color')) {
+                color = prompt("Enter a Hex Color for your theme (e.g. #ff5733):", "#2563eb");
+            }
+            // Default if cancelled
+            if (!color) color = "#2563eb"; 
+            
+            localStorage.setItem('customColor', color);
+        }
+        
+        applyCustomColor(color);
     }
 }
 
+// 3. Apply Custom Logic
 function applyCustomColor(color) {
-    // Set Main Primary Color
+    const root = document.documentElement;
+    
+    // Save it
+    localStorage.setItem('customColor', color);
+
+    // Apply Brand Color
     root.style.setProperty('--primary-color', color);
     
-    // Set Background to a very light version of the chosen color
-    // We use a simple trick: mixing the color with white (using opacity visually)
-    // or simply setting a tinted background if possible. 
-    // Here we will use a light mix for --bg-color
-    const lightBg = lightenColor(color, 95); // 95% lighter
-    root.style.setProperty('--bg-color', lightBg);
-    root.style.setProperty('--secondary-color', color); 
+    // Calculate a matching secondary color (slightly darker)
+    // You can also change the background here if you wish, 
+    // but usually, it's safer to keep the background neutral (dark/light) 
+    // and only pop the primary elements.
+    root.style.setProperty('--secondary-color', color);
 }
 
-function resetBackground() {
+function handleCustomColorChange(color) {
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'custom') {
+        applyCustomColor(color);
+    }
+}
+
+// 4. Helper: Reset to default CSS variables
+function resetCustomStyles() {
+    const root = document.documentElement;
     root.style.removeProperty('--primary-color');
-    root.style.removeProperty('--bg-color');
     root.style.removeProperty('--secondary-color');
+    root.style.removeProperty('--bg-color');
 }
 
-// Helper to lighten a hex color
-function lightenColor(color, percent) {
-    var num = parseInt(color.replace("#",""),16),
-    amt = Math.round(2.55 * percent),
-    R = (num >> 16) + amt,
-    B = (num >> 8 & 0x00FF) + amt,
-    G = (num & 0x0000FF) + amt;
-    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
-}
+// 5. Listener for System Changes (if user is in 'System' mode)
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (localStorage.getItem('theme') === 'system') {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
+});

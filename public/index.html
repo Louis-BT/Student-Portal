@@ -3,116 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Portal</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>National Tertiary Portal | Ghana</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* --- 1. GLOBAL STYLES --- */
-        body { margin: 0; font-family: 'Inter', sans-serif; background: white; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        /* --- 2. NAVIGATION BAR --- */
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 40px; background: white; border-bottom: 1px solid #f1f5f9;
-            position: sticky; top: 0; z-index: 100;
-        }
-        .logo { font-size: 1.5rem; font-weight: 700; color: #2563eb; }
-        .nav-links a {
-            text-decoration: none; color: #64748b; margin-left: 30px; font-weight: 600;
-            transition: color 0.2s;
-        }
-        .nav-links a:hover { color: #2563eb; }
-        .btn-primary {
-            background: #2563eb; color: white; padding: 10px 20px; border-radius: 8px;
-            text-decoration: none; font-weight: 600; transition: background 0.2s;
-        }
-        .btn-primary:hover { background: #1d4ed8; }
+        /* LANDING PAGE SPECIFIC STYLES */
+        body { margin: 0; font-family: 'Inter', sans-serif; }
 
-        /* --- 3. HERO SECTION --- */
+        /* 1. News Ticker */
+        .news-ticker {
+            background: #b91c1c;
+            color: white;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none; /* Hidden if no news */
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-content {
+            display: inline-block;
+            animation: scroll 20s linear infinite;
+            padding-left: 100%;
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* 2. Hero Section */
         .hero {
-            text-align: center; padding: 100px 20px; max-width: 800px; margin: 0 auto; flex: 1;
+            text-align: center;
+            padding: 100px 20px;
+            background: linear-gradient(135deg, var(--bg-color) 0%, var(--card-bg) 100%);
+            border-bottom: 1px solid var(--border-color);
         }
-        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; line-height: 1.2; color: #0f172a; }
-        .hero p { font-size: 1.2rem; color: #64748b; margin-bottom: 40px; }
         
-        /* --- 4. FEATURES GRID --- */
-        .features {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px; padding: 60px 40px; background: #f8fafc;
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            line-height: 1.1;
         }
-        .feature-card {
-            background: white; padding: 30px; border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); text-align: center;
-            transition: transform 0.2s;
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
         }
-        .feature-card:hover { transform: translateY(-5px); }
-        .feature-icon { font-size: 40px; margin-bottom: 20px; display: block; }
 
-        /* --- 5. FOOTER & CONTACT INFO --- */
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero {
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1.1rem;
+        }
+        .btn-primary-hero {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .btn-outline-hero {
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            background: transparent;
+        }
+        .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+        /* 3. Features Grid */
+        .features {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 40px 30px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: 0.3s;
+            text-align: left;
+        }
+        .feature-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .icon-box {
+            width: 60px; height: 60px;
+            background: #e0f2fe;
+            color: var(--primary-color);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+        }
+
+        /* 4. University Partners */
+        .partners {
+            text-align: center;
+            padding: 60px 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-color);
+        }
+        .partner-logos {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            opacity: 0.6;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* 5. Footer */
         .footer {
-            background: #1e293b; color: white; padding: 60px 40px 20px;
-            margin-top: auto;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 80px 20px 40px;
         }
         .footer-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px; max-width: 1200px; margin: 0 auto 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
         }
-        .footer-col h3 { color: #38bdf8; margin-bottom: 20px; }
-        .footer-col p { color: #94a3b8; line-height: 1.6; margin: 5px 0; }
-        .footer-col a { color: #cbd5e1; text-decoration: none; display: block; margin-bottom: 10px; }
-        .footer-col a:hover { color: white; }
+        .footer-col h3 { color: #38bdf8; margin-bottom: 25px; font-size: 1.2rem; }
+        .footer-col p { color: #94a3b8; line-height: 1.6; margin: 8px 0; }
+        .footer-col a { color: #cbd5e1; text-decoration: none; display: block; margin-bottom: 12px; transition: 0.2s; }
+        .footer-col a:hover { color: white; padding-left: 5px; }
 
-        .copyright {
-            text-align: center; border-top: 1px solid #334155; padding-top: 20px; color: #64748b; font-size: 0.9rem;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .navbar { padding: 15px 20px; }
-            .nav-links { display: none; }
-            .hero h1 { font-size: 2.5rem; }
+        .developer-tag {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
 
+    <div id="news-ticker" class="news-ticker">
+        <div id="ticker-text" class="ticker-content">Loading Updates...</div>
+    </div>
+
     <nav class="navbar">
-        <div class="logo">🎓 Student Portal</div>
-        
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="#features">Features</a>
-            <a href="#contact">Contact</a>
-            <a href="/login" style="margin-left: 30px;">Login</a>
-            <a href="/signup" class="btn-primary">Get Started</a>
+        <div class="logo">🇬🇭 National Portal</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="/login.html" style="text-decoration: none; color: var(--text-color); font-weight: 600;">Login</a>
+            <a href="/signup.html" style="background: var(--primary-color); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">Get Started</a>
+            <select onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);">
+                <option value="system">💻 System</option>
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+            </select>
         </div>
     </nav>
 
     <section class="hero">
-        <h1>Your Academic Life,<br>Simplified.</h1>
-        <p>Manage your GPA, register your semester/trimester courses, and get other impactful and important news all in one place.</p>
-        <div>
-            <a href="/signup" class="btn-primary" style="font-size: 1.2rem; padding: 15px 30px;">Create Account</a>
-            <a href="/login" style="margin-left: 20px; text-decoration: none; color: #2563eb; font-weight: 600;">Log In &rarr;</a>
+        <h1>Your Academic Life,<br>Simplified & Unified.</h1>
+        <p>The central digital platform for all tertiary students in Ghana. Manage your GPA, register courses, access the National Library, and connect with peers from every university.</p>
+        
+        <div class="btn-group">
+            <a href="/signup.html" class="btn-hero btn-primary-hero">Create Free Account</a>
+            <a href="/login.html" class="btn-hero btn-outline-hero">Student Login</a>
         </div>
     </section>
 
     <section class="features" id="features">
         <div class="feature-card">
-            <span class="feature-icon">📊</span>
-            <h3>GPA Calculator</h3>
-            <p>Track your academic performance with our built-in grade point scale calculator.</p>
+            <div class="icon-box">📊</div>
+            <h3 style="color: var(--text-color);">GPA Calculator</h3>
+            <p style="color: var(--text-muted);">Track your academic performance with our 4.0/5.0 scale calculator. Save your history semester by semester to visualize your progress.</p>
         </div>
         <div class="feature-card">
-            <span class="feature-icon">📢</span>
-            <h3>Campus News</h3>
-            <p>Get real-time updates from the Admin directly on your dashboard.</p>
+            <div class="icon-box">📚</div>
+            <h3 style="color: var(--text-color);">National Library</h3>
+            <p style="color: var(--text-muted);">Access thousands of Past Questions, Slides, and Textbooks uploaded by students from KNUST, Legon, UCC, UMaT, and more.</p>
         </div>
         <div class="feature-card">
-            <span class="feature-icon">📚</span>
-            <h3>Course Manager</h3>
-            <p>Easily register and manage your semester/trimester courses online.</p>
+            <div class="icon-box">💬</div>
+            <h3 style="color: var(--text-color);">Student Connect</h3>
+            <p style="color: var(--text-muted);">Join the national chat room. Discuss courses, campus events, and network with students across the entire country.</p>
+        </div>
+    </section>
+
+    <section class="partners">
+        <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">SERVING STUDENTS FROM</p>
+        <div class="partner-logos">
+            <span>UG (Legon)</span>
+            <span>KNUST</span>
+            <span>UCC</span>
+            <span>UDS</span>
+            <span>UEW</span>
+            <span>UMaT</span>
+            <span>UPSA</span>
+            <span>GIMPA</span>
+            <span>KsTU</span>
+            <span>TTU</span>
+            <span>KTU</span>
+            <span>ATU</span>
+            <span>AAMUSTED</span>
+            <span>SEDACOE</span>
+            <span>ANGUTECH</span>
+            <span>CCTU</span>
         </div>
     </section>
 
@@ -121,33 +236,55 @@
             
             <div class="footer-col">
                 <h3>About This Portal</h3>
-                <p>Assisting students to navigate through their academics smarter and with ease.</p>
-                <p>📧 Support: <b>admin@portalsupport.com</b></p>
+                <p>Designed to assist Ghanaian students navigate their academic journey smarter and with ease. A unified tool for excellence.</p>
+                <p>📧 Support: <a href="mailto:admin@portalsupport.com" style="display:inline; color:#38bdf8;">admin@portalsupport.com</a></p>
             </div>
             
             <div class="footer-col">
                 <h3>Quick Links</h3>
-                <a href="/login">Student Login</a>
-                <a href="/signup">Create Account</a>
+                <a href="/login.html">Student Login</a>
+                <a href="/signup.html">Create Account</a>
+                <a href="/admin.html">Admin Portal</a>
                 <a href="#features">Features</a>
             </div>
 
             <div class="footer-col">
-                <h3>Developer Contact</h3>
-                <p>Built by:</p>
-                <p style="color: white; font-weight: bold;">[Louis Baffoe-Tachie]</p>
-                
-                <p>For technical inquiries:</p>
-                <p>📞 <b>[+233 59 457 8434]</b></p>
-                
-                <p>📧 <b>[baffoetachielouis@gmail.com]</b></p>
+                <h3>Lead Developer</h3>
+                <div class="developer-tag">
+                    <p style="color: white; font-weight: 700; font-size: 1.1rem; margin-bottom: 5px;">Louis Baffoe-Tachie</p>
+                    <p style="font-size: 0.9rem;">Full Stack Engineer</p>
+                    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
+                    <p>📞 <b>+233 59 457 8434</b></p>
+                    <p>📧 <b>baffoetachielouis@gmail.com</b></p>
+                </div>
             </div>
         </div>
 
-        <div class="copyright">
-            &copy; <script>document.write(new Date().getFullYear())</script> Student Portal. All rights reserved.
+        <div style="text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.9rem;">
+            &copy; <script>document.write(new Date().getFullYear())</script> National Tertiary Portal. All rights reserved.
         </div>
     </footer>
+
+    <script>
+        // FETCH LIVE NEWS FOR TICKER
+        fetch('/api/news')
+            .then(res => res.json())
+            .then(data => {
+                // Filter for "Urgent" or take the latest
+                const urgentNews = data.find(n => n.category === 'Urgent') || data[0];
+                
+                if (urgentNews) {
+                    const ticker = document.getElementById('news-ticker');
+                    const text = document.getElementById('ticker-text');
+                    
+                    ticker.style.display = 'block';
+                    // Repeat text for smooth infinite scroll effect
+                    const msg = `📢 UPDATE: ${urgentNews.title} - ${urgentNews.message}`;
+                    text.innerText = `${msg}   |   ${msg}   |   ${msg}`; 
+                }
+            })
+            .catch(err => console.log("No news available"));
+    </script>
 
 </body>
 </html>

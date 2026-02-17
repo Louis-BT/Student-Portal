@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leadership Vanguard | National Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/theme.js"></script>
+    <style>
+        .hero-leader {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .gold-text { color: #f59e0b; font-weight: bold; }
+        
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card-form {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .leader-card {
+            background: var(--bg-color);
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        @media(max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">⚖️ Leadership Vanguard</div>
+        <div style="display: flex; gap: 15px;">
+            <a href="/dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="hero-leader">
+        <h1>Are You a <span class="gold-text">Visionary?</span></h1>
+        <p style="max-width: 600px; margin: 10px auto; color: #cbd5e1;">
+            We are gathering the most refined, dedicated, and leadership-driven minds in Ghana. 
+            Join the Vanguard to connect with fellow changemakers.
+        </p>
+    </div>
+
+    <div class="grid-layout">
+        
+        <div class="card-form">
+            <h2 style="color: var(--primary-color);">Apply for Membership</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                Tell us why you belong here. This is for serious applicants only.
+            </p>
+
+            <div id="status-box" style="display: none; margin-bottom: 20px; padding: 15px; border-radius: 8px;"></div>
+            <form action="/api/leadership/apply" method="POST">
+                <div style="margin-bottom: 15px;">
+                    <label>Leadership Interest / Role</label>
+                    <input type="text" name="position" placeholder="e.g. SRC President, Course Rep, Entrepreneur" required 
+                           style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label>Your Vision / Manifesto</label>
+                    <textarea name="vision" rows="5" placeholder="Write briefly about your values and what drives you..." required
+                              style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #f59e0b; color: white; padding: 12px; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
+                    Submit Application 🚀
+                </button>
+            </form>
+        </div>
+
+        <div>
+            <h2 style="color: var(--text-color);">🏅 Approved Leaders</h2>
+            <p style="color: var(--text-muted);">Connect with these verified individuals.</p>
+            
+            <div id="leaders-list">
+                <p>Loading directory...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Fetch Approved Leaders
+        fetch('/api/leadership/leaders')
+            .then(res => res.json())
+            .then(leaders => {
+                const container = document.getElementById('leaders-list');
+                container.innerHTML = '';
+                
+                if(leaders.length === 0) {
+                    container.innerHTML = '<p style="color:gray;">No leaders inducted yet.</p>';
+                    return;
+                }
+
+                leaders.forEach(l => {
+                    container.innerHTML += `
+                        <div class="leader-card">
+                            <strong style="display:block; font-size:1.1rem;">${l.name} 🏅</strong>
+                            <span style="color:#666; font-size:0.9rem;">${l.position} @ ${l.institution}</span>
+                        </div>
+                    `;
+                });
+            });
+    </script>
+
+<script>
+    // 1. Check My Application Status
+    fetch('/api/leadership/my-status')
+        .then(res => res.json())
+        .then(data => {
+            const box = document.getElementById('status-box');
+            const form = document.querySelector('form'); // The application form
+
+            if (data.status === 'APPROVED') {
+                // HIDE FORM, SHOW SUCCESS & LINK
+                if(form) form.style.display = 'none';
+                
+                box.style.display = 'block';
+                box.style.background = '#dcfce7';
+                box.style.border = '1px solid #22c55e';
+                box.innerHTML = `
+                    <h3 style="color: #14532d; margin-top:0;">🎉 You are a Vanguard Leader!</h3>
+                    <p style="color: #166534;">Your application has been vetted and approved. You are now part of the elite circle.</p>
+                    
+                    <a href="${data.link}" target="_blank" style="display: inline-block; background: #22c55e; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+                        Join the Leadership WhatsApp Hub 🏅
+                    </a>
+                `;
+            } 
+            else if (data.status === 'PENDING') {
+                // HIDE FORM, SHOW WAITING MESSAGE
+                if(form) form.style.display = 'none';
+                
+                box.style.display = 'block';
+                box.style.background = '#fff7ed'; // Light Orange
+                box.style.border = '1px solid #f97316';
+                box.innerHTML = `
+                    <strong style="color: #c2410c;">⏳ Application Under Review</strong>
+                    <p style="color: #9a3412;">The Admin is currently reviewing your vision statement. Please check back later.</p>
+                `;
+            }
+        });
+
+    // ... (Your existing code to load list of leaders) ...
+</script>
+
+</body>
+</html>

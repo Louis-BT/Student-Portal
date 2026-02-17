@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Connect | Global Chat</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/theme.js"></script>
+    <style>
+        .chat-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 80vh; /* Takes up most of the screen */
+            border: 1px solid var(--border-color);
+        }
+
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-window {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        /* My messages (Right) */
+        .my-msg {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 0;
+        }
+
+        /* Others' messages (Left) */
+        .other-msg {
+            align-self: flex-start;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-bottom-left-radius: 0;
+        }
+
+        .msg-info {
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            opacity: 0.8;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .send-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Admin Delete Button styling */
+        .admin-del {
+            font-size: 0.7rem;
+            color: red;
+            cursor: pointer;
+            margin-left: 10px;
+            background: white;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"> Student Connect</div>
+        <div style="display: flex; gap: 15px;">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/logout" style="color: red;">Logout</a>
+        </div>
+    </nav>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <h3>🇬🇭 National Student Chat</h3>
+            <span style="font-size: 0.8rem; opacity: 0.9;">Live Room</span>
+        </div>
+
+        <div id="chat-window" class="chat-window">
+            <div style="text-align: center; color: gray;">Loading chat...</div>
+        </div>
+
+        <form id="chat-form" class="chat-input-area">
+            <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off">
+            <button type="submit" class="send-btn">Send ➤</button>
+        </form>
+    </div>
+
+    <script>
+        const chatWindow = document.getElementById('chat-window');
+        const chatForm = document.getElementById('chat-form');
+        const msgInput = document.getElementById('msg-input');
+        let myName = "";
+        let isAdmin = false;
+
+        // 1. Get User Info First
+        fetch('/user-data').then(res => res.json()).then(user => {
+            myName = user.name;
+            isAdmin = (user.role === 'ADMIN');
+            loadMessages(); // Load immediately
+            setInterval(loadMessages, 3000); // Refresh every 3 seconds (Polling)
+        });
+
+        // 2. Load Messages Function
+        function loadMessages() {
+            fetch('/api/chat')
+                .then(res => res.json())
+                .then(msgs => {
+                    chatWindow.innerHTML = "";
+                    
+                    msgs.forEach(msg => {
+                        const isMe = (msg.user_name === myName);
+                        const div = document.createElement('div');
+                        div.className = `message-bubble ${isMe ? 'my-msg' : 'other-msg'}`;
+                        
+                        // Admin Control: Delete Button
+                        const deleteBtn = isAdmin ? `<span class="admin-del" onclick="deleteMessage(${msg.id})">DEL</span>` : '';
+
+                        div.innerHTML = `
+                            <div class="msg-info">
+                                <span>${msg.user_name} <small>(${msg.institution || 'Student'})</small></span>
+                                ${deleteBtn}
+                            </div>
+                            <div>${msg.message}</div>
+                        `;
+                        chatWindow.appendChild(div);
+                    });
+                });
+        }
+
+        // 3. Send Message
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = msgInput.value;
+            if(!text) return;
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: text })
+            }).then(() => {
+                msgInput.value = "";
+                loadMessages(); // Refresh instantly
+            });
+        });
+
+        // 4. Admin Delete Function
+        function deleteMessage(id) {
+            if(!confirm("Admin: Permanently delete this message?")) return;
+            fetch(`/api/chat/${id}`, { method: 'DELETE' })
+                .then(() => loadMessages());
+        }
+    </script>
+</body>
+</html>
