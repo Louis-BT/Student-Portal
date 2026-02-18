@@ -106,6 +106,36 @@ const initDB = async () => {
             );
         `);
 
+        // --- DANGER ZONE: RESET SYSTEM ---
+app.delete('/api/admin/reset-system', checkAdmin, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN'); // Start Transaction
+
+            // 1. Clear Dependent Data First (To prevent foreign key errors)
+            await client.query("DELETE FROM leadership_apps");
+            await client.query("DELETE FROM support_tickets");
+            // Optional: Clear chat if you want a full wipe
+            // await client.query("DELETE FROM global_chat"); 
+
+            // 2. Delete All Users EXCEPT Admins
+            await client.query("DELETE FROM users WHERE role != 'ADMIN'");
+
+            await client.query('COMMIT'); // Save Changes
+            res.json({ success: true, message: "System Reset Successful. All students removed." });
+        } catch (e) {
+            await client.query('ROLLBACK'); // Undo if error
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error("Reset Error:", err);
+        res.status(500).json({ error: "System Reset Failed" });
+    }
+});
+
         // 3. News & Announcements
         await client.query(`
             CREATE TABLE IF NOT EXISTS news (

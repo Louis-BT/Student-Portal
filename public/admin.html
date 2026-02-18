@@ -13,8 +13,6 @@
 
     <style>
         /* --- ADMIN SPECIFIC OVERRIDES --- */
-        /* These styles are specific ONLY to the admin panel, so they stay here */
-        
         body { display: flex; height: 100vh; overflow: hidden; }
 
         /* SIDEBAR (Darker for Admin Distinction) */
@@ -147,7 +145,12 @@
                 <div class="section-box">
                     <div class="section-title">
                         <span><i class="fas fa-users"></i> Student Database</span>
-                        <button class="btn btn-primary btn-sm" style="margin-left: auto;" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
+                        <div style="margin-left: auto; display: flex; gap: 10px;">
+                            <button class="btn btn-danger btn-sm" onclick="systemReset()" style="background: #7f1d1d; border: 1px solid #991b1b;">
+                                <i class="fas fa-radiation-alt"></i> WIPE ALL STUDENTS
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
+                        </div>
                     </div>
                     <div style="overflow-x: auto;">
                         <table class="admin-table">
@@ -245,7 +248,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const role = localStorage.getItem('portal-user-role');
             if (role !== 'ADMIN') {
-                alert("⛔ Security Alert: Access Denied. Admin privileges required.");
+                alert("Security Alert: Access Denied. Admin privileges required.");
                 window.location.href = 'login.html';
                 return;
             }
@@ -254,7 +257,6 @@
 
         // --- CORE INITIALIZATION ---
         function initDashboard() {
-            // Load all data modules
             loadUsers();
             loadLeadership();
             loadNews();
@@ -276,14 +278,12 @@
         // 1. USERS MODULE
         async function loadUsers() {
             try {
-                // In production, this hits the API. For demo, we simulate if API fails.
                 const res = await fetch('/api/admin/users'); 
                 const users = await res.json(); 
                 if(!users || users.length === 0) throw new Error("No data");
                 renderUsers(users);
                 document.getElementById('kpi-users').innerText = users.length;
             } catch(e) {
-                // Fallback Display if Server isn't populated
                 console.warn("Using fallback user data");
                 document.getElementById('user-table-body').innerHTML = `
                     <tr><td colspan="6" class="text-center">No users found in database yet.</td></tr>
@@ -316,13 +316,36 @@
             loadUsers();
         }
 
+        // --- DANGER ZONE LOGIC: WIPE ALL STUDENTS ---
+        async function systemReset() {
+            if(!confirm("⚠️ CRITICAL WARNING ⚠️\n\nThis will DELETE ALL STUDENT ACCOUNTS, leadership applications, and tickets.\n\nThis action cannot be undone. Are you sure?")) return;
+            
+            const verify = prompt("To confirm, type 'DELETE' in the box below:");
+            if(verify !== 'DELETE') return alert("Action Cancelled.");
+
+            try {
+                const res = await fetch('/api/admin/reset-system', { method: 'DELETE' });
+                const data = await res.json();
+                
+                if(data.success) {
+                    alert("✅ System Reset Complete. All student data has been wiped.");
+                    loadUsers(); 
+                    document.getElementById('kpi-users').innerText = "0"; 
+                    document.getElementById('kpi-leaders').innerText = "0";
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (e) {
+                alert("Server Error: Could not reset system.");
+            }
+        }
+
         // 2. LEADERSHIP MODULE
         async function loadLeadership() {
             try {
                 const res = await fetch('/api/admin/leadership-apps');
                 const apps = await res.json();
                 
-                // Update KPI
                 const pendingCount = apps.filter(a => a.status === 'PENDING').length;
                 document.getElementById('kpi-leaders').innerText = pendingCount;
                 document.getElementById('pending-count-badge').innerText = `${pendingCount} Pending`;
