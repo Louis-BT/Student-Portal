@@ -121,7 +121,7 @@
     <div class="auth-grid">
         <div class="brand-side">
             <div class="brand-content">
-                <div style="font-size: 3rem; margin-bottom: 20px;"></div>
+                <div style="font-size: 3rem; margin-bottom: 20px;">🎓</div>
                 <div class="brand-quote">"Education is the passport to the future, for tomorrow belongs to those who prepare for it today."</div>
                 <div class="brand-author">— Louis-BT</div>
             </div>
@@ -163,6 +163,10 @@
                     <button type="submit" class="btn-auth">Sign In</button>
                 </form>
 
+                <div style="margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                    <strong>Tip:</strong> Use <code style="background: #e2e8f0; padding: 2px 5px; border-radius: 4px; color: #334155;">admin@portal.edu.gh</code> to enter Admin Mode.
+                </div>
+
                 <div class="links">
                     Don't have an account? <a href="signup.html">Create Account</a>
                 </div>
@@ -177,15 +181,33 @@
         }
 
         function handleLogin() {
+            const email = document.getElementById('email').value.toLowerCase();
             const btn = document.querySelector('.btn-auth');
+            
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
             
-            // SIMULATE LOGIN
+            // SIMULATE AUTHENTICATION DELAY
             setTimeout(() => {
-                // In a real app, this verifies against a server
-                // For now, we assume success
+                
+                // === ROLE DETECTION LOGIC ===
+                if (email === 'admin@portal.edu.gh') {
+                    // Set Admin Role
+                    localStorage.setItem('portal-user-role', 'ADMIN');
+                    localStorage.setItem('portal-user-name', 'System Administrator');
+                    localStorage.setItem('portal-avatar', 'https://via.placeholder.com/70/ef4444/ffffff?text=AD');
+                } else {
+                    // Set Student Role
+                    localStorage.setItem('portal-user-role', 'STUDENT');
+                    
+                    // Keep existing name if set, otherwise default
+                    if(!localStorage.getItem('portal-user-name') || localStorage.getItem('portal-user-name') === 'System Administrator') {
+                        localStorage.setItem('portal-user-name', 'Student User');
+                    }
+                }
+
+                // Redirect to Dashboard (which will now read the role correctly)
                 window.location.href = "dashboard.html";
-            }, 1500);
+            }, 1000);
         }
     </script>
 </body>
