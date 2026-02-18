@@ -43,12 +43,13 @@
         .welcome-text h1 { margin: 0; font-size: 1.8rem; font-weight: 700; }
         .welcome-text p { color: var(--text-muted); margin: 5px 0 0; }
 
-        /* --- IDENTITY STRIP --- */
+        /* --- IDENTITY STRIP (UPDATED) --- */
         .identity-strip { 
             background: var(--card-bg); padding: 20px; border-radius: 12px; display: flex; gap: 20px; 
             margin-bottom: 25px; border: 1px solid var(--border-color); box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            flex-wrap: wrap; /* Allows wrapping on small screens */
         }
-        .id-item { flex: 1; border-right: 1px solid var(--border-color); padding-right: 20px; }
+        .id-item { flex: 1; border-right: 1px solid var(--border-color); padding-right: 20px; min-width: 150px; }
         .id-item:last-child { border: none; }
         .id-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
         .id-val { font-size: 1.1rem; font-weight: 700; color: var(--text-color); margin-top: 5px; display: block; }
@@ -111,7 +112,7 @@
         </div>
 
         <ul class="sidebar-links" id="menu-list">
-            </ul>
+        </ul>
     </aside>
 
     <main class="main-content">
@@ -136,6 +137,10 @@
                     <div class="id-item">
                         <span class="id-label">Institution</span>
                         <span class="id-val" id="stu-school">Loading...</span>
+                    </div>
+                    <div class="id-item">
+                        <span class="id-label">Program</span>
+                        <span class="id-val" id="stu-program">--</span>
                     </div>
                     <div class="id-item">
                         <span class="id-label">Level</span>
@@ -203,9 +208,7 @@
                     <div class="news-box">
                         <h3 style="margin-top:0;">Campus News</h3>
                         <div id="news-feed" style="color:var(--text-muted); font-size:0.9rem;">
-                            <p><i class="fas fa-bullhorn"></i> Registration closes on Friday.</p>
-                            <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
-                            <p><i class="fas fa-info-circle"></i> Library hours extended.</p>
+                            <p class="text-center" style="padding: 20px;">Loading news from portal...</p>
                         </div>
                     </div>
                 </div>
@@ -270,18 +273,13 @@
     document.addEventListener("DOMContentLoaded", () => {
         // 1. DATA COLLECTION
         const role = localStorage.getItem('portal-user-role') || 'STUDENT';
-        const name = localStorage.getItem('portal-user-name') || 'User';
-        const pic = localStorage.getItem('portal-avatar');
-
-        // 2. SIDEBAR IDENTITY
-        document.getElementById('sidebar-name').innerText = name;
-        if(pic) document.getElementById('sidebar-pic').src = pic;
-
-        // 3. ROLE SWITCHING LOGIC
+        
+        // 2. ROLE SWITCHING LOGIC
         if (role === 'ADMIN') {
             setupAdminView();
         } else {
-            setupStudentView(name);
+            // Updated to pass a default, but data loads async
+            setupStudentView();
         }
     });
 
@@ -292,7 +290,8 @@
         document.getElementById('admin-view').style.display = 'block';
         document.getElementById('portal-title').innerText = "Admin Panel";
         document.getElementById('sidebar-role').innerText = "System Administrator";
-        document.querySelector('.sidebar').style.background = "#1e293b"; // Darker sidebar for Admin
+        document.getElementById('sidebar-name').innerText = "Admin";
+        document.querySelector('.sidebar').style.background = "#1e293b"; 
 
         // Admin Menu
         document.getElementById('menu-list').innerHTML = `
@@ -303,9 +302,8 @@
         `;
     }
 
-    function setupStudentView(name) {
-        // UI Updates
-        document.getElementById('welcome-message').innerText = `Welcome, ${name.split(' ')[0]}!`;
+    // --- UPDATED STUDENT LOGIC FOR DB SYNC ---
+    async function setupStudentView() {
         document.getElementById('student-view').style.display = 'block';
         document.getElementById('sidebar-role').innerText = "Undergraduate Student";
 
@@ -321,31 +319,57 @@
             <li><a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         `;
 
-        // Load Dynamic Data
-        loadStudentData();
+        await loadStudentData(); // Now Async
+        loadNews(); // New: Load News from DB
     }
 
-    function loadStudentData() {
-        // Get data from LocalStorage (Simulated DB)
-        const courses = JSON.parse(localStorage.getItem('portal-courses') || '[]');
-        const gpa = localStorage.getItem('portal-gpa') || '0.00';
-        const school = localStorage.getItem('portal-institution') || 'See Profile';
+    async function loadStudentData() {
+        // Fallbacks from LocalStorage (Instant Load)
+        const cachedName = localStorage.getItem('portal-user-name') || 'User';
+        const cachedPic = localStorage.getItem('portal-avatar');
+        document.getElementById('sidebar-name').innerText = cachedName;
+        document.getElementById('welcome-message').innerText = `Welcome, ${cachedName.split(' ')[0]}!`;
+        if(cachedPic) document.getElementById('sidebar-pic').src = cachedPic;
+
+        // FETCH FROM DATABASE (Real Data)
+        let gpaValue = 0.00;
+        try {
+            const res = await fetch('/api/user/profile');
+            if(res.ok) {
+                const data = await res.json();
+                
+                // Update Text Elements with DB Data
+                document.getElementById('stu-school').innerText = data.institution || 'Not Set';
+                document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
+                
+                // NEW: Program Display
+                document.getElementById('stu-program').innerText = data.program || 'General';
+                
+                // GPA
+                gpaValue = data.gpa || 0.00;
+                document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
+                document.getElementById('card-gpa').innerText = Number(gpaValue).toFixed(2);
+                
+                // Name Update
+                if(data.name) {
+                    document.getElementById('sidebar-name').innerText = data.name;
+                    document.getElementById('welcome-message').innerText = `Welcome, ${data.name.split(' ')[0]}!`;
+                }
+            }
+        } catch (e) {
+            console.log("Offline mode: ", e);
+            // If offline, we stay with LocalStorage values loaded above
+        }
+
+        // Check Leadership Status (Local for now, or could fetch from API)
         const leadershipStatus = localStorage.getItem('portal-leadership-status');
-
-        // Update Dashboard Cards (Real-time binding)
-        document.getElementById('stu-school').innerText = school;
-        document.getElementById('stu-gpa').innerText = Number(gpa).toFixed(2);
-        document.getElementById('card-gpa').innerText = Number(gpa).toFixed(2);
-        document.getElementById('course-count').innerText = courses.length;
-
-        // Toggle Vanguard Status
         if (leadershipStatus === 'APPROVED') {
             document.getElementById('vanguard-banner').style.display = 'none';
             document.getElementById('vanguard-member-card').style.display = 'block';
             document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
         }
 
-        // Initialize Chart
+        // Initialize Chart (Connected to GPA)
         const ctx = document.getElementById('gpaChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -353,7 +377,7 @@
                 labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Current'],
                 datasets: [{
                     label: 'CGPA Progress',
-                    data: [2.5, 3.0, 3.2, gpa],
+                    data: [2.5, 3.0, 3.2, gpaValue], // Uses dynamic GPA
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                     borderWidth: 2,
@@ -368,6 +392,32 @@
                 scales: { x: { display: false }, y: { beginAtZero: false, max: 4.0 } }
             }
         });
+    }
+
+    async function loadNews() {
+        try {
+            const res = await fetch('/api/news');
+            const news = await res.json();
+            const feed = document.getElementById('news-feed');
+            
+            if(news.length > 0) {
+                feed.innerHTML = ''; // Clear loading text
+                news.slice(0, 3).forEach(n => {
+                    feed.innerHTML += `
+                        <div style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+                            <div style="font-weight:700; color:var(--text-color); margin-bottom:4px;">
+                                <i class="fas fa-bullhorn" style="color:var(--primary-color);"></i> ${n.title}
+                            </div>
+                            <div style="font-size:0.85rem;">${n.message}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                feed.innerHTML = '<p class="text-center">No new announcements.</p>';
+            }
+        } catch (e) {
+            // Keep default static news if fetch fails
+        }
     }
 </script>
 

@@ -65,7 +65,7 @@
         .form-section { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; }
         
-        .form-group { position: relative; } /* Important for dropdown positioning */
+        .form-group { position: relative; } 
         .form-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
         .form-group input, .form-group select {
             width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);
@@ -153,7 +153,7 @@
                     
                     <div class="profile-info">
                         <h1 id="student-name">Loading...</h1>
-                        <p id="student-email">loading@student.edu.gh</p>
+                        <p id="student-email">student@gmail.com</p>
                         <span class="badge" id="student-role">Student</span>
                     </div>
                 </div>
@@ -165,6 +165,11 @@
                     
                     <form id="profile-form">
                         <div class="form-grid">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="name" placeholder="Your Full Name">
+                            </div>
+
                             <div class="form-group">
                                 <label>Institution / University</label>
                                 <input type="text" id="schoolSearch" placeholder="Type university name..." autocomplete="off">
@@ -201,7 +206,8 @@
                             <div class="form-group">
                                 <label>Financial Status</label>
                                 <select id="financial">
-                                    <option value="Regular">Regular (Fee Paying)</option>
+                                    <option value="Regular">Regular</option>
+                                    <option value="Fee Paying">Fee Paying</option>
                                     <option value="Scholarship">Scholarship / Bursary</option>
                                     <option value="International">International Student</option>
                                 </select>
@@ -265,34 +271,43 @@
             "All Nations University", "Regent University College"
         ];
 
-        // --- 1. INITIALIZATION ---
-        document.addEventListener("DOMContentLoaded", () => {
-            // Load Basic Info (From Signup/Login)
-            const name = localStorage.getItem("portal-user-name") || "Student User";
-            const email = localStorage.getItem("portal-user-email") || "student@university.edu.gh";
+        // --- 1. INITIALIZATION & SERVER LOAD ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Load LocalStorage Basics first (for instant feel)
             const role = localStorage.getItem("portal-user-role") || "Student";
             const pic = localStorage.getItem("portal-avatar");
-
-            document.getElementById("student-name").innerText = name;
-            document.getElementById("student-email").innerText = email;
+            
             document.getElementById("student-role").innerText = role.toUpperCase();
             if(pic) document.getElementById("profile-display").src = pic;
 
-            // Load Detailed Profile Data
-            const savedData = JSON.parse(localStorage.getItem("portal-profile-data"));
-            if(savedData) {
-                document.getElementById("schoolSearch").value = savedData.institution || "";
-                document.getElementById("faculty").value = savedData.faculty || "";
-                document.getElementById("department").value = savedData.department || "";
-                document.getElementById("program").value = savedData.program || "";
-                document.getElementById("level").value = savedData.level || "100";
-                document.getElementById("financial").value = savedData.financial || "Regular";
-                document.getElementById("entry-year").value = savedData.entry || "";
-                document.getElementById("grad-year").value = savedData.grad || "";
+            // FETCH DATA FROM SERVER (Database Sync)
+            try {
+                const res = await fetch('/api/user/profile');
+                if(!res.ok) throw new Error("Not logged in");
+                
+                const data = await res.json();
+                
+                // Update Header
+                document.getElementById("student-name").innerText = data.name || "Student User";
+                document.getElementById("student-email").innerText = data.email || "";
+
+                // Populate ALL Form Fields (Making them editable)
+                if(data.name) document.getElementById("name").value = data.name;
+                if(data.institution) document.getElementById("schoolSearch").value = data.institution;
+                if(data.faculty) document.getElementById("faculty").value = data.faculty;
+                if(data.department) document.getElementById("department").value = data.department;
+                if(data.program) document.getElementById("program").value = data.program;
+                if(data.level) document.getElementById("level").value = data.level;
+                if(data.financial_status) document.getElementById("financial").value = data.financial_status;
+                if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
+                if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
+                
+            } catch (e) {
+                console.error("Using offline/local mode");
             }
         });
 
-        // --- 2. SCHOOL SEARCH LOGIC ---
+        // --- 2. SCHOOL SEARCH LOGIC (Editable) ---
         const schoolInput = document.getElementById('schoolSearch');
         const suggestionBox = document.getElementById('school-suggestions');
 
@@ -324,14 +339,17 @@
             }
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!schoolInput.contains(e.target)) suggestionBox.style.display = 'none';
         });
 
-        // --- 3. SAVE LOGIC ---
-        function saveProfile() {
-            const data = {
+        // --- 3. SAVE LOGIC (SERVER SYNC for ALL fields) ---
+        async function saveProfile() {
+            const btn = document.querySelector('button[onclick="saveProfile()"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            const payload = {
+                name: document.getElementById("name").value,
                 institution: document.getElementById("schoolSearch").value,
                 faculty: document.getElementById("faculty").value,
                 department: document.getElementById("department").value,
@@ -339,20 +357,38 @@
                 level: document.getElementById("level").value,
                 financial: document.getElementById("financial").value,
                 entry: document.getElementById("entry-year").value,
-                grad: document.getElementById("grad-year").value
+                completion: document.getElementById("grad-year").value
             };
 
-            // Save to Global State
-            localStorage.setItem("portal-profile-data", JSON.stringify(data));
-            
-            // Also update "portal-institution" specifically for Dashboard use
-            localStorage.setItem("portal-institution", data.institution);
+            try {
+                // Save to Database
+                const res = await fetch('/api/user/update-profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            // Feedback
-            const msg = document.getElementById("save-status");
-            msg.innerText = "✓ Saved Successfully";
-            msg.style.opacity = 1;
-            setTimeout(() => { msg.style.opacity = 0; }, 3000);
+                if(res.ok) {
+                    // Feedback
+                    const msg = document.getElementById("save-status");
+                    msg.innerText = "✓ Saved to Database";
+                    msg.style.opacity = 1;
+                    setTimeout(() => { msg.style.opacity = 0; }, 3000);
+
+                    // Instant UI Update
+                    document.getElementById("student-name").innerText = payload.name;
+                    
+                    // Update LocalStorage for immediate use by Dashboard
+                    localStorage.setItem("portal-institution", payload.institution);
+                } else {
+                    alert("Error saving to database.");
+                }
+
+            } catch (err) {
+                alert("Connection error. Check your internet.");
+            } finally {
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            }
         }
 
         // --- 4. IMAGE CROPPER LOGIC ---
@@ -384,7 +420,7 @@
             const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
             const url = canvas.toDataURL();
             document.getElementById("profile-display").src = url;
-            localStorage.setItem("portal-avatar", url);
+            localStorage.setItem("portal-avatar", url); // Keep Avatar in LocalStorage for now
             closeCropper();
         }
 
