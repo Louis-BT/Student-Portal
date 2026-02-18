@@ -1,359 +1,442 @@
-/* =========================================
-   1. GLOBAL VARIABLES ("The Brain")
-   ========================================= */
-:root {
-    /* --- LIGHT MODE (Default) --- */
-    --primary-color: #2563eb;  /* Dynamic: Changed by Color Picker */
-    --secondary-color: #3b82f6;
-    --bg-color: #ffffff;
-    --card-bg: #f8fafc;
-    --text-color: #1e293b;
-    --text-muted: #64748b;
-    --border-color: #e2e8f0;
-    --input-bg: #f1f5f9;
+/* ==========================================================================
+   1. GLOBAL VARIABLES ("THE BRAIN")
+   ========================================================================== */
+   :root {
+    /* --- CORE PALETTE --- */
+    --primary-color: #2563eb;   /* Default: Royal Blue */
+    --secondary-color: #0f172a; /* Deep Navy */
+    --accent-color: #38bdf8;    /* Sky Blue */
     
-    /* Sidebar Specifics */
-    --sidebar-width: 280px;
-    --sidebar-bg: #ffffff;
-    --sidebar-text: #1e293b;
-    --sidebar-active: #eff6ff;
+    /* --- SEMANTIC COLORS --- */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+
+    /* --- BACKGROUNDS & SURFACES --- */
+    --bg-color: #f1f5f9;       /* Light Grey Background */
+    --card-bg: #ffffff;        /* White Cards */
+    --sidebar-bg: #0f172a;     /* Dark Sidebar */
+    --input-bg: #f8fafc;
+    
+    /* --- TYPOGRAPHY --- */
+    --text-color: #1e293b;     /* Dark Slate */
+    --text-muted: #64748b;     /* Muted Grey */
+    --text-on-primary: #ffffff;
+
+    /* --- BORDERS & SHADOWS --- */
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+
+    /* --- DIMENSIONS --- */
+    --sidebar-width: 260px;
+    --header-height: 70px;
 }
 
-/* =========================================
+/* ==========================================================================
    2. THEME OVERRIDES
-   ========================================= */
+   ========================================================================== */
 
 /* --- 🌙 DARK MODE --- */
 body.dark-mode {
-    --bg-color: #0f172a;       /* Deep Navy/Black */
-    --card-bg: #1e293b;        /* Slate Blue Grey */
-    --text-color: #f8fafc;     /* White-ish */
-    --text-muted: #94a3b8;     /* Light Grey */
-    --border-color: #334155;   /* Dark Borders */
-    --input-bg: #020617;
-    --sidebar-bg: #1e293b;
-    --sidebar-text: #f8fafc;
-    --sidebar-active: #334155;
-    
-    /* Make the logo white in dark mode */
-    --primary-color: #60a5fa; 
+    --bg-color: #020617;
+    --card-bg: #1e293b;
+    --sidebar-bg: #0f172a;
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --input-bg: #0f172a;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
 }
 
 /* --- 🎨 CUSTOM MODE --- */
-/* Custom Mode usually looks best with a Dark Background 
-   to let the Neon Colors pop, but we keep the structure clean. */
 body.custom-mode {
-    --bg-color: #1a1a1a;
-    --card-bg: #2a2a2a;
-    --text-color: #ffffff;
+    --bg-color: #111111;
+    --card-bg: #1a1a1a;
+    --sidebar-bg: #000000;
+    --text-color: #e5e5e5;
     --text-muted: #a3a3a3;
-    --border-color: #404040;
-    --input-bg: #333333;
-    --sidebar-bg: #2a2a2a;
-    --sidebar-text: #ffffff;
-    --sidebar-active: #404040;
+    --border-color: #333333;
+    --input-bg: #222222;
 }
 
-/* =========================================
-   3. BASE & TYPOGRAPHY
-   ========================================= */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* ==========================================================================
+   3. BASE RESET & TYPOGRAPHY
+   ========================================================================== */
+* { box-sizing: border-box; outline: none; }
 
 body {
+    margin: 0;
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.6;
-    overflow-x: hidden;
-    /* Smooth Theme Transition for all elements */
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-a { text-decoration: none; color: inherit; }
-ul { list-style: none; }
+a { text-decoration: none; color: inherit; transition: 0.2s; }
+ul { list-style: none; padding: 0; margin: 0; }
+button { font-family: inherit; }
 
-/* =========================================
-   4. NAVIGATION BAR
-   ========================================= */
-.navbar {
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ==========================================================================
+   4. LAYOUT COMPONENTS
+   ========================================================================== */
+
+/* --- WRAPPER --- */
+.wrapper, .dashboard-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    z-index: 100;
+    transition: width 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 25px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.5px;
+}
+
+.nav-links { padding: 20px; overflow-y: auto; flex: 1; }
+.nav-links li { margin-bottom: 5px; }
+
+.nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #94a3b8;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.nav-links a:hover, .nav-links li.active a, .nav-links a.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Internal Scroll Area for Content */
+.content-scrollable, .scroll-area {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* --- HEADER (Top Bar) --- */
+.header, .top-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 5%;
-    background-color: var(--bg-color); /* Matches body */
-    border-bottom: 1px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-    background: rgba(var(--bg-color), 0.9);
+    margin-bottom: 30px;
 }
 
-.logo {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-color);
-    display: flex;
+/* ==========================================================================
+   5. UI COMPONENTS (Buttons, Cards, Inputs)
+   ========================================================================== */
+
+/* --- CARDS --- */
+.card, .action-card, .feature-card, .premium-card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+}
+
+.card:hover, .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+/* --- BUTTONS --- */
+.btn, .btn-primary, .btn-gold, .btn-auth, .btn-action {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    font-size: 0.95rem;
+    gap: 8px;
 }
 
-/* Theme Dropdown Styling */
+.btn-primary, .btn-auth {
+    background: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover, .btn-auth:hover {
+    filter: brightness(110%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+.btn-outline:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* --- FORMS & INPUTS --- */
+input[type="text"], input[type="email"], input[type="password"], 
+input[type="number"], select, textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* --- THEME SWITCHER --- */
 .theme-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     background: var(--card-bg);
     padding: 5px 12px;
     border-radius: 50px;
     border: 1px solid var(--border-color);
 }
-
 .theme-select {
     background: transparent;
     border: none;
-    color: var(--text-color);
-    font-family: inherit;
-    font-size: 0.9rem;
-    cursor: pointer;
-    outline: none;
-}
-
-/* Circular Color Input (Custom Mode) */
-input[type="color"] {
-    -webkit-appearance: none;
-    border: none;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    border-radius: 50%;
-    overflow: hidden;
     padding: 0;
-    background: none;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    cursor: pointer;
 }
-input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--border-color); }
 
-/* =========================================
-   5. SIDEBAR (Dashboard)
-   ========================================= */
-.sidebar {
-    position: fixed;
-    top: 0;
-    left: -100%; /* Hidden Mobile */
-    width: var(--sidebar-width);
+/* ==========================================================================
+   6. MODULE SPECIFIC STYLES
+   ========================================================================== */
+
+/* --- AUTH PAGES (Login/Signup) --- */
+.auth-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
     height: 100vh;
-    background-color: var(--sidebar-bg);
-    border-right: 1px solid var(--border-color);
-    z-index: 1100;
-    transition: 0.3s ease;
+    width: 100%;
+}
+.brand-side {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #1e3a8a 100%);
+    color: white;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    position: relative;
+    overflow: hidden;
 }
-
-.sidebar.active { left: 0; }
-
-.sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--sidebar-text);
-    font-weight: 800;
-    font-size: 1.2rem;
-}
-
-.sidebar-links { padding: 20px; }
-.sidebar-links li { margin-bottom: 8px; }
-
-.sidebar-links a {
+.form-side {
+    background: var(--bg-color);
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 15px;
-    color: var(--sidebar-text);
-    border-radius: 8px;
-    transition: 0.2s;
-    font-weight: 500;
+    justify-content: center;
+    padding: 40px;
+    overflow-y: auto;
 }
 
-.sidebar-links a:hover, 
-.sidebar-links li.active a {
-    background-color: var(--sidebar-active);
-    color: var(--primary-color);
+/* --- CHAT MODULE (Connect) --- */
+.chat-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100vh - 70px); /* Subtract header */
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
 }
-
-.sidebar-footer {
-    margin-top: auto;
-    padding: 20px;
-    border-top: 1px solid var(--border-color);
+.msg {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    position: relative;
 }
+.msg-in { background: var(--bg-color); border: 1px solid var(--border-color); border-bottom-left-radius: 2px; align-self: flex-start; }
+.msg-out { background: var(--primary-color); color: white; border-bottom-right-radius: 2px; align-self: flex-end; }
 
-/* =========================================
-   6. HERO SECTION & BUTTONS
-   ========================================= */
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px 25px;
-    border-radius: 8px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
+/* --- LIBRARY & RESOURCE GRID --- */
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+.badge {
     display: inline-block;
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    opacity: 0.9;
-}
-
-/* =========================================
-   7. FEATURES & CARDS
-   ========================================= */
-.features {
-    padding: 4rem 5%;
-    max-width: 1200px;
-    margin: 0 auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.feature-card {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    transition: 0.3s;
-}
-
-.feature-card:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
-}
-
-.feature-card h3 { color: var(--text-color); margin-bottom: 0.5rem; }
-.feature-card p { color: var(--text-muted); font-size: 0.95rem; }
-
-/* =========================================
-   8. UNIVERSITY LOGO GRID (New!)
-   ========================================= */
-.partners {
-    background: var(--card-bg);
-    padding: 4rem 1rem;
-    text-align: center;
-    border-top: 1px solid var(--border-color);
-}
-
-.logo-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-    max-width: 1000px;
-    margin: 2rem auto;
-}
-
-.uni-logo {
-    height: 60px;
-    width: auto;
-    object-fit: contain;
-    /* Grayscale Effect */
-    filter: grayscale(100%) opacity(0.6); 
-    transition: all 0.4s ease;
-    cursor: pointer;
-}
-
-/* Hover: Color & Scale */
-.uni-logo:hover {
-    filter: grayscale(0%) opacity(1);
-    transform: scale(1.1);
-}
-
-/* Dark Mode Fix for Black Logos */
-body.dark-mode .uni-logo {
-    filter: grayscale(100%) brightness(1.5) opacity(0.5);
-}
-body.dark-mode .uni-logo:hover {
-    filter: grayscale(0%) brightness(1) opacity(1);
-}
-
-/* =========================================
-   9. AUTH PAGES (Login/Signup)
-   ========================================= */
-.auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 80vh; /* Centers vertically */
-    padding: 20px;
-}
-
-.auth-box {
-    background: var(--card-bg);
-    padding: 2.5rem;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
+/* --- TABLES (Admin & Courses) --- */
+.data-table, .timetable, .admin-table {
     width: 100%;
-    max-width: 400px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-
-.auth-box h2 {
-    color: var(--text-color);
-    text-align: center;
-    margin-bottom: 0.5rem;
-}
-
-.auth-box p {
-    color: var(--text-muted);
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
-}
-
-.input-group { margin-bottom: 1.2rem; }
-
-.input-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.input-group input {
-    width: 100%;
-    padding: 12px;
+    border-collapse: collapse;
+    background: var(--card-bg);
     border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--input-bg);
-    color: var(--text-color);
-    font-size: 1rem;
-    outline: none;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
-
-.input-group input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-}
-
-/* =========================================
-   10. FOOTER
-   ========================================= */
-footer {
-    background: #0f172a; /* Always dark for footer */
+.data-table th, .timetable th, .admin-table th {
+    background: var(--secondary-color);
     color: white;
-    padding: 4rem 5% 2rem;
+    padding: 15px;
+    text-align: left;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.data-table td, .timetable td, .admin-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+.data-table tr:hover td { background: rgba(37, 99, 235, 0.05); }
+
+/* --- ADMIN DASHBOARD --- */
+.admin-badge {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
-footer a { color: #cbd5e1; transition: 0.2s; }
-footer a:hover { color: var(--primary-color); }
-
-/* =========================================
-   11. UTILITIES
-   ========================================= */
-.highlight { color: var(--primary-color); font-weight: 700; }
+/* ==========================================================================
+   7. UTILITIES & ANIMATIONS
+   ========================================================================== */
 .text-center { text-align: center; }
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   8. PRINT STYLES (Critical for Courses/Transcript)
+   ========================================================================== */
+@media print {
+    body { 
+        background: white; 
+        color: black; 
+        font-size: 12pt; 
+        overflow: visible !important;
+        height: auto !important;
+    }
+    
+    /* Hide Non-Print Elements */
+    .sidebar, .navbar, .theme-wrapper, .btn, .btn-print, 
+    .search-container, .action-bar, .upload-fab, 
+    .suggestions-list, footer {
+        display: none !important;
+    }
+
+    /* Layout Resets */
+    .wrapper, .main-content, .profile-container, .gpa-layout {
+        display: block;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+    }
+
+    /* Print Header Visibility */
+    .print-only-header, .official-header { display: block !important; }
+    
+    /* Ensure Tables Print Cleanly */
+    table, th, td {
+        border: 1px solid black !important;
+        border-collapse: collapse !important;
+    }
+    th { background: #eee !important; color: black !important; }
+}
+
+/* ==========================================================================
+   9. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 900px) {
+    .sidebar { display: none; } /* Mobile Menu Logic handled via JS in real app */
+    .auth-grid { grid-template-columns: 1fr; }
+    .brand-side { display: none; }
+    .page-grid, .content-grid, .bottom-grid, .gpa-layout {
+        grid-template-columns: 1fr !important;
+    }
+    .chat-layout { display: flex; flex-direction: column; }
+    .chat-sidebar { width: 100%; height: 100%; }
+    .chat-main { display: none; } /* Toggled via JS class */
+}

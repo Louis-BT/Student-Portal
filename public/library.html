@@ -3,379 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Library | Resources</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>National Library | Student Portal</title>
     
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="theme.js"></script>
+
     <style>
-        /* LIBRARY SPECIFIC STYLES */
-        .section-header {
-            margin-top: 40px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* --- LAYOUT --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        .wrapper { display: flex; width: 100%; height: 100%; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .nav-links { list-style: none; padding: 20px; margin: 0; }
+        .nav-links li { margin-bottom: 8px; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
+        .scroll-area { flex: 1; padding: 30px; overflow-y: auto; }
+
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         
-        .section-header h3 {
-            font-size: 1.25rem;
-            color: var(--primary-color);
-            margin: 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        /* --- LIBRARY NAVIGATION TABS --- */
+        .lib-nav { 
+            display: flex; gap: 5px; background: var(--card-bg); padding: 5px; 
+            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 30px;
+            overflow-x: auto;
         }
-
-        .library-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
+        .lib-tab {
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+            color: var(--text-muted); transition: 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px;
         }
+        .lib-tab:hover { background: var(--input-bg); color: var(--text-color); }
+        .lib-tab.active { background: var(--primary-color); color: white; shadow: 0 2px 10px rgba(37,99,235,0.2); }
 
-        .filter-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-color);
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .filter-btn.active, .filter-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .resource-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 25px;
-        }
-
+        /* --- RESOURCE CARDS --- */
+        .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .resource-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            transition: 0.3s;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 20px; transition: transform 0.2s, box-shadow 0.2s; position: relative;
+            display: flex; flex-direction: column; height: 100%;
         }
-
-        .resource-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .card-icon-wrapper {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-        }
-
-        /* Color Coding for Categories */
-        .type-academic { background: rgba(37, 99, 235, 0.1); color: #2563eb; } /* Blue */
-        .type-finance { background: rgba(16, 185, 129, 0.1); color: #10b981; } /* Green */
-        .type-psych { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; } /* Purple */
-        .type-relation { background: rgba(236, 72, 153, 0.1); color: #ec4899; } /* Pink */
-        .type-growth { background: rgba(245, 158, 11, 0.1); color: #f59e0b; } /* Orange */
-
-        .resource-title {
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--text-color);
-            font-size: 1.05rem;
-        }
-
-        .resource-meta {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-            flex-grow: 1; /* Pushes button to bottom */
-            line-height: 1.5;
-        }
-
-        .download-btn {
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .download-btn:hover {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
+        .resource-card:hover { transform: translateY(-5px); border-color: var(--primary-color); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            background: var(--input-bg);
-            color: var(--text-muted);
-            margin-bottom: 8px;
+        .card-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; }
+        .cat-gh { background: rgba(220, 38, 38, 0.1); color: #dc2626; } /* Red for Ghana */
+        .cat-acad { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .cat-life { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+        .res-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 8px; color: var(--text-color); }
+        .res-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; flex-grow: 1; }
+        
+        .btn-action {
+            width: 100%; padding: 10px; background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-color); border-radius: 6px; font-weight: 600; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 0.9rem;
         }
+        .btn-action:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        /* --- GHANA CORNER STYLES --- */
+        .ghana-hero {
+            background: linear-gradient(135deg, #ce1126, #fcd116, #006b3f); /* Ghana Flag Gradient Concept */
+            height: 5px; width: 100%; border-radius: 5px; margin-bottom: 20px;
+        }
+        .news-ticker-box {
+            background: var(--input-bg); border: 1px solid var(--border-color); padding: 15px;
+            border-radius: 8px; margin-bottom: 30px; display: flex; align-items: center; gap: 15px;
+        }
+        .live-dot { height: 10px; width: 10px; background: red; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* --- DICTIONARY & SEARCH --- */
+        .dict-container { max-width: 800px; margin: 0 auto; text-align: center; padding: 40px 0; }
+        .search-group { display: flex; gap: 10px; margin-top: 20px; }
+        .search-group select, .search-group input { padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); }
+        .search-group input { flex: 1; }
+        
+        /* --- UPLOAD SECTION --- */
+        .upload-fab {
+            position: fixed; bottom: 30px; right: 30px; background: var(--primary-color); color: white;
+            width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 15px rgba(37,99,235,0.4); transition: transform 0.2s;
+            z-index: 100;
+        }
+        .upload-fab:hover { transform: scale(1.1); }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 16px; width: 500px; max-width: 90%; border: 1px solid var(--border-color); }
+        
+        .alert-box { background: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 20px; font-size: 0.9rem; color: #d97706; }
+
+        @media (max-width: 900px) { .sidebar { display: none; } .resource-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            🇬🇭 Student Portal
-        </div>
-        <ul class="sidebar-links">
-            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
-            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-            <li><a href="connect.html"><i class="fas fa-comments"></i> Student Connect</a></li>
-            <li class="active"><a href="library.html"><i class="fas fa-book"></i> National Library</a></li>
-            <li><a href="leadership.html"><i class="fas fa-flag"></i> Leadership</a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        </div>
-    </div>
-
-    <div class="main-content" style="margin-left: 280px; padding: 20px;">
-        
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div>
-                <h2 style="color: var(--text-color);">National Library 📚</h2>
-                <p style="color: var(--text-muted);">Academics, Personal Growth & Life Skills Repository.</p>
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: var(--text-color);">Upload Resource</h2>
+                <span onclick="toggleModal()" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
             </div>
             
-            <div class="theme-wrapper">
-                <select id="theme-selector" class="theme-select" onchange="setTheme(this.value)">
-                    <option value="system">💻 System</option>
-                    <option value="light">☀️ Light</option>
-                    <option value="dark">🌙 Dark</option>
-                    <option value="custom">🎨 Custom</option>
+            <div class="alert-box">
+                <strong><i class="fas fa-shield-alt"></i> Security Protocol:</strong><br>
+                To maintain sanctity and professionalism, all uploads are quarantined and scrutinized by the Administration before appearing publicly. Illegal or inappropriate content will trigger an immediate ban.
+            </div>
+            
+            <form onsubmit="event.preventDefault(); handleUpload();">
+                <input type="text" id="resTitle" placeholder="Document Title" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;" required>
+                
+                <select id="resCategory" style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;">
+                    <option value="Academic">Academic Material</option>
+                    <option value="Ghana">Ghana / Current Affairs</option>
+                    <option value="Career">Career & Growth</option>
+                    <option value="General">General Knowledge</option>
                 </select>
-                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+
+                <div style="border: 2px dashed var(--border-color); padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 8px; cursor: pointer;">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--text-muted);"></i>
+                    <p style="margin: 5px 0 0; color: var(--text-muted);">Click to select file (PDF, DOCX, PPT)</p>
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Submit for Review</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-book-reader"></i> Student Portal
             </div>
-        </header>
+            <ul class="nav-links">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+                <li><a href="leadership.html"><i class="fas fa-medal"></i> Leadership</a></li>
+                <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
+                <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
+                <li><a href="library.html" class="active"><i class="fas fa-book"></i> Library</a></li>
+                <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
 
-        <div class="library-filters">
-            <button class="filter-btn active">All Resources</button>
-            <button class="filter-btn">Academic Textbooks</button>
-            <button class="filter-btn">Past Questions</button>
-            <button class="filter-btn">Financial Literacy</button>
-            <button class="filter-btn">Relationships & Marriage</button>
-            <button class="filter-btn">Mental Health</button>
-            <button class="filter-btn">Career & Motivation</button>
-        </div>
+        <main class="main-content">
+            <div class="scroll-area">
+                
+                <header class="header">
+                    <div>
+                        <h1 style="margin: 0; font-size: 1.8rem;">National Library</h1>
+                        <p style="color: var(--text-muted); margin: 5px 0 0;">Knowledge Repository & State Archives.</p>
+                    </div>
+                    
+                    <div class="theme-wrapper">
+                        <select onchange="setTheme(this.value)" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                            <option value="system">💻 System</option>
+                            <option value="light">☀️ Light</option>
+                            <option value="dark">🌙 Dark</option>
+                            <option value="custom">🎨 Custom</option>
+                        </select>
+                    </div>
+                </header>
 
-        <div class="section-header">
-            <i class="fas fa-graduation-cap"></i>
-            <h3>Academic Course Materials</h3>
-        </div>
+                <div class="lib-nav">
+                    <div class="lib-tab active" onclick="switchTab('academic')"><i class="fas fa-graduation-cap"></i> Academics</div>
+                    <div class="lib-tab" onclick="switchTab('ghana')"><i class="fas fa-flag"></i> Ghana Corner</div>
+                    <div class="lib-tab" onclick="switchTab('knowledge')"><i class="fas fa-brain"></i> Gen. Knowledge & Dictionary</div>
+                    <div class="lib-tab" onclick="switchTab('life')"><i class="fas fa-seedling"></i> Career & Growth</div>
+                </div>
 
-        <div class="resource-grid">
+                <div id="tab-academic" class="content-section">
+                    <div class="section-header" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                        <h3 style="margin:0; color: var(--text-color);">📚 Course Materials</h3>
+                    </div>
+                    <div class="resource-grid">
+                        <div class="resource-card">
+                            <span class="badge" style="background:#e0f2fe; color:#0284c7;">MATH 121</span>
+                            <div class="card-icon cat-acad"><i class="fas fa-square-root-alt"></i></div>
+                            <div class="res-title">Calculus I: Limits & Derivatives</div>
+                            <div class="res-desc">Essential lecture notes for Engineering & Science students.</div>
+                            <button class="btn-action" onclick="alert('Opening Document Viewer...')"><i class="fas fa-eye"></i> Read</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="badge" style="background:#e0f2fe; color:#0284c7;">CSCD 205</span>
+                            <div class="card-icon cat-acad"><i class="fas fa-code"></i></div>
+                            <div class="res-title">Java Programming Manual</div>
+                            <div class="res-desc">Lab manual for Object-Oriented Programming exercises.</div>
+                            <button class="btn-action" onclick="alert('Downloading...')"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-ghana" class="content-section" style="display: none;">
+                    <div class="ghana-hero"></div>
+                    
+                    <div class="news-ticker-box">
+                        <div style="display:flex; align-items:center; gap:5px; font-weight:bold; color:#dc2626; white-space:nowrap;">
+                            <div class="live-dot"></div> LIVE UPDATES:
+                        </div>
+                        <marquee id="ghana-ticker" scrollamount="5" style="font-size:0.9rem;">
+                            Loading current affairs...
+                        </marquee>
+                    </div>
+
+                    <div class="resource-grid">
+                        <div class="resource-card">
+                            <div class="card-icon cat-gh"><i class="fas fa-landmark"></i></div>
+                            <div class="res-title">1992 Constitution</div>
+                            <div class="res-desc">The supreme law of the Republic of Ghana. Full digital text.</div>
+                            <button class="btn-action"><i class="fas fa-book-open"></i> Access Constitution</button>
+                        </div>
+                        <div class="resource-card">
+                            <div class="card-icon cat-gh"><i class="fas fa-users"></i></div>
+                            <div class="res-title">National Statistics (2025)</div>
+                            <div class="res-desc">Population, GDP, Literacy Rates, and Economic Indicators.</div>
+                            <button class="btn-action"><i class="fas fa-chart-bar"></i> View Stats</button>
+                        </div>
+                        <div class="resource-card">
+                            <div class="card-icon cat-gh"><i class="fas fa-umbrella-beach"></i></div>
+                            <div class="res-title">Tourism & Culture</div>
+                            <div class="res-desc">Guide to Kakum, Mole Park, Cape Coast Castle, and Festivals.</div>
+                            <button class="btn-action"><i class="fas fa-map-marked-alt"></i> Explore</button>
+                        </div>
+                        <div class="resource-card">
+                            <div class="card-icon cat-gh"><i class="fas fa-history"></i></div>
+                            <div class="res-title">Political History</div>
+                            <div class="res-desc">Profiles of the Big Six, Past Presidents, and the Road to Independence.</div>
+                            <button class="btn-action"><i class="fas fa-scroll"></i> Read History</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-knowledge" class="content-section" style="display: none;">
+                    <div class="dict-container">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 15px;"></i>
+                        <h2 style="margin: 0;">Smart Knowledge Engine</h2>
+                        <p style="color: var(--text-muted);">Search definitions across multiple disciplines.</p>
+                        
+                        <div class="search-group">
+                            <select id="dict-category">
+                                <option value="general">General English</option>
+                                <option value="legal">Legal Terminology</option>
+                                <option value="medical">Medical / Science</option>
+                                <option value="tech">Technology & Computing</option>
+                            </select>
+                            <input type="text" id="dict-input" placeholder="Enter word or concept...">
+                            <button class="btn-action" style="width: auto; background: var(--primary-color); color: white;" onclick="searchDictionary()">Search</button>
+                        </div>
+                        <div id="dict-result" style="margin-top: 20px; text-align: left; padding: 20px; background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); display: none;">
+                            </div>
+                    </div>
+                </div>
+
+                <div id="tab-life" class="content-section" style="display: none;">
+                    <div class="resource-grid">
+                        <div class="resource-card">
+                            <span class="badge">CAREER GUIDANCE</span>
+                            <div class="card-icon cat-life"><i class="fas fa-user-tie"></i></div>
+                            <div class="res-title">Connect with a Counselor</div>
+                            <div class="res-desc">Book a session with certified career guidance professionals.</div>
+                            <button class="btn-action"><i class="fas fa-calendar-check"></i> Book Session</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="badge">PERSONAL GROWTH</span>
+                            <div class="card-icon cat-life"><i class="fas fa-book-reader"></i></div>
+                            <div class="res-title">Atomic Habits (Summary)</div>
+                            <div class="res-desc">Strategies to build good habits and break bad ones.</div>
+                            <button class="btn-action"><i class="fas fa-download"></i> Download</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="badge">FINANCIAL LITERACY</span>
+                            <div class="card-icon cat-life"><i class="fas fa-coins"></i></div>
+                            <div class="res-title">Student Finance 101</div>
+                            <div class="res-desc">Budgeting, Investment, and saving tips for Ghanaian students.</div>
+                            <button class="btn-action"><i class="fas fa-book-open"></i> Read Guide</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="upload-fab" onclick="toggleModal()" title="Upload Resource">
+                <i class="fas fa-plus"></i>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- TAB LOGIC ---
+        function switchTab(tabId) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
             
-            <div class="resource-card">
-                <span class="badge">MATHEMATICS</span>
-                <div class="card-icon-wrapper type-academic">
-                    <i class="fas fa-calculator"></i>
-                </div>
-                <div class="resource-title">Calculus & Analysis I</div>
-                <div class="resource-meta">
-                    Comprehensive textbook covering limits, derivatives, and integrals. Essential for Engineering students.
-                </div>
-                <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
-            </div>
+            // Activate selected
+            document.querySelector(`.lib-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+        }
 
-            <div class="resource-card">
-                <span class="badge">ECONOMICS</span>
-                <div class="card-icon-wrapper type-academic">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="resource-title">Microeconomics: Principles</div>
-                <div class="resource-meta">
-                    Standard course slides from UG Legon. Covers supply, demand, and market structures.
-                </div>
-                <button class="download-btn"><i class="fas fa-download"></i> Download PPT</button>
-            </div>
+        // --- UPLOAD LOGIC ---
+        function toggleModal() {
+            const modal = document.getElementById('uploadModal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
 
-            <div class="resource-card">
-                <span class="badge">PHYSICS</span>
-                <div class="card-icon-wrapper type-academic">
-                    <i class="fas fa-atom"></i>
-                </div>
-                <div class="resource-title">University Physics Vol. 2</div>
-                <div class="resource-meta">
-                    Past questions (2018-2024) from KNUST and UCC. Solutions included.
-                </div>
-                <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
-            </div>
+        function handleUpload() {
+            toggleModal();
+            // Simulate Admin Notification
+            alert("✅ Upload Successful!\n\nYour document has been sent to the Administration Queue for security vetting. You will be notified once approved.");
+        }
 
-            <div class="resource-card">
-                <span class="badge">COMPUTER SCIENCE</span>
-                <div class="card-icon-wrapper type-academic">
-                    <i class="fas fa-code"></i>
-                </div>
-                <div class="resource-title">Intro to Java Programming</div>
-                <div class="resource-meta">
-                    Lab manual and project exercises for Level 200 CS students.
-                </div>
-                <button class="download-btn"><i class="fas fa-download"></i> Download ZIP</button>
-            </div>
+        // --- DICTIONARY LOGIC (Simulated) ---
+        function searchDictionary() {
+            const term = document.getElementById('dict-input').value;
+            const cat = document.getElementById('dict-category').value;
+            const resBox = document.getElementById('dict-result');
+            
+            if(!term) return;
 
-        </div>
+            resBox.style.display = 'block';
+            resBox.innerHTML = `
+                <strong style="font-size: 1.2rem;">${term}</strong> <em style="color:var(--text-muted);">(${cat} dictionary)</em>
+                <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+                <p><strong>Definition:</strong> [Simulated Result] A comprehensive definition of '${term}' would appear here based on the ${cat} database.</p>
+                <p><strong>Context:</strong> Used frequently in modern academic research.</p>
+            `;
+        }
 
-        <div class="section-header">
-            <i class="fas fa-seedling"></i>
-            <h3>The Life Library: Personal Growth</h3>
-        </div>
+        // --- LIVE GHANA UPDATER ---
+        const ghanaUpdates = [
+            "President to address the nation on Education Policy at 8 PM.",
+            "New Tourism Site discovered in the Volta Region.",
+            "National Cathedral project update released.",
+            "Ghana Stock Exchange reports 5% growth in Q1.",
+            "Black Stars announce squad for upcoming qualifiers."
+        ];
 
-        <div class="resource-grid">
+        function updateTicker() {
+            const ticker = document.getElementById('ghana-ticker');
+            // Randomly pick a headline or cycle them
+            ticker.innerText = ghanaUpdates.join(" ••• ");
+        }
 
-            <div class="resource-card">
-                <span class="badge">FINANCIAL LITERACY</span>
-                <div class="card-icon-wrapper type-finance">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <div class="resource-title">Money Management 101</div>
-                <div class="resource-meta">
-                    A guide to budgeting, saving, and investing while in school. "Rich Dad Poor Dad" summary included.
-                </div>
-                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
-            </div>
+        setInterval(updateTicker, 300000); // Update every 5 mins
+        updateTicker(); // Initial run
 
-            <div class="resource-card">
-                <span class="badge">RELATIONSHIPS</span>
-                <div class="card-icon-wrapper type-relation">
-                    <i class="fas fa-heart"></i>
-                </div>
-                <div class="resource-title">Building Healthy Connections</div>
-                <div class="resource-meta">
-                    Navigating friendships, dating, and conflict resolution emotionally and maturely.
-                </div>
-                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
-            </div>
-
-            <div class="resource-card">
-                <span class="badge">MENTAL STRENGTH</span>
-                <div class="card-icon-wrapper type-psych">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="resource-title">The Psychology of Success</div>
-                <div class="resource-meta">
-                    Understanding motivation, discipline, and overcoming academic anxiety.
-                </div>
-                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
-            </div>
-
-            <div class="section-header">
-    <i class="fas fa-compass"></i>
-    <h3>The School of Life: Career & Identity</h3>
-</div>
-
-<div class="resource-grid">
-    <div class="resource-card">
-        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
-        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
-            <i class="fas fa-briefcase"></i>
-        </div>
-        <div class="resource-title">The 21st Century Career Guide</div>
-        <div class="resource-meta">
-            Mapping your path from classroom to boardroom. Includes CV templates and LinkedIn optimization.
-        </div>
-        <button class="download-btn"><i class="fas fa-book-open"></i> Read Guide</button>
-    </div>
-
-    <div class="resource-card">
-        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
-        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
-            <i class="fas fa-network-wired"></i>
-        </div>
-        <div class="resource-title">Networking in Ghana</div>
-        <div class="resource-meta">
-            A specialized resource on how to build professional connections within the Ghanaian corporate space.
-        </div>
-        <button class="download-btn"><i class="fas fa-video"></i> Watch Masterclass</button>
-    </div>
-
-    <div class="resource-card">
-        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
-        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
-            <i class="fas fa-lightbulb"></i>
-        </div>
-        <div class="resource-title">The Multi-Potentialite Student</div>
-        <div class="resource-meta">
-            How to balance multiple skills and side-hustles without dropping your academic grades.
-        </div>
-        <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
-    </div>
-
-    <div class="resource-card">
-        <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">KNOWING YOURSELF</span>
-        <div class="card-icon-wrapper" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
-            <i class="fas fa-fingerprint"></i>
-        </div>
-        <div class="resource-title">Identity & Temperament Test</div>
-        <div class="resource-meta">
-            Discover your personality type (Sanguine, Choleric, etc.) to understand how you learn and lead.
-        </div>
-        <button class="download-btn"><i class="fas fa-tasks"></i> Take Test</button>
-    </div>
-
-    <div class="resource-card">
-        <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">KNOWING YOURSELF</span>
-        <div class="card-icon-wrapper" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
-            <i class="fas fa-eye"></i>
-        </div>
-        <div class="resource-title">Purpose Discovery Journal</div>
-        <div class="resource-meta">
-            A 30-day guided prompt to help you find your "Why" before you graduate.
-        </div>
-        <button class="download-btn"><i class="fas fa-file-pdf"></i> Download Journal</button>
-    </div>
-</div>
-
-            <div class="resource-card">
-                <span class="badge">MOTIVATION</span>
-                <div class="card-icon-wrapper type-growth">
-                    <i class="fas fa-mountain"></i>
-                </div>
-                <div class="resource-title">Atomic Habits (Guide)</div>
-                <div class="resource-meta">
-                    Practical strategies to build good habits, break bad ones, and achieve your life goals.
-                </div>
-                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
-            </div>
-
-        </div>
-
-        <div style="height: 50px;"></div>
-
-    </div>
-
-    <script src="theme.js"></script>
+    </script>
 </body>
 </html>

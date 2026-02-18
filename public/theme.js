@@ -1,117 +1,159 @@
 /**
- * theme.js - Enterprise Grade Theme Manager
- * Capabilities: System Sync, Light/Dark Toggle, Custom Color Injection, State Persistence
+ * ==============================================================================
+ * THEME ENGINE | National Student Portal
+ * ==============================================================================
+ * A robust, enterprise-grade state manager for handling visual preferences.
+ * * Features:
+ * 1. Quad-State Logic: System, Light, Dark, Custom.
+ * 2. Real-Time OS Synchronization (Dynamic System switching).
+ * 3. Cross-Tab Event Listening (Syncs across multiple open windows).
+ * 4. CSS Variable Injection for Custom Theming.
+ * * @author Lead Engineer
+ * ==============================================================================
  */
 
-document.addEventListener("DOMContentLoaded", () => {
-    // 1. Initialize State
-    const savedTheme = localStorage.getItem("portal-theme") || "system";
-    const savedColor = localStorage.getItem("portal-custom-color") || "#2563eb";
+(function() {
+    // --- CONSTANTS & CONFIG ---
+    const STORAGE_KEY_THEME = "portal-theme";
+    const STORAGE_KEY_COLOR = "portal-custom-color";
+    const DEFAULT_COLOR = "#2563eb"; // Standard Portal Blue
+    const DARK_CLASS = "dark-mode";
+    const CUSTOM_CLASS = "custom-mode";
 
-    // 2. Sync UI Elements (Dropdown & Picker)
-    const selector = document.getElementById("theme-selector");
-    const picker = document.getElementById("custom-theme-picker");
+    // --- 1. CORE APPLICATION LOGIC ---
+    
+    /**
+     * The Brain: Decides what classes/styles to apply based on inputs.
+     * @param {string} theme - 'system', 'light', 'dark', 'custom'
+     * @param {string} color - Hex color code
+     */
+    function applyTheme(theme, color) {
+        const body = document.body;
+        const root = document.documentElement;
+        
+        // 1. Clean Slate (Remove specific mode classes)
+        body.classList.remove(DARK_CLASS, CUSTOM_CLASS);
+        root.style.removeProperty('--primary-color');
 
-    if (selector) selector.value = savedTheme;
-    if (picker) picker.value = savedColor;
+        // 2. Logic Switch
+        switch (theme) {
+            case 'system':
+                applySystemPreference();
+                break;
+            
+            case 'dark':
+                body.classList.add(DARK_CLASS);
+                break;
+            
+            case 'custom':
+                body.classList.add(CUSTOM_CLASS);
+                root.style.setProperty('--primary-color', color);
+                break;
+            
+            case 'light':
+            default:
+                // Default is light (no specific class needed due to CSS structure)
+                break;
+        }
 
-    // 3. Apply Logic (Visuals only, no interaction triggers)
-    applyTheme(savedTheme, savedColor);
-});
-
-/**
- * LISTENER: Watch for System (OS) Theme Changes
- * Updates real-time if the user is in "System" mode.
- */
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    if (localStorage.getItem("portal-theme") === 'system') {
-        applySystemTheme();
+        // 3. UI Synchronization (Update Dropdowns/Pickers if they exist)
+        syncUI(theme, color);
     }
-});
 
-/**
- * ACTION: User selects a theme from the dropdown
- */
-function setTheme(theme) {
-    const savedColor = localStorage.getItem("portal-custom-color") || "#2563eb";
-    const picker = document.getElementById("custom-theme-picker");
-
-    // 1. Save Preference
-    localStorage.setItem("portal-theme", theme);
-
-    // 2. Apply Visuals
-    applyTheme(theme, savedColor);
-
-    // 3. Interaction: Auto-open picker ONLY when manually switching to Custom
-    if (theme === 'custom' && picker) {
-        setTimeout(() => picker.click(), 50); 
+    /**
+     * Helper: Detects OS preference and applies it.
+     */
+    function applySystemPreference() {
+        const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (systemIsDark) {
+            document.body.classList.add(DARK_CLASS);
+        } else {
+            document.body.classList.remove(DARK_CLASS);
+        }
     }
-}
 
-/**
- * ACTION: User drags the Color Picker
- */
-function updateCustomColor(color) {
-    // 1. Save Data
-    localStorage.setItem("portal-custom-color", color);
-    localStorage.setItem("portal-theme", "custom"); // Force theme to custom
+    /**
+     * Helper: Updates buttons, selects, and inputs to match internal state.
+     */
+    function syncUI(theme, color) {
+        const selector = document.getElementById("theme-selector");
+        const picker = document.getElementById("custom-theme-picker");
 
-    // 2. Sync Dropdown (Visual Feedback)
-    const selector = document.getElementById("theme-selector");
-    if (selector) selector.value = "custom";
-
-    // 3. Apply Changes
-    applyTheme("custom", color);
-}
-
-/**
- * CORE LOGIC: Applies CSS Classes, Variables & Visibility
- * This is the Single Source of Truth for UI State.
- */
-function applyTheme(theme, color) {
-    const body = document.body;
-    const root = document.documentElement;
-    const picker = document.getElementById("custom-theme-picker");
-
-    // 1. Reset everything to baseline
-    body.classList.remove("dark-mode", "custom-mode");
-    root.style.removeProperty('--primary-color');
-
-    // 2. Handle Picker Visibility (Default to hidden)
-    if (picker) picker.style.display = 'none';
-
-    // 3. Switch Logic
-    switch (theme) {
-        case 'system':
-            applySystemTheme();
-            break;
-
-        case 'dark':
-            body.classList.add("dark-mode");
-            break;
-
-        case 'custom':
-            body.classList.add("custom-mode");
-            root.style.setProperty('--primary-color', color);
-            // Only show picker in Custom mode
-            if (picker) picker.style.display = 'inline-block';
-            break;
-
-        case 'light':
-        default:
-            // Default behavior (Light mode)
-            break;
+        if (selector) selector.value = theme;
+        
+        if (picker) {
+            picker.value = color;
+            // Only show the color picker if we are in 'Custom' mode
+            picker.style.display = (theme === 'custom') ? 'inline-block' : 'none';
+        }
     }
-}
 
-/**
- * HELPER: Determines if System is Dark or Light
- */
-function applySystemTheme() {
-    const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (systemIsDark) {
-        document.body.classList.add("dark-mode");
-    } else {
-        document.body.classList.remove("dark-mode");
+    // --- 2. PUBLIC API (Global Functions) ---
+
+    /**
+     * Triggered by <select onchange="...">
+     */
+    window.setTheme = function(theme) {
+        const currentColor = localStorage.getItem(STORAGE_KEY_COLOR) || DEFAULT_COLOR;
+        
+        // Save State
+        localStorage.setItem(STORAGE_KEY_THEME, theme);
+        
+        // Apply
+        applyTheme(theme, currentColor);
+
+        // UX: If selecting custom, auto-open the picker
+        if (theme === 'custom') {
+            const picker = document.getElementById("custom-theme-picker");
+            if (picker) {
+                // Small delay to ensure display:block is rendered before click
+                setTimeout(() => picker.click(), 50); 
+            }
+        }
+    };
+
+    /**
+     * Triggered by <input type="color" oninput="...">
+     */
+    window.updateCustomColor = function(color) {
+        // Save State
+        localStorage.setItem(STORAGE_KEY_COLOR, color);
+        localStorage.setItem(STORAGE_KEY_THEME, 'custom'); // Changing color forces Custom mode
+
+        // Apply
+        applyTheme('custom', color);
+    };
+
+    // --- 3. EVENT LISTENERS & INITIALIZATION ---
+
+    /**
+     * Initialization Routine
+     * Runs immediately to prevent FOUC (Flash of Unstyled Content)
+     */
+    function init() {
+        const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || "system";
+        const savedColor = localStorage.getItem(STORAGE_KEY_COLOR) || DEFAULT_COLOR;
+        applyTheme(savedTheme, savedColor);
     }
-}
+
+    // Run on script load (Block render slightly to ensure correct theme)
+    init();
+
+    // Re-run on DOMContentLoaded to catch elements that weren't ready
+    document.addEventListener("DOMContentLoaded", init);
+
+    // Watch for System Theme Changes (Real-time OS switching)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (localStorage.getItem(STORAGE_KEY_THEME) === 'system') {
+            applySystemPreference();
+        }
+    });
+
+    // Watch for Cross-Tab Changes (Sync across open windows)
+    window.addEventListener('storage', (e) => {
+        if (e.key === STORAGE_KEY_THEME || e.key === STORAGE_KEY_COLOR) {
+            init(); // Re-initialize if data changes in another tab
+        }
+    });
+
+})();

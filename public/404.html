@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found | National Portal</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="theme.js"></script>
+
+    <style>
+        body {
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; text-align: center;
+            background: radial-gradient(circle at center, var(--card-bg) 0%, var(--bg-color) 100%);
+        }
+        .error-container {
+            max-width: 500px; padding: 40px;
+            animation: fadeUp 0.8s ease-out;
+        }
+        .error-code {
+            font-size: 8rem; font-weight: 900; line-height: 1;
+            background: linear-gradient(135deg, var(--primary-color), #38bdf8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+        .error-msg { font-size: 1.5rem; color: var(--text-color); margin: 10px 0 20px; font-weight: 700; }
+        .error-desc { color: var(--text-muted); margin-bottom: 30px; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <h1 class="error-code">404</h1>
+        <div class="error-msg">Lost in the Archives?</div>
+        <p class="error-desc">The page you are looking for does not exist or has been moved. Let's get you back to campus.</p>
+        
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <a href="javascript:history.back()" class="btn btn-outline">Go Back</a>
+            <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
+        </div>
+    </div>
+
+</body>
+</html>

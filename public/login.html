@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Login | National Portal</title>
+    
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
     <style>
-        body { margin: 0; height: 100vh; overflow: hidden; display: flex; }
+        /* --- LAYOUT CONFIGURATION --- */
+        body { margin: 0; height: 100vh; overflow: hidden; display: flex; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); }
 
         /* SPLIT LAYOUT */
         .auth-grid {
@@ -20,7 +22,7 @@
             height: 100%;
         }
 
-        /* LEFT SIDE: BRANDING */
+        /* BRANDING SIDE (Left) */
         .brand-side {
             background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
             color: white;
@@ -32,19 +34,23 @@
             overflow: hidden;
         }
 
+        /* Subtle Pattern Overlay */
         .brand-side::before {
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-            opacity: 0.1;
+            background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
         }
 
-        .brand-content { position: relative; z-index: 2; }
-        .brand-quote { font-size: 2rem; font-weight: 700; line-height: 1.4; margin-bottom: 20px; }
-        .brand-author { color: #93c5fd; font-size: 1rem; }
+        .brand-content { position: relative; z-index: 2; max-width: 450px; }
+        .brand-icon { font-size: 3.5rem; margin-bottom: 25px; display: inline-block; }
+        .brand-quote { font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 20px; }
+        .brand-author { color: #93c5fd; font-size: 1.1rem; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+        .brand-author::before { content: ''; display: block; width: 30px; height: 2px; background: #93c5fd; }
 
-        /* RIGHT SIDE: FORM */
+        /* FORM SIDE (Right) */
         .form-side {
             background: var(--bg-color);
             display: flex;
@@ -57,32 +63,46 @@
         .auth-card {
             width: 100%;
             max-width: 400px;
+            animation: fadeUp 0.6s ease-out;
         }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { font-size: 1.8rem; margin-bottom: 5px; color: var(--text-color); }
-        p.sub-text { color: var(--text-muted); margin-bottom: 30px; }
+        h2 { font-size: 2rem; margin-bottom: 8px; color: var(--text-color); font-weight: 800; }
+        p.sub-text { color: var(--text-muted); margin-bottom: 35px; font-size: 0.95rem; }
 
+        /* INPUTS */
         .input-group { margin-bottom: 20px; position: relative; }
         .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); font-size: 0.9rem; }
         .input-group input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 14px 16px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--input-bg);
             color: var(--text-color);
             font-size: 1rem;
+            font-family: inherit;
             transition: 0.2s;
+            box-sizing: border-box;
         }
-        .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
         .toggle-password {
             position: absolute;
             right: 15px;
-            top: 40px;
+            top: 42px;
             cursor: pointer;
             color: var(--text-muted);
+            font-size: 1rem;
+            transition: color 0.2s;
         }
+        .toggle-password:hover { color: var(--primary-color); }
+
+        /* ACTIONS */
+        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 0.9rem; }
+        .remember-me { display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; }
+        .forgot-pass { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        .forgot-pass:hover { text-decoration: underline; }
 
         .btn-auth {
             width: 100%;
@@ -94,25 +114,27 @@
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background 0.2s;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
         }
         .btn-auth:hover { transform: translateY(-2px); opacity: 0.9; }
 
         .links {
-            margin-top: 20px;
+            margin-top: 25px;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
         }
-        .links a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        .links a { color: var(--primary-color); text-decoration: none; font-weight: 700; }
+        .links a:hover { text-decoration: underline; }
 
-        /* THEME TOGGLE (Top Right) */
-        .theme-float { position: absolute; top: 20px; right: 20px; }
+        /* THEME TOGGLE */
+        .theme-float { position: absolute; top: 30px; right: 30px; }
 
-        /* MOBILE RESPONSIVE */
+        /* RESPONSIVE */
         @media (max-width: 900px) {
             .auth-grid { grid-template-columns: 1fr; }
-            .brand-side { display: none; } /* Hide image on mobile */
+            .brand-side { display: none; }
         }
     </style>
 </head>
@@ -121,19 +143,20 @@
     <div class="auth-grid">
         <div class="brand-side">
             <div class="brand-content">
-                <div style="font-size: 3rem; margin-bottom: 20px;">🎓</div>
-                <div class="brand-quote">"Education is the passport to the future, for tomorrow belongs to those who prepare for it today."</div>
-                <div class="brand-author">— Louis-BT</div>
+                <div class="brand-icon">🎓</div>
+                <div class="brand-quote">"True Education enables one to develop the power to think and to do."</div>
+                <div class="brand-author">Louis B-T</div>
             </div>
         </div>
 
         <div class="form-side">
             
             <div class="theme-float">
-                <select onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px;">
+                <select onchange="setTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-size: 0.85rem;">
                     <option value="system">💻 System</option>
                     <option value="light">☀️ Light</option>
                     <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
                 </select>
             </div>
 
@@ -144,7 +167,7 @@
                 <form onsubmit="event.preventDefault(); handleLogin();">
                     <div class="input-group">
                         <label>Email Address</label>
-                        <input type="email" id="email" placeholder="student@university.edu.gh" required>
+                        <input type="email" id="email" placeholder="student@gmail.com" required>
                     </div>
 
                     <div class="input-group">
@@ -153,19 +176,18 @@
                         <i class="fas fa-eye toggle-password" onclick="togglePass()"></i>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 0.85rem;">
-                        <label style="color: var(--text-muted); display: flex; gap: 5px;">
+                    <div class="form-actions">
+                        <label class="remember-me">
                             <input type="checkbox"> Remember me
                         </label>
-                        <a href="#" style="color: var(--primary-color); text-decoration: none;">Forgot Password?</a>
+                        <a href="#" class="forgot-pass">Forgot Password?</a>
                     </div>
 
-                    <button type="submit" class="btn-auth">Sign In</button>
+                    <button type="submit" class="btn-auth">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
                 </form>
-
-                <div style="margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
-                    <strong>Tip:</strong> Use <code style="background: #e2e8f0; padding: 2px 5px; border-radius: 4px; color: #334155;">admin@portal.edu.gh</code> to enter Admin Mode.
-                </div>
 
                 <div class="links">
                     Don't have an account? <a href="signup.html">Create Account</a>
@@ -174,41 +196,7 @@
         </div>
     </div>
 
-    <script>
-        function togglePass() {
-            const input = document.getElementById('password');
-            input.type = input.type === "password" ? "text" : "password";
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('email').value.toLowerCase();
-            const btn = document.querySelector('.btn-auth');
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
-            
-            // SIMULATE AUTHENTICATION DELAY
-            setTimeout(() => {
-                
-                // === ROLE DETECTION LOGIC ===
-                if (email === 'admin@portal.edu.gh') {
-                    // Set Admin Role
-                    localStorage.setItem('portal-user-role', 'ADMIN');
-                    localStorage.setItem('portal-user-name', 'System Administrator');
-                    localStorage.setItem('portal-avatar', 'https://via.placeholder.com/70/ef4444/ffffff?text=AD');
-                } else {
-                    // Set Student Role
-                    localStorage.setItem('portal-user-role', 'STUDENT');
-                    
-                    // Keep existing name if set, otherwise default
-                    if(!localStorage.getItem('portal-user-name') || localStorage.getItem('portal-user-name') === 'System Administrator') {
-                        localStorage.setItem('portal-user-name', 'Student User');
-                    }
-                }
-
-                // Redirect to Dashboard (which will now read the role correctly)
-                window.location.href = "dashboard.html";
-            }, 1000);
-        }
-    </script>
+    <script src="login.js"></script>
+    
 </body>
 </html>

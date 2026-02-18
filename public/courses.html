@@ -3,340 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Registration & Timetable | Student Portal</title>
+    <title>Course Registration | National Portal</title>
     
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
     <style>
-        /* PAGE LAYOUT */
-        .page-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
+        /* --- WEB LAYOUT (Screen Only) --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        .wrapper { display: flex; width: 100%; height: 100%; }
 
-        @media (max-width: 900px) { .page-grid { grid-template-columns: 1fr; } }
+        /* Sidebar & Nav */
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .nav-links { list-style: none; padding: 20px; margin: 0; }
+        .nav-links li { margin-bottom: 8px; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
 
-        /* CARDS */
+        /* Content Area */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-color); position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+        /* Grid & Cards */
+        .page-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; max-width: 1400px; margin: 0 auto; }
         .action-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            height: 100%;
+            background: var(--card-bg); padding: 25px; border-radius: 12px;
+            border: 1px solid var(--border-color); box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column;
         }
 
-        h2 { color: var(--text-color); margin-top: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
-        
-        /* SEARCH BAR */
-        .search-container { position: relative; margin-bottom: 15px; }
-        
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--input-bg);
-            color: var(--text-color);
-            font-family: inherit;
-            font-size: 0.95rem;
+        /* Inputs */
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 12px 15px; border: 1px solid var(--border-color);
+            border-radius: 8px; background: var(--input-bg); color: var(--text-color);
+            font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
         }
-        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        input:focus { outline: none; border-color: var(--primary-color); }
+        .manual-entry-grid { display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 10px; margin-bottom: 10px; }
 
+        /* Suggestions Dropdown */
         .suggestions-list {
-            position: absolute;
-            top: 100%; left: 0; right: 0;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: none;
-            margin-top: 5px;
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; margin-top: 5px;
         }
-
-        .suggestion-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: space-between;
-        }
+        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
         .suggestion-item:hover { background: var(--primary-color); color: white; }
 
-        /* REGISTERED LIST */
+        /* Course List Items */
         .course-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-color);
-            border-radius: 6px;
-            margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; border-bottom: 1px solid var(--border-color);
+            background: var(--bg-color); border-radius: 6px; margin-bottom: 8px;
         }
-        .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.9rem; }
-        .course-name { font-size: 0.9rem; color: var(--text-color); }
+        .course-meta span { display: block; }
+        .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.85rem; }
+        .course-credits { font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content; }
 
-        .btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px; }
-        .btn-delete:hover { color: #b91c1c; transform: scale(1.1); }
+        /* Buttons */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-primary { background: var(--primary-color); color: white; width: 100%; justify-content: center; }
+        .btn-delete { background: #fee2e2; color: #ef4444; padding: 6px; border-radius: 4px; }
+        .btn-print { background: #1e293b; color: white; }
 
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: 0.2s;
-        }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+        /* Timetable */
+        .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .timetable { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .timetable th { background: #0f172a; color: white; padding: 12px; text-align: center; font-size: 0.9rem; }
+        .timetable td { padding: 12px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; }
+        .cell-filled { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; border-radius: 4px; }
 
-        /* RESOURCE TOOLKIT STYLES */
-        .toolkit-section {
-            margin-top: 20px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
+        /* --- OFFICIAL DOCUMENT STYLES (Print Only) --- */
+        .official-header { display: none; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 15px; }
+        .header-top { display: flex; align-items: center; gap: 20px; }
+        .school-logo { font-size: 3.5rem; color: #000; } 
+        .school-info h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .school-info p { margin: 5px 0 0 0; font-size: 0.9rem; font-style: italic; }
+        
+        .student-bio-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; 
+            background: #f9f9f9; padding: 15px; border: 1px solid #ddd;
         }
-        .resource-tag {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--input-bg);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid var(--border-color);
-            transition: 0.2s;
-            text-decoration: none;
-            color: var(--text-color);
-        }
-        .resource-tag:hover { border-color: #ff0000; background: rgba(255, 0, 0, 0.05); }
-        .yt-icon { color: #ff0000; font-size: 1.2rem; }
+        .bio-item strong { display: inline-block; width: 100px; }
 
-        /* TIMETABLE STYLES */
-        .timetable-section {
-            margin: 40px auto;
-            max-width: 1200px;
-            padding: 0 20px;
-            display: none; 
-        }
+        .doc-title { text-align: center; text-transform: uppercase; font-weight: 800; text-decoration: underline; margin: 30px 0; font-size: 1.4rem; }
+        
+        .print-signature { display: none; margin-top: 80px; display: flex; justify-content: space-between; }
+        .sign-line { border-top: 1px solid #000; width: 250px; padding-top: 10px; text-align: center; font-size: 0.9rem; }
 
-        .timetable-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+        @media (max-width: 1000px) { .page-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
 
-        .mode-select {
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--primary-color);
-            background: var(--card-bg);
-            color: var(--text-color);
-            font-weight: 600;
-        }
+        /* --- PRINT MODE CONFIGURATION --- */
+        @media print {
+            @page { margin: 2cm; }
+            body { background: white; color: black; display: block; height: auto; overflow: visible; font-size: 12pt; }
+            .wrapper, .main-content { display: block; padding: 0; overflow: visible; width: 100%; height: auto; }
+            
+            /* Hide UI Elements */
+            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, 
+            .btn, .btn-delete, .suggestions-list, h2 i { display: none !important; }
 
-        .timetable {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
+            /* Show Official Elements */
+            .official-header { display: block; }
+            .print-signature { display: flex; }
 
-        .timetable th {
-            background: var(--primary-color);
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+            /* Default: Hide content sections */
+            .action-card, .timetable-section { display: none; border: none; box-shadow: none; padding: 0; }
 
-        .timetable td {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-            color: var(--text-color);
-            font-size: 0.85rem;
-        }
-
-        .cell-filled {
-            background: rgba(37, 99, 235, 0.1);
-            color: var(--primary-color);
-            font-weight: 700;
-            border-radius: 4px;
-        }
-        .cell-study { background: rgba(16, 185, 129, 0.1); color: #10b981; font-style: italic; }
-        .break-row td {
-            background: var(--input-bg);
-            color: var(--text-muted);
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            padding: 8px;
+            /* MODE: REGISTRATION SLIP */
+            body.print-reg .action-card.course-card { display: block; width: 100%; }
+            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; }
+            
+            /* MODE: TIMETABLE */
+            body.print-time .timetable-section { display: block; width: 100%; }
+            body.print-time .timetable th { background: #eee !important; color: black !important; border: 1px solid #000; }
+            body.print-time .timetable td { border: 1px solid #000; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">🎓 Academic Portal</div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="dashboard.html" style="font-weight: 600;">Dashboard</a>
-            <div class="theme-wrapper">
-                <select id="theme-selector" onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px;">
-                    <option value="system">💻 System</option>
-                    <option value="light">☀️ Light</option>
-                    <option value="dark">🌙 Dark</option>
-                    <option value="custom">🎨 Custom</option>
-                </select>
-                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+    <div class="official-header">
+        <div class="header-top">
+            <div class="school-logo">
+                <i class="fas fa-university"></i> </div>
+            <div class="school-info">
+                <h1 id="p-school-name">National Tertiary Portal</h1>
+                <p>Office of the Registrar • Academic Affairs</p>
             </div>
         </div>
-    </nav>
 
-    <div class="page-grid">
-        
-        <div class="action-card">
-            <h2><i class="fas fa-search"></i> Course Registration</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Search courses or add manually.</p>
-
-            <div class="search-container">
-                <input type="text" id="courseSearch" placeholder="Type course name (e.g. African Studies)..." autocomplete="off">
-                <div id="suggestions" class="suggestions-list"></div>
-            </div>
-
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="text" id="manualCode" placeholder="Code (e.g. UGRC 150)" style="text-transform: uppercase; width: 40%;">
-                <input type="text" id="manualName" placeholder="Course Title" style="width: 60%;">
-            </div>
-
-            <button class="btn-primary" onclick="addManualCourse()">+ Add Course</button>
+        <div class="student-bio-grid">
+            <div class="bio-item"><strong>Name:</strong> <span id="p-student-name">Loading...</span></div>
+            <div class="bio-item"><strong>Student ID:</strong> <span id="p-student-id">10293844</span></div>
+            <div class="bio-item"><strong>Programme:</strong> Bachelor of Science</div>
+            <div class="bio-item"><strong>Date:</strong> <span id="p-print-date"></span></div>
         </div>
 
-        <div class="action-card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2><i class="fas fa-list-check"></i> My Courses</h2>
-                <span id="course-count" style="background: var(--input-bg); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold;">0</span>
-            </div>
-            
-            <div id="registered-list" style="margin-top: 15px; min-height: 80px;">
-                <p style="color: var(--text-muted); text-align: center; font-style: italic; margin-top: 30px;">No courses added yet.</p>
-            </div>
-
-            <div id="toolkit-area" class="toolkit-section" style="display: none;">
-                <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">
-                    ⚡ Recommended Study Tools
-                </h4>
-                <div id="resource-list">
-                    </div>
-            </div>
-
-            <button id="btn-generate" class="btn-primary" style="background: #10b981; display: none;" onclick="generateTimetable()">
-                <i class="fas fa-calendar-alt"></i> Generate Timetable
-            </button>
-        </div>
+        <h2 class="doc-title" id="p-doc-title">Official Document</h2>
     </div>
 
-    <div id="timetable-display" class="timetable-section">
-        <div class="timetable-header">
-            <h2 style="color: var(--text-color); margin: 0;"><i class="fas fa-table"></i> Weekly Schedule</h2>
-            
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <select id="schedule-mode" class="mode-select" onchange="generateTimetable()">
-                    <option value="standard">Standard Day (8:00 AM - 5:00 PM)</option>
-                    <option value="extended">Extended Day (5:00 AM - 11:30 PM)</option>
-                </select>
-
-                <button onclick="window.print()" style="padding: 10px 15px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 6px; cursor: pointer;">
-                    <i class="fas fa-download"></i> PDF
-                </button>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-graduation-cap"></i> Student Portal
             </div>
-        </div>
-        
-        <table class="timetable">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Time</th>
-                    <th style="width: 17%;">Monday</th>
-                    <th style="width: 17%;">Tuesday</th>
-                    <th style="width: 17%;">Wednesday</th>
-                    <th style="width: 17%;">Thursday</th>
-                    <th style="width: 17%;">Friday</th>
-                </tr>
-            </thead>
-            <tbody id="timetable-body">
-                </tbody>
-        </table>
+            <ul class="nav-links">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+                <li><a href="leadership.html"><i class="fas fa-medal"></i> Leadership</a></li>
+                <li><a href="courses.html" class="active"><i class="fas fa-book-open"></i> Courses</a></li>
+                <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
+                <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
+                <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div>
+                    <h1 style="margin: 0; font-size: 1.8rem;">Academic Registration</h1>
+                    <p style="color: var(--text-muted); margin-top: 5px;">Enrolment & Scheduling</p>
+                </div>
+                <div class="theme-wrapper">
+                    <select onchange="setTheme(this.value)" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <option value="system">💻 System</option>
+                        <option value="light">☀️ Light</option>
+                        <option value="dark">🌙 Dark</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="page-grid">
+                
+                <div class="action-card">
+                    <h2><i class="fas fa-search"></i> Find Courses</h2>
+                    
+                    <div class="input-group">
+                        <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Search Database</label>
+                        <input type="text" id="courseSearch" placeholder="E.g. Calculus..." autocomplete="off">
+                        <div id="suggestions" class="suggestions-list"></div>
+                    </div>
+
+                    <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Manual Entry (If not found)</label>
+                        <div class="manual-entry-grid">
+                            <input type="text" id="manualCode" placeholder="Code (e.g. CSCD 201)">
+                            <input type="text" id="manualName" placeholder="Course Title">
+                            <input type="number" id="manualCredit" placeholder="Cr" value="3" min="1">
+                        </div>
+                        <button class="btn btn-primary" onclick="addManualCourse()">+ Add to List</button>
+                    </div>
+                </div>
+
+                <div class="action-card course-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">
+                        <h2 style="margin:0;"><i class="fas fa-list-ul"></i> Registered List</h2>
+                        <span id="total-credits" style="font-size: 0.8rem; background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 10px; font-weight: 700;">0 Credits</span>
+                    </div>
+
+                    <div class="course-list-container" id="registered-list">
+                        </div>
+
+                    <button class="btn btn-print" onclick="printDocument('registration')">
+                        <i class="fas fa-print"></i> Print Slip
+                    </button>
+                </div>
+            </div>
+
+            <div class="timetable-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                    <h2 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Weekly Schedule</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="schedule-mode" onchange="generateTimetable()" style="padding: 8px; border-radius: 6px;">
+                            <option value="standard">Standard View</option>
+                            <option value="extended">Extended View</option>
+                        </select>
+                        <button class="btn btn-print" onclick="printDocument('timetable')">
+                            <i class="fas fa-print"></i> Print Timetable
+                        </button>
+                    </div>
+                </div>
+
+                <table class="timetable">
+                    <thead>
+                        <tr>
+                            <th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetable-body"></tbody>
+                </table>
+            </div>
+
+            <div class="print-signature">
+                <div class="sign-line">Student Signature</div>
+                <div class="sign-line">Academic Officer / HOD</div>
+            </div>
+
+        </main>
     </div>
 
     <script>
-        // 1. DATA: GHANAIAN UNIVERSITY COURSES
+        // --- DATA & STATE ---
         const courseDB = [
-            { name: "Academic Writing I", code: "UGRC 110" },
-            { name: "Academic Writing II", code: "UGRC 210" },
-            { name: "African Studies", code: "UGRC 150" },
-            { name: "Calculus I", code: "MATH 121" },
-            { name: "Calculus II", code: "MATH 122" },
-            { name: "Intro to Computer Science", code: "CSCD 101" },
-            { name: "Programming Fundamentals", code: "CSCD 102" },
-            { name: "Economics I", code: "ECON 101" },
-            { name: "Psychology I", code: "PSYC 101" },
-            { name: "Communication Skills", code: "COMM 101" },
-            { name: "Financial Accounting", code: "ACCT 201" },
-            { name: "Physics for Engineers", code: "PHYS 205" },
-            { name: "French Language I", code: "FREN 101" }
+            { name: "Academic Writing I", code: "UGRC 110", credits: 3 },
+            { name: "Calculus I", code: "MATH 121", credits: 4 },
+            { name: "Intro to Computer Science", code: "CSCD 101", credits: 3 },
+            { name: "Programming Fundamentals", code: "CSCD 102", credits: 3 },
+            { name: "Economics I", code: "ECON 101", credits: 3 },
+            { name: "Financial Accounting", code: "ACCT 201", credits: 3 }
         ];
 
-        // 2. STUDY RESOURCES MAPPING (Contextual AI)
-        const resourceMap = [
-            { key: "math", name: "Professor Leonard (Calculus)", url: "https://www.youtube.com/@ProfessorLeonard" },
-            { key: "calculus", name: "3Blue1Brown (Visual Math)", url: "https://www.youtube.com/@3blue1brown" },
-            { key: "computer", name: "CS50 by Harvard (YouTube)", url: "https://www.youtube.com/cs50" },
-            { key: "programming", name: "FreeCodeCamp", url: "https://www.freecodecamp.org/" },
-            { key: "economics", name: "Jacob Clifford (Econ)", url: "https://www.youtube.com/@JacobAClifford" },
-            { key: "accounting", name: "Accounting Stuff", url: "https://www.youtube.com/@AccountingStuff" },
-            { key: "physics", name: "Organic Chemistry Tutor", url: "https://www.youtube.com/@TheOrganicChemistryTutor" },
-            { key: "writing", name: "Purdue OWL (Writing Lab)", url: "https://owl.purdue.edu/" },
-            { key: "french", name: "Learn French with Alexa", url: "https://www.youtube.com/@learnfrenchwithalexa" }
-        ];
+        let myCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
 
-        let myCourses = [];
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderList();
+            generateTimetable();
+            setupPrintHeader();
+        });
 
-        // 3. SEARCH LOGIC
+        // --- SMART PRINT LOGIC ---
+        function setupPrintHeader() {
+            // Fetch User Details from Storage
+            const name = localStorage.getItem('portal-user-name') || 'Student Name';
+            const school = localStorage.getItem('portal-institution') || 'University of Ghana';
+            
+            // Inject into Hidden Print Header
+            document.getElementById('p-student-name').innerText = name;
+            document.getElementById('p-school-name').innerText = school;
+            document.getElementById('p-print-date').innerText = new Date().toLocaleDateString();
+        }
+
+        function printDocument(type) {
+            const docTitle = document.getElementById('p-doc-title');
+            const name = localStorage.getItem('portal-user-name') || 'Student';
+            
+            // Clean slate class
+            document.body.className = ''; 
+
+            if (type === 'registration') {
+                document.body.classList.add('print-reg');
+                docTitle.innerText = `${name}'s Course Registration Slip`;
+                document.title = "Registration_Slip.pdf";
+            } else if (type === 'timetable') {
+                document.body.classList.add('print-time');
+                docTitle.innerText = `${name}'s Personal Timetable`;
+                document.title = "Personal_Timetable.pdf";
+            }
+
+            window.print();
+
+            // Reset after print dialog closes
+            setTimeout(() => {
+                document.body.className = '';
+                document.title = "Course Registration | National Portal";
+            }, 1000);
+        }
+
+        // --- MANUAL COURSE ENTRY (REQUESTED) ---
+        function addManualCourse() {
+            const code = document.getElementById('manualCode').value.toUpperCase().trim();
+            const name = document.getElementById('manualName').value.trim();
+            const cred = parseInt(document.getElementById('manualCredit').value) || 3;
+
+            if (code && name) {
+                addCourse(name, code, cred);
+                // Clear fields
+                document.getElementById('manualCode').value = '';
+                document.getElementById('manualName').value = '';
+            } else {
+                alert("Please enter a Course Code and Title.");
+            }
+        }
+
+        // --- CORE COURSE LOGIC ---
         const searchInput = document.getElementById('courseSearch');
         const suggestionsBox = document.getElementById('suggestions');
 
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase();
             suggestionsBox.innerHTML = '';
-            
-            if (query.length < 1) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
+            if (query.length < 1) { suggestionsBox.style.display = 'none'; return; }
 
             const matches = courseDB.filter(c => c.name.toLowerCase().includes(query));
-            
             if (matches.length > 0) {
                 suggestionsBox.style.display = 'block';
                 matches.forEach(c => {
@@ -344,188 +339,90 @@
                     div.className = 'suggestion-item';
                     div.innerHTML = `<span>${c.name}</span> <small>${c.code}</small>`;
                     div.onclick = () => {
-                        addCourse(c.name, c.code);
+                        addCourse(c.name, c.code, c.credits);
                         searchInput.value = '';
                         suggestionsBox.style.display = 'none';
                     };
                     suggestionsBox.appendChild(div);
                 });
-            } else {
-                suggestionsBox.style.display = 'none';
+            } else { suggestionsBox.style.display = 'none'; }
+        });
+
+        function addCourse(name, code, credits) {
+            if(myCourses.find(c => c.code === code)) {
+                alert("Course already registered!");
+                return;
             }
-        });
+            myCourses.push({ name, code, credits });
+            saveAndRender();
+        }
 
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target)) suggestionsBox.style.display = 'none';
-        });
-
-        // 4. ADD / REMOVE LOGIC
-        function addManualCourse() {
-            const code = document.getElementById('manualCode').value.toUpperCase();
-            const name = document.getElementById('manualName').value;
-            if(code && name) {
-                addCourse(name, code);
-                document.getElementById('manualCode').value = '';
-                document.getElementById('manualName').value = '';
-            } else {
-                alert("Please enter both Code and Name.");
+        function removeCourse(index) {
+            if(confirm("Remove this course?")) {
+                myCourses.splice(index, 1);
+                saveAndRender();
             }
         }
 
-        function addCourse(name, code) {
-            if(myCourses.find(c => c.code === code)) return;
-            myCourses.push({ name, code });
+        function saveAndRender() {
+            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
             renderList();
+            generateTimetable();
         }
 
         function renderList() {
             const list = document.getElementById('registered-list');
-            const count = document.getElementById('course-count');
-            const genBtn = document.getElementById('btn-generate');
-            
+            const totalDisplay = document.getElementById('total-credits');
             list.innerHTML = '';
-            count.innerText = myCourses.length;
+            let totalCr = 0;
 
             if(myCourses.length === 0) {
-                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No courses added yet.</p>';
-                genBtn.style.display = 'none';
-                document.getElementById('toolkit-area').style.display = 'none';
-                return;
+                list.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">No courses registered.</p>';
             }
 
             myCourses.forEach((c, index) => {
-                const item = document.createElement('div');
-                item.className = 'course-item';
-                item.innerHTML = `
-                    <div class="course-info">
-                        <span class="course-code">${c.code}</span>
-                        <span class="course-name">${c.name}</span>
+                totalCr += c.credits;
+                list.innerHTML += `
+                    <div class="course-item">
+                        <div class="course-meta">
+                            <span class="course-code">${c.code}</span>
+                            <span style="font-weight:500;">${c.name}</span>
+                            <span class="course-credits">${c.credits} Credits</span>
+                        </div>
+                        <button class="btn-delete" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
                     </div>
-                    <button class="btn-delete" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
                 `;
-                list.appendChild(item);
             });
-
-            if(myCourses.length >= 3) genBtn.style.display = 'block';
-            else genBtn.style.display = 'none';
-
-            updateStudyToolkit();
+            totalDisplay.innerText = `${totalCr} Total Credits`;
         }
 
-        function removeCourse(index) {
-            myCourses.splice(index, 1);
-            renderList();
-        }
-
-        // 5. RESOURCE GENERATOR (The "Study Tools" Logic)
-        function updateStudyToolkit() {
-            const toolkitArea = document.getElementById('toolkit-area');
-            const resourceList = document.getElementById('resource-list');
-            
-            // Get all course names as a single lowercase string
-            const allText = myCourses.map(c => c.name.toLowerCase()).join(" ");
-            
-            // Find matches
-            const matches = resourceMap.filter(res => allText.includes(res.key));
-            
-            // Remove duplicates based on URL
-            const uniqueMatches = [...new Map(matches.map(item => [item['url'], item])).values()];
-
-            if (uniqueMatches.length > 0) {
-                toolkitArea.style.display = 'block';
-                resourceList.innerHTML = '';
-                uniqueMatches.forEach(r => {
-                    resourceList.innerHTML += `
-                        <a href="${r.url}" target="_blank" class="resource-tag">
-                            <i class="fab fa-youtube yt-icon"></i>
-                            <div>
-                                <div style="font-weight:600; font-size:0.9rem;">${r.name}</div>
-                                <div style="font-size:0.75rem; opacity:0.7;">Recommended for your courses</div>
-                            </div>
-                        </a>
-                    `;
-                });
-            } else {
-                toolkitArea.style.display = 'none';
-            }
-        }
-
-        // 6. TIMETABLE LOGIC (Standard vs Extended)
+        // --- TIMETABLE GENERATOR ---
         function generateTimetable() {
-            const section = document.getElementById('timetable-display');
             const tbody = document.getElementById('timetable-body');
-            const mode = document.getElementById('schedule-mode').value;
-            
-            section.style.display = 'block';
             tbody.innerHTML = '';
-
-            let schedule = [];
-
-            if (mode === 'standard') {
-                // STANDARD MODE (8am - 5pm)
-                schedule = [
-                    { time: "8:00 AM - 10:00 AM", type: "Lecture" },
-                    { time: "10:00 AM - 12:00 PM", type: "Lecture" },
-                    { time: "12:00 PM - 1:00 PM", type: "Break", label: "LUNCH BREAK" },
-                    { time: "1:00 PM - 3:00 PM", type: "Lecture" },
-                    { time: "3:00 PM - 5:00 PM", type: "Lecture" }
-                ];
-            } else {
-                // EXTENDED MODE (5am - 11:30pm)
-                schedule = [
-                    { time: "5:00 AM - 7:00 AM", type: "Study" },
-                    { time: "7:30 AM - 9:30 AM", type: "Lecture" },
-                    { time: "9:30 AM - 11:30 AM", type: "Lecture" },
-                    { time: "11:30 AM - 12:30 PM", type: "Break", label: "LUNCH BREAK" },
-                    { time: "12:30 PM - 2:30 PM", type: "Lecture" },
-                    { time: "2:30 PM - 4:30 PM", type: "Lecture" },
-                    { time: "4:30 PM - 6:30 PM", type: "Lecture" },
-                    { time: "6:30 PM - 7:30 PM", type: "Break", label: "SUPPER / RECESS" },
-                    { time: "7:30 PM - 9:30 PM", type: "Lecture" },
-                    { time: "9:30 PM - 11:30 PM", type: "Study" }
-                ];
-            }
             
-            schedule.forEach(slot => {
-                let rowHtml = "";
+            const slots = ["8:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 1:00 PM (Break)", "1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM"];
 
-                if (slot.type === "Break") {
-                    rowHtml = `<tr class="break-row"><td>${slot.time}</td><td colspan="5" style="text-align: center;">--- ${slot.label} ---</td></tr>`;
+            slots.forEach(time => {
+                let row = `<tr><td><strong>${time}</strong></td>`;
+                
+                if(time.includes("Break")) {
+                    row = `<tr><td style="background:#f1f5f9; font-weight:bold;">${time}</td><td colspan="5" style="background:#f1f5f9; letter-spacing:2px; color:#64748b; text-align:center;">--- RECESS ---</td></tr>`;
                 } else {
-                    rowHtml = `<tr><td><strong>${slot.time}</strong></td>`;
                     for(let i=0; i<5; i++) {
-                        if (slot.type === "Study") {
-                            rowHtml += `<td class="cell-study">Personal Study</td>`;
+                        const hasClass = Math.random() > 0.6 && myCourses.length > 0;
+                        if(hasClass) {
+                            const course = myCourses[Math.floor(Math.random() * myCourses.length)];
+                            row += `<td class="cell-filled">${course.code}<br><small>Venue: N${Math.floor(Math.random()*20)}</small></td>`;
                         } else {
-                            const showCourse = Math.random() > 0.4;
-                            if (showCourse && myCourses.length > 0) {
-                                const randomCourse = myCourses[Math.floor(Math.random() * myCourses.length)];
-                                rowHtml += `<td class="cell-filled">
-                                            <div style="font-size:0.8rem;">${randomCourse.code}</div>
-                                            <div style="font-size:0.7rem; opacity:0.8;">Venue: N${Math.floor(Math.random()*30)}</div>
-                                        </td>`;
-                            } else {
-                                rowHtml += `<td>-</td>`;
-                            }
+                            row += `<td>-</td>`;
                         }
                     }
-                    rowHtml += "</tr>";
+                    row += `</tr>`;
                 }
-                tbody.innerHTML += rowHtml;
+                tbody.innerHTML += row;
             });
-
-            section.scrollIntoView({ behavior: 'smooth' });
-            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
         }
-
-        // Load saved
-        document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('portal-courses');
-            if(saved) {
-                myCourses = JSON.parse(saved);
-                renderList();
-            }
-        });
     </script>
 </body>
 </html>
