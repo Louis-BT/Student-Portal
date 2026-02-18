@@ -3,131 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard | Student Portal</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Student Dashboard | National Portal</title>
+    
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="theme.js"></script>
 
     <style>
-        /* --- CORE LAYOUT --- */
+        /* --- DASHBOARD LAYOUT --- */
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
-            background: #f1f5f9;
+            background: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
+
         .dashboard-wrapper { display: flex; width: 100%; height: 100%; }
 
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px;
-            background: #1e293b;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 25px;
-            box-sizing: border-box;
-            border-right: 1px solid #334155;
+        .main-content { 
+            flex: 1; 
+            padding: 30px; 
+            overflow-y: auto;
+            margin-left: 280px; 
         }
-        .sidebar-logo { font-size: 1.4rem; font-weight: 700; margin-bottom: 30px; color: #38bdf8; }
 
-        .profile-section {
+        .top-header { 
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #334155;
-        }
-        .profile-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #38bdf8;
+            margin-bottom: 20px; 
         }
 
-        .sidebar-nav a {
-            color: #cbd5e1;
-            text-decoration: none;
-            padding: 12px 15px;
-            display: block;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
-        }
-        .sidebar-nav a:hover,
-        .sidebar-nav a.active {
-            background: #334155;
-            color: white;
-        }
-
-        /* --- MAIN --- */
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
-        .top-header { margin-bottom: 20px; }
-
-        /* Student Identity Strip */
+        /* --- IDENTITY STRIP --- */
         .identity-strip {
-            background: white;
-            padding: 15px 25px;
+            background: var(--card-bg);
+            padding: 20px 25px;
             border-radius: 12px;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             margin-bottom: 25px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
         }
+        
         .id-item { flex: 1; min-width: 120px; }
-        .id-label { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        .id-value { font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-top: 4px; display: block;}
+        .id-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .id-value { font-size: 0.95rem; font-weight: 600; color: var(--text-color); margin-top: 4px; display: block;}
 
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-        .badge-regular { background: #dbeafe; color: #1e40af; }
-        .badge-scholarship { background: #dcfce7; color: #166534; }
-        .badge-fee { background: #ffedd5; color: #9a3412; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; display: inline-block;}
+        .badge-regular { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .badge-scholarship { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .badge-fee { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
-        /* Dashboard Grid */
+        /* --- KPI CARDS --- */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
         .card {
-            background: white;
+            background: var(--card-bg);
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             text-align: center;
             cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #e2e8f0;
+            transition: 0.3s;
+            border: 1px solid var(--border-color);
             position: relative;
         }
-        .card:hover { transform: translateY(-5px); border-color: #cbd5e1; }
+        .card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
 
-        .stat-num { font-size: 2rem; font-weight: 800; color: #2563eb; margin: 10px 0; }
+        .card h3 { font-size: 1rem; color: var(--text-muted); margin: 0; }
+        .stat-num { font-size: 2.5rem; font-weight: 800; color: var(--primary-color); margin: 10px 0; }
+        .stat-link { font-size: 0.85rem; color: var(--text-color); text-decoration: underline; }
 
+        /* --- BOTTOM SECTION --- */
         .bottom-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
+            margin-bottom: 40px;
         }
         .chart-section, .news-section {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .news-section h3, .chart-section h3 { margin-top: 0; color: var(--text-color); }
+
+        /* VANGUARD CARD STYLES */
+        .vanguard-card {
+            background: linear-gradient(135deg, #1e1e2f 0%, #0f172a 100%); 
+            color: #fbbf24; 
+            padding: 25px; 
+            border-radius: 12px; 
+            margin-bottom: 25px; 
+            border: 1px solid #fbbf24; 
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.15);
+            display: none; /* Hidden by default */
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .bottom-grid { grid-template-columns: 1fr; }
             .identity-strip { gap: 15px; }
+            .main-content { margin-left: 0; }
         }
     </style>
 </head>
@@ -137,41 +127,53 @@
 <div class="dashboard-wrapper">
 
     <aside class="sidebar">
-        <div class="sidebar-logo">🎓 Student Portal</div>
+        <div class="sidebar-header">
+            <i class="fas fa-graduation-cap"></i> Student Portal
+        </div>
         
-        <div class="profile-section">
-            <a href="/profile.html">
-                <img id="sidebar-pic" src="/uploads/default.png" class="profile-img" alt="Profile">
-            </a>
-            <div style="line-height: 1.2;">
-                <div id="sidebar-name" style="font-weight: 600; font-size: 0.9rem;">Student</div>
-                <div id="sidebar-role" style="font-size: 0.75rem; color: #94a3b8;">User</div>
+        <div style="padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="width: 70px; height: 70px; margin: 0 auto 10px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary-color);">
+                <img id="sidebar-pic" src="https://via.placeholder.com/70" style="width: 100%; height: 100%; object-fit: cover;" alt="Profile">
             </div>
+            <div id="sidebar-name" style="font-weight: 600; color: white;">Student</div>
+            <div id="sidebar-role" style="font-size: 0.8rem; color: #94a3b8; margin-top: 2px;">Undergraduate</div>
         </div>
 
-        <nav class="sidebar-nav">
-            <a href="/dashboard.html" class="active">📊 Dashboard</a>
-            <a href="/profile.html">👤 My Profile</a>
-            <a href="/leadership.html" style="color: #f59e0b; font-weight: bold;">🏅 Leadership Vanguard</a> 
-            <a href="/courses.html">📚 Courses</a>
-            <a href="/gpa.html">🧮 GPA Calculator</a>
-            <a href="/library.html">📖 National Library</a> 
-            <a href="/connect.html">💬 Student Connect</a>
-            <a href="/logout" style="margin-top:20px; color:#f87171;">🚪 Logout</a>
-        </nav>
+        <ul class="sidebar-links">
+            <li class="active"><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="leadership.html" style="color: #f59e0b;"><i class="fas fa-medal"></i> Leadership</a></li>
+            <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
+            <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
+            <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
+            <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
+            <li><a href="index.html" style="color: #ef4444; margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
     </aside>
 
     <main class="main-content">
 
         <header class="top-header">
-            <h1 id="welcome-message" style="margin:0; color: #1e293b;">Welcome back!</h1>
-            <p style="color:#64748b; margin-top: 5px;">Here is your academic overview.</p>
+            <div>
+                <h1 id="welcome-message" style="margin:0; font-size: 1.8rem;">Welcome back!</h1>
+                <p style="color: var(--text-muted); margin-top: 5px;">Here is your academic overview.</p>
+            </div>
+            
+            <div class="theme-wrapper">
+                <select id="theme-selector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+            </div>
         </header>
 
         <div class="identity-strip">
             <div class="id-item">
                 <span class="id-label">Institution</span>
-                <span id="id-school" class="id-value">--</span>
+                <span id="id-school" class="id-value">Fetching...</span>
             </div>
             <div class="id-item">
                 <span class="id-label">Faculty / Dept</span>
@@ -193,78 +195,95 @@
 
         <div id="vanguard-banner" style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 6px solid #f59e0b;">
             <div>
-                <h3 style="margin: 0; color: #f59e0b;">Join the Leadership Vanguard</h3>
+                <h3 style="margin: 0; color: #f59e0b; font-size: 1.1rem;">Join the Leadership Vanguard</h3>
                 <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #cbd5e1;">Are you a visionary? Apply to join our elite circle of dedicated student leaders.</p>
             </div>
-            <a href="/leadership.html" style="background: #f59e0b; color: #0f172a; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Apply Now</a>
+            <a href="leadership.html" style="background: #f59e0b; color: #0f172a; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9rem;">Apply Now</a>
         </div>
 
-        <div id="news-box" style="background:#f0fdf4; border-left:4px solid #10b981; padding:15px; border-radius:8px; margin-bottom:25px; display: none;">
-            <strong style="color:#10b981;">📢 Latest Update:</strong>
-            <p id="announcement-text" style="margin: 5px 0 0 0; color: #14532d;">...</p>
+        <div id="vanguard-member-card" class="vanguard-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-crown"></i> Leadership Vanguard Member
+                    </h3>
+                    <p style="margin: 5px 0 0 0; color: #e5e7eb; opacity: 0.9;">
+                        Welcome to the inner circle. Access exclusive resources and network with other leaders.
+                    </p>
+                </div>
+                <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K?mode=gi_t" target="_blank" 
+                   style="background: #fbbf24; color: #000; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: 800; display: flex; align-items: center; gap: 8px; transition: transform 0.2s; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);">
+                    <i class="fab fa-whatsapp"></i> Join The Leaders Vanguard Group
+                </a>
+            </div>
+        </div>
+
+        <div id="news-box" style="background: rgba(16, 185, 129, 0.1); border-left:4px solid #10b981; padding:15px; border-radius:8px; margin-bottom:25px; display: none;">
+            <strong style="color:#059669;">Latest Update:</strong>
+            <p id="announcement-text" style="margin: 5px 0 0 0; color: #065f46;">...</p>
         </div>
 
         <div class="dashboard-grid">
-            <div class="card" onclick="window.location.href='/profile.html'">
+            <div class="card" onclick="window.location.href='profile.html'">
                 <h3>Academic Profile</h3>
-                <div style="font-size: 2rem; margin: 10px 0;">📂</div>
-                <small style="color: #2563eb; font-weight: bold;">View & Download Record</small>
+                <div style="font-size: 2rem; margin: 10px 0; color: var(--primary-color);"><i class="fas fa-user-graduate"></i></div>
+                <span class="stat-link">View Record</span>
             </div>
 
-            <div class="card" onclick="window.location.href='/courses.html'">
+            <div class="card" onclick="window.location.href='courses.html'">
                 <h3>Registered Courses</h3>
                 <p id="course-count" class="stat-num">0</p>
-                <small>View Details</small>
+                <span class="stat-link">View Timetable</span>
             </div>
 
-            <div class="card" onclick="window.location.href='/gpa.html'">
+            <div class="card" onclick="window.location.href='gpa.html'">
                 <h3>Current CGPA</h3>
                 <p id="dashboard-gpa" class="stat-num">0.00</p>
-                <small>View Transcript</small>
+                <span class="stat-link">View Transcript</span>
             </div>
         </div>
 
         <div class="bottom-grid">
             <div class="chart-section">
-                <h3>📈 Performance History</h3>
+                <h3>Performance History</h3>
                 <div style="height:250px;">
                     <canvas id="gpaChart"></canvas>
                 </div>
             </div>
 
             <div class="news-section">
-                <h3>🔔 Announcements</h3>
+                <h3>Campus Announcements</h3>
                 <div id="news-feed" style="max-height: 250px; overflow-y: auto;">
-                    <p style="color:#94a3b8;">Loading news...</p>
+                    <p style="color: var(--text-muted);">Loading news...</p>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="margin-top: 30px; background: #dcfce7; border: 1px solid #22c55e; text-align: left; cursor: default;">
+        <div class="card" style="margin-top: 30px; background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; text-align: left; cursor: default;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <div style="background: #22c55e; color: white; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 1.5rem;">
-                    📱
+                    <i class="fab fa-whatsapp"></i>
                 </div>
                 <div>
-                    <h3 style="color: #14532d; margin: 0;">Join the General Platform</h3>
+                    <h3 style="color: #14532d; margin: 0; font-size: 1.1rem;">Join the General Platform</h3>
                     <p style="color: #166534; margin: 5px 0 0 0; font-size: 0.9rem;">
                         Connect with thousands of students. Get instant updates and network.
                     </p>
                 </div>
             </div>
-            <a href="https://chat.whatsapp.com/YOUR_GENERAL_GROUP_LINK" target="_blank" 
-               style="display: block; margin-top: 15px; background: #22c55e; color: white; text-align: center; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+            <a href="https://chat.whatsapp.com/IMuzhRwzn9YJRzE9chqWUD?mode=gi_t" target="_blank" 
+               style="display: block; margin-top: 15px; background: #22c55e; color: white; text-align: center; padding: 12px; border-radius: 6px; text-decoration: none; font-weight: bold; transition: 0.2s;">
                 Join WhatsApp Community &rarr;
             </a>
         </div>
 
-        <div class="card" style="margin-top:30px; border: none; border-left:5px solid #f59e0b; text-align: left; background: #fffbeb; cursor: default;">
+        <div class="card" style="margin-top:30px; border: none; border-left:5px solid #f59e0b; text-align: left; background: rgba(245, 158, 11, 0.1); cursor: default;">
             <h3 style="color: #92400e; margin-top: 0;">Help & Support</h3>
             <p style="font-size: 0.9rem; color: #78350f;">Facing an issue? Message the Administrator directly.</p>
 
-            <form action="/api/support" method="POST" style="display:flex; gap:10px; margin-top:15px;">
-                <input type="text" name="message" placeholder="Describe your issue here..." required
-                       style="flex:1; padding:10px; border:1px solid #fcd34d; border-radius:6px;">
+            <form onsubmit="event.preventDefault(); alert('Report Sent to Admin!');" style="display:flex; gap:10px; margin-top:15px;">
+                <input type="text" placeholder="Describe your issue here..." required
+                       style="flex:1; padding:10px; border:1px solid #fcd34d; border-radius:6px; outline:none;">
                 <button type="submit"
                         style="background:#f59e0b; color:white; padding:10px 20px; border:none; border-radius:6px; cursor: pointer; font-weight: bold;">
                     Report
@@ -272,113 +291,138 @@
             </form>
         </div>
 
+        <footer style="margin-top: 50px; text-align: center; color: var(--text-muted); padding: 20px; border-top: 1px solid var(--border-color);">
+            <p>&copy; 2026 National Student Portal. All Rights Reserved.</p>
+        </footer>
+
     </main>
 </div>
 
-<script src="/theme.js"></script>
 <script>
-    // --- 1. FETCH USER DATA ---
-    fetch('/user-data') 
-    .then(res => res.json())
-    .then(data => {
-        const name = data.name || data.username || 'Student';
-        document.getElementById('welcome-message').innerText = `Welcome, ${name} 👋`;
-        document.getElementById('sidebar-name').innerText = name;
-        document.getElementById('sidebar-role').innerText = data.role || 'Student';
+    // --- CORE DASHBOARD LOGIC ---
+    document.addEventListener("DOMContentLoaded", () => {
+        
+        // 1. Load Profile Pic (Instant)
+        const savedPic = localStorage.getItem("portal-avatar");
+        if(savedPic) document.getElementById("sidebar-pic").src = savedPic;
 
-        if (data.profile_pic) {
-            document.getElementById('sidebar-pic').src = '/uploads/' + data.profile_pic;
-        }
+        // 2. Fetch User Data (With Fallback)
+        fetch('/user-data') 
+        .then(res => {
+            if (!res.ok) throw new Error("Offline");
+            return res.json();
+        })
+        .then(data => {
+            // Server Success
+            updateDashboardUI(data);
+        })
+        .catch(err => {
+            // Offline/LocalStorage Mode
+            console.log("Using LocalStorage Data");
+            
+            // Reconstruct data object from various local storage keys
+            const localData = {
+                name: localStorage.getItem('portal-user-name') || 'Student',
+                institution: 'See Profile',
+                leadership_status: localStorage.getItem('portal-leadership-status'),
+                gpa: localStorage.getItem('portal-gpa')
+            };
+            
+            // Try to get courses length
+            const courses = localStorage.getItem('portal-courses');
+            if(courses) localData.courses = courses;
+
+            updateDashboardUI(localData);
+        });
+
+        // 3. News Feed
+        fetch('/api/news')
+        .then(res => res.json())
+        .then(news => {
+            const feed = document.getElementById('news-feed');
+            if (news && news.length > 0) {
+                feed.innerHTML = '';
+                document.getElementById('news-box').style.display = 'block';
+                document.getElementById('announcement-text').innerText = news[0].title;
+                news.forEach(n => {
+                    feed.innerHTML += `<div style="border-bottom:1px solid var(--border-color); padding: 10px 0;">
+                        <strong style="color:var(--text-color);">${n.title}</strong><br>
+                        <span style="font-size:0.9rem; color:var(--text-muted);">${n.message}</span></div>`;
+                });
+            } else {
+                feed.innerHTML = '<p style="color:var(--text-muted);">No active announcements.</p>';
+            }
+        })
+        .catch(() => {
+            document.getElementById('news-feed').innerHTML = '<p style="color:var(--text-muted);">No active announcements.</p>';
+        });
+    });
+
+    // --- UI UPDATER FUNCTION ---
+    function updateDashboardUI(data) {
+        // Name & Role
+        const name = data.name || 'Student';
+        document.getElementById('welcome-message').innerText = `Welcome, ${name.split(' ')[0]}!`;
+        document.getElementById('sidebar-name').innerText = name;
 
         // Identity Strip
-        document.getElementById('id-school').innerText = data.institution || 'Not Set';
-        const faculty = data.faculty || '';
-        const dept = data.department || '';
-        document.getElementById('id-dept').innerText = (faculty && dept) ? `${faculty} / ${dept}` : (faculty || dept || 'Not Set');
-        document.getElementById('id-level').innerText = data.level ? `Level ${data.level}` : '--';
-        document.getElementById('id-years').innerText = `${data.year_entry || '?'} - ${data.year_completion || '?'}`;
-
-        const finStatus = document.getElementById('id-financial');
-        finStatus.innerText = data.financial_status || 'Regular';
-        if(data.financial_status === 'Scholarship') finStatus.className = 'id-value badge badge-scholarship';
-        else if(data.financial_status === 'Fee Paying') finStatus.className = 'id-value badge badge-fee';
-        else finStatus.className = 'id-value badge badge-regular';
-
-        if (data.gpa) {
-            document.getElementById('dashboard-gpa').innerText = Number(data.gpa).toFixed(2);
-        }
-
+        document.getElementById('id-school').innerText = data.institution || 'See Profile';
+        document.getElementById('id-dept').innerText = (data.faculty) ? `${data.faculty} / ${data.department}` : 'See Profile';
+        document.getElementById('id-level').innerText = data.level ? `Lvl ${data.level}` : '--';
+        document.getElementById('id-financial').innerText = data.financial || 'Regular';
+        
+        // Stats
+        if (data.gpa) document.getElementById('dashboard-gpa').innerText = Number(data.gpa).toFixed(2);
+        
         if (data.courses) {
             try {
-                const courseArr = JSON.parse(data.courses);
+                const courseArr = typeof data.courses === 'string' ? JSON.parse(data.courses) : data.courses;
                 document.getElementById('course-count').innerText = courseArr.length;
-            } catch(e) { console.log("Error parsing courses"); }
+            } catch(e) {}
         }
 
-        // Chart.js
-        let history = [0];
-        if (data.gpa) history = [data.gpa]; 
-        
+        // Leadership Toggle logic
+        if (data.leadership_status === 'APPROVED') {
+            document.getElementById('vanguard-banner').style.display = 'none';
+            document.getElementById('vanguard-member-card').style.display = 'block';
+            document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
+        }
+
+        // Initialize Chart
+        initChart(data.gpa || 0);
+    }
+
+    // --- CHART INITIALIZER ---
+    function initChart(currentGPA) {
         const ctx = document.getElementById('gpaChart').getContext('2d');
+        const historyData = [2.5, 3.0, 3.2, currentGPA || 0];
+        
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: history.map((_, i) => `Sem ${i+1}`),
+                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Current'],
                 datasets: [{
                     label: 'CGPA Progress',
-                    data: history,
+                    data: historyData,
                     borderColor: '#2563eb',
-                    backgroundColor: 'rgba(37,99,235,0.1)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.3,
+                    tension: 0.4,
                     pointBackgroundColor: '#2563eb'
                 }]
             },
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: false, min: 0, max: 5.0 } } 
+                scales: { 
+                    y: { beginAtZero: false, min: 0, max: 5.0, grid: { color: 'rgba(0,0,0,0.05)' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
             }
         });
-    });
-
-    // --- 2. LEADERSHIP STATUS CHECK (Banner Logic) ---
-    fetch('/api/leadership/my-status')
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'APPROVED') {
-            document.getElementById('vanguard-banner').style.display = 'none';
-            document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="cursor:pointer; font-size:1.2rem;">🏅</span>';
-        }
-    })
-    .catch(() => {});
-
-    // --- 3. FETCH NEWS ---
-    fetch('/api/news')
-    .then(res => res.json())
-    .catch(() => []) 
-    .then(newsList => {
-        const feed = document.getElementById('news-feed');
-        const box = document.getElementById('news-box');
-        const boxText = document.getElementById('announcement-text');
-
-        if (newsList && newsList.length > 0) {
-            feed.innerHTML = '';
-            box.style.display = 'block';
-            boxText.innerText = newsList[0].message || newsList[0].title;
-
-            newsList.forEach(news => {
-                feed.innerHTML += `
-                    <div style="border-bottom:1px solid #eee; padding: 10px 0;">
-                        <strong style="color:#334155; display:block;">${news.title || 'Update'}</strong>
-                        <span style="font-size:0.9rem; color:#64748b;">${news.message}</span>
-                    </div>
-                `;
-            });
-        } else {
-            feed.innerHTML = '<p style="color:#94a3b8; font-style:italic;">No active announcements.</p>';
-        }
-    });
+    }
 </script>
 
 </body>

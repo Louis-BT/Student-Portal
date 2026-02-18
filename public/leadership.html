@@ -3,33 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leadership Vanguard | National Portal</title>
+    <title>Leadership Vanguard | Application</title>
+    
     <link rel="stylesheet" href="style.css">
-    <script src="/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="theme.js"></script>
+
     <style>
-        .hero-leader {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        /* HERO SECTION */
+        .vanguard-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%);
             color: white;
-            padding: 80px 20px;
+            padding: 60px 20px;
             text-align: center;
-        }
-        .gold-text { color: #f59e0b; font-weight: bold; }
-        
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 20px;
+            border-bottom: 4px solid #fbbf24; /* Gold Border */
+            position: relative;
+            overflow: hidden;
         }
 
-        .card-form {
+        .vanguard-header::after {
+            content: '👑';
+            font-size: 15rem;
+            position: absolute;
+            right: 5%;
+            bottom: -50px;
+            opacity: 0.05;
+            transform: rotate(-15deg);
+        }
+
+        .gold-text { color: #fbbf24; }
+
+        /* GRID LAYOUT */
+        .vanguard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        @media (max-width: 900px) { .vanguard-grid { grid-template-columns: 1fr; } }
+
+        /* CARDS */
+        .application-card {
             background: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
         .leader-card {
@@ -38,131 +61,195 @@
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 4px;
+            border: 1px solid var(--border-color);
+            transition: 0.2s;
+        }
+        .leader-card:hover { transform: translateX(5px); }
+
+        /* FORM STYLES */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-family: inherit;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #fbbf24;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
         }
 
-        @media(max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
+        .btn-apply {
+            width: 100%;
+            padding: 15px;
+            background: #fbbf24;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+        .btn-apply:hover { transform: translateY(-2px); background: #f59e0b; }
+
+        /* STATUS BADGE */
+        .status-box {
+            display: none;
+            padding: 25px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">⚖️ Leadership Vanguard</div>
-        <div style="display: flex; gap: 15px;">
-            <a href="/dashboard.html">Dashboard</a>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            🇬🇭 Student Portal
         </div>
-    </nav>
-
-    <div class="hero-leader">
-        <h1>Are You a <span class="gold-text">Visionary?</span></h1>
-        <p style="max-width: 600px; margin: 10px auto; color: #cbd5e1;">
-            We are gathering the most refined, dedicated, and leadership-driven minds in Ghana. 
-            Join the Vanguard to connect with fellow changemakers.
-        </p>
+        <ul class="sidebar-links">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li class="active"><a href="leadership.html"><i class="fas fa-medal"></i> Leadership</a></li>
+            <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
+            <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
+            <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
+            <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
     </div>
 
-    <div class="grid-layout">
+    <div class="main-content" style="margin-left: 280px; padding: 0;">
         
-        <div class="card-form">
-            <h2 style="color: var(--primary-color);">Apply for Membership</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">
-                Tell us why you belong here. This is for serious applicants only.
+        <div class="vanguard-header">
+            <h1 style="margin: 0; font-size: 2.5rem;">Join the <span class="gold-text">Vanguard.</span></h1>
+            <p style="margin-top: 10px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6; opacity: 0.9;">
+                The Leadership Vanguard is a curated group of SRC aspirants, course reps, and changemakers. 
+                Gain access to exclusive mentorship, resources, and a dedicated network.
             </p>
-
-            <div id="status-box" style="display: none; margin-bottom: 20px; padding: 15px; border-radius: 8px;"></div>
-            <form action="/api/leadership/apply" method="POST">
-                <div style="margin-bottom: 15px;">
-                    <label>Leadership Interest / Role</label>
-                    <input type="text" name="position" placeholder="e.g. SRC President, Course Rep, Entrepreneur" required 
-                           style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;">
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label>Your Vision / Manifesto</label>
-                    <textarea name="vision" rows="5" placeholder="Write briefly about your values and what drives you..." required
-                              style="width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;"></textarea>
-                </div>
-
-                <button type="submit" style="width: 100%; background: #f59e0b; color: white; padding: 12px; border: none; font-weight: bold; border-radius: 6px; cursor: pointer;">
-                    Submit Application 🚀
-                </button>
-            </form>
         </div>
 
-        <div>
-            <h2 style="color: var(--text-color);">🏅 Approved Leaders</h2>
-            <p style="color: var(--text-muted);">Connect with these verified individuals.</p>
+        <div class="vanguard-grid">
             
-            <div id="leaders-list">
-                <p>Loading directory...</p>
+            <div class="application-card">
+                
+                <div id="status-approved" class="status-box" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;">
+                    <i class="fas fa-check-circle" style="font-size: 3rem; color: #10b981; margin-bottom: 15px;"></i>
+                    <h3 style="color: #065f46; margin: 0;">Application Approved</h3>
+                    <p style="color: #047857;">Welcome to the inner circle. Your leadership status has been verified.</p>
+                    
+                    <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K?mode=gi_t" target="_blank" 
+                       style="display: inline-block; background: #10b981; color: white; padding: 12px 25px; border-radius: 6px; text-decoration: none; font-weight: bold; margin-top: 15px;">
+                        <i class="fab fa-whatsapp"></i> Join The Leadership Vanguard Hub
+                    </a>
+                </div>
+
+                <div id="status-pending" class="status-box" style="background: #fff7ed; border: 1px solid #f97316;">
+                    <i class="fas fa-hourglass-half" style="font-size: 3rem; color: #f97316; margin-bottom: 15px;"></i>
+                    <h3 style="color: #9a3412; margin: 0;">Application Under Review</h3>
+                    <p style="color: #c2410c;">The Administration is currently reviewing your manifesto. Please check back later.</p>
+                </div>
+
+                <form id="leadership-form" onsubmit="event.preventDefault(); submitApplication();">
+                    <h3 style="color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-top: 0;">
+                        <i class="fas fa-pen-nib"></i> Application Form
+                    </h3>
+
+                    <div class="form-group">
+                        <label>Current Role / Position</label>
+                        <input type="text" id="role" placeholder="e.g. Course Rep, SRC Aspirant, Club President" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Leadership Experience (Years)</label>
+                        <select id="experience">
+                            <option value="1">Less than 1 Year</option>
+                            <option value="2">1 - 2 Years</option>
+                            <option value="3">3+ Years</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Your Vision / Manifesto</label>
+                        <textarea id="reason" rows="5" placeholder="Briefly describe your vision and values..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reference (Optional)</label>
+                        <input type="text" id="ref" placeholder="Name of a Lecturer or past Leader">
+                    </div>
+
+                    <button type="submit" class="btn-apply">Submit Application</button>
+                </form>
             </div>
+
+            <div>
+                <h3 style="color: var(--text-color); margin-top: 0;">🏅 Inducted Leaders</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Connect with verified changemakers.</p>
+                
+                <div id="leaders-list">
+                    <div class="leader-card">
+                        <strong style="display:block; font-size:1rem; color: var(--text-color);">Frank Owusu 🏅</strong>
+                        <span style="color: var(--text-muted); font-size:0.85rem;">SRC President @ KNUST</span>
+                    </div>
+                    <div class="leader-card">
+                        <strong style="display:block; font-size:1rem; color: var(--text-color);">Sarah Mensah 🏅</strong>
+                        <span style="color: var(--text-muted); font-size:0.85rem;">Wocom @ UG Legon</span>
+                    </div>
+                    <div class="leader-card">
+                        <strong style="display:block; font-size:1rem; color: var(--text-color);">David K. 🏅</strong>
+                        <span style="color: var(--text-muted); font-size:0.85rem;">Course Rep @ UCC</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <footer style="margin-top: 50px; text-align: center; color: var(--text-muted); padding: 20px; border-top: 1px solid var(--border-color);">
+            <p>&copy; 2026 National Student Portal.</p>
+        </footer>
 
     </div>
 
     <script>
-        // Fetch Approved Leaders
-        fetch('/api/leadership/leaders')
-            .then(res => res.json())
-            .then(leaders => {
-                const container = document.getElementById('leaders-list');
-                container.innerHTML = '';
-                
-                if(leaders.length === 0) {
-                    container.innerHTML = '<p style="color:gray;">No leaders inducted yet.</p>';
-                    return;
-                }
+        // LOGIC: Check Status on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const status = localStorage.getItem('portal-leadership-status');
+            const form = document.getElementById('leadership-form');
+            const pendingBox = document.getElementById('status-pending');
+            const approvedBox = document.getElementById('status-approved');
 
-                leaders.forEach(l => {
-                    container.innerHTML += `
-                        <div class="leader-card">
-                            <strong style="display:block; font-size:1.1rem;">${l.name} 🏅</strong>
-                            <span style="color:#666; font-size:0.9rem;">${l.position} @ ${l.institution}</span>
-                        </div>
-                    `;
-                });
-            });
-    </script>
-
-<script>
-    // 1. Check My Application Status
-    fetch('/api/leadership/my-status')
-        .then(res => res.json())
-        .then(data => {
-            const box = document.getElementById('status-box');
-            const form = document.querySelector('form'); // The application form
-
-            if (data.status === 'APPROVED') {
-                // HIDE FORM, SHOW SUCCESS & LINK
-                if(form) form.style.display = 'none';
-                
-                box.style.display = 'block';
-                box.style.background = '#dcfce7';
-                box.style.border = '1px solid #22c55e';
-                box.innerHTML = `
-                    <h3 style="color: #14532d; margin-top:0;">🎉 You are a Vanguard Leader!</h3>
-                    <p style="color: #166534;">Your application has been vetted and approved. You are now part of the elite circle.</p>
-                    
-                    <a href="${data.link}" target="_blank" style="display: inline-block; background: #22c55e; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
-                        Join the Leadership WhatsApp Hub 🏅
-                    </a>
-                `;
-            } 
-            else if (data.status === 'PENDING') {
-                // HIDE FORM, SHOW WAITING MESSAGE
-                if(form) form.style.display = 'none';
-                
-                box.style.display = 'block';
-                box.style.background = '#fff7ed'; // Light Orange
-                box.style.border = '1px solid #f97316';
-                box.innerHTML = `
-                    <strong style="color: #c2410c;">⏳ Application Under Review</strong>
-                    <p style="color: #9a3412;">The Admin is currently reviewing your vision statement. Please check back later.</p>
-                `;
+            if (status === 'PENDING') {
+                form.style.display = 'none';
+                pendingBox.style.display = 'block';
+            } else if (status === 'APPROVED') {
+                form.style.display = 'none';
+                approvedBox.style.display = 'block';
             }
         });
 
-    // ... (Your existing code to load list of leaders) ...
-</script>
-
+        function submitApplication() {
+            const btn = document.querySelector('.btn-apply');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Simulate Server Delay
+            setTimeout(() => {
+                localStorage.setItem('portal-leadership-status', 'PENDING');
+                location.reload(); // Refresh to show pending state
+            }, 1500);
+        }
+    </script>
 </body>
 </html>

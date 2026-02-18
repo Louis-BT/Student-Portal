@@ -3,14 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Tertiary Portal | Ghana</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="/theme.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>National Tertiary Student Portal | Ghana</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        /* LANDING PAGE SPECIFIC STYLES */
-        body { margin: 0; font-family: 'Inter', sans-serif; }
+        /* LANDING PAGE EXCLUSIVE STYLES (Professional Grade) */
+        :root {
+            --primary-color: #2563eb; /* Default Blue */
+            --bg-color: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        /* Dark Mode Overrides */
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
 
         /* 1. News Ticker */
         .news-ticker {
@@ -33,123 +60,201 @@
             100% { transform: translateX(-100%); }
         }
 
-        /* 2. Hero Section */
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem 5%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        body.dark-mode .navbar { background: rgba(15, 23, 42, 0.8); }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-color);
+        }
+
+        /* THEME CONTROLS */
+        .theme-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            padding: 5px 10px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+        }
+        
+        select.theme-select {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* The Circular Color Picker */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            padding: 0;
+            background: none;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--border-color); }
+
+        /* HERO SECTION */
         .hero {
             text-align: center;
-            padding: 100px 20px;
-            background: linear-gradient(135deg, var(--bg-color) 0%, var(--card-bg) 100%);
+            padding: 6rem 1rem;
+            max-width: 900px;
+            margin: 0 auto;
             border-bottom: 1px solid var(--border-color);
         }
-        
+
         .hero h1 {
             font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 20px;
             line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            color: var(--text-color);
         }
-        
+
         .hero p {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             color: var(--text-muted);
-            max-width: 700px;
-            margin: 0 auto 40px;
+            margin-bottom: 2.5rem;
             line-height: 1.6;
         }
 
         .btn-group {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
         .btn-hero {
-            padding: 15px 40px;
+            padding: 12px 30px;
             border-radius: 8px;
-            font-weight: 700;
+            font-weight: 600;
             text-decoration: none;
             transition: transform 0.2s, box-shadow 0.2s;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         .btn-primary-hero {
             background: var(--primary-color);
             color: white;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 4px 14px 0 rgba(0,0,0,0.1);
         }
         .btn-outline-hero {
-            border: 2px solid var(--border-color);
-            color: var(--text-color);
             background: transparent;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
         }
-        .btn-hero:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .btn-hero:hover { transform: translateY(-2px); }
 
-        /* 3. Features Grid */
+        /* FEATURES GRID */
         .features {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 80px 20px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
+            gap: 2rem;
+            padding: 4rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .feature-card {
             background: var(--card-bg);
-            padding: 40px 30px;
+            padding: 2rem;
             border-radius: 16px;
             border: 1px solid var(--border-color);
             transition: 0.3s;
-            text-align: left;
         }
         .feature-card:hover {
             border-color: var(--primary-color);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        .icon-box {
-            width: 60px; height: 60px;
-            background: #e0f2fe;
-            color: var(--primary-color);
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 12px;
-            font-size: 1.8rem;
-            margin-bottom: 25px;
         }
 
-        /* 4. University Partners */
+        .icon-box {
+            width: 50px; height: 50px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* PARTNERS (Now with Images) */
         .partners {
             text-align: center;
-            padding: 60px 20px;
+            padding: 4rem 1rem;
             border-top: 1px solid var(--border-color);
-            background: var(--bg-color);
+            background: var(--card-bg);
         }
-        .partner-logos {
+        /* Styles for the new Logo Grid */
+        .logo-grid {
             display: flex;
-            justify-content: center;
-            gap: 40px;
             flex-wrap: wrap;
-            margin-top: 30px;
-            opacity: 0.6;
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--text-muted);
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            margin-top: 2rem;
         }
+        .uni-logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            filter: grayscale(100%) opacity(0.6); 
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+        .uni-logo:hover {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.1);
+        }
+        /* Dark mode fix for logos */
+        body.dark-mode .uni-logo { filter: grayscale(100%) brightness(1.5) opacity(0.5); }
+        body.dark-mode .uni-logo:hover { filter: grayscale(0%) brightness(1) opacity(1); }
 
-        /* 5. Footer */
+        /* FOOTER */
         .footer {
-            background: #1e293b;
-            color: #f8fafc;
-            padding: 80px 20px 40px;
+            background: #0f172a;
+            color: white;
+            padding: 4rem 5% 2rem;
+            font-size: 0.9rem;
         }
         .footer-grid {
-            max-width: 1200px;
-            margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 50px;
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        .footer-col h3 { color: #38bdf8; margin-bottom: 25px; font-size: 1.2rem; }
+        .footer-col h3 { color: #38bdf8; margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 0.5px; }
         .footer-col p { color: #94a3b8; line-height: 1.6; margin: 8px 0; }
         .footer-col a { color: #cbd5e1; text-decoration: none; display: block; margin-bottom: 12px; transition: 0.2s; }
         .footer-col a:hover { color: white; padding-left: 5px; }
@@ -160,6 +265,23 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .social-links a {
+            color: #94a3b8;
+            font-size: 1.5rem;
+            transition: 0.3s;
+        }
+        .social-links a:hover {
+            color: #38bdf8;
+            transform: scale(1.1);
+        }
+
     </style>
 </head>
 <body>
@@ -169,25 +291,34 @@
     </div>
 
     <nav class="navbar">
-        <div class="logo">🇬🇭 National Portal</div>
+        <div class="logo">🇬🇭 National Tertiary Student Portal</div>
+        
         <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="/login.html" style="text-decoration: none; color: var(--text-color); font-weight: 600;">Login</a>
-            <a href="/signup.html" style="background: var(--primary-color); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">Get Started</a>
-            <select onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);">
-                <option value="system">💻 System</option>
-                <option value="light">☀️ Light</option>
-                <option value="dark">🌙 Dark</option>
-            </select>
+            <a href="login.html" style="text-decoration: none; color: var(--text-color); font-weight: 600;">Login</a>
+            <a href="signup.html" style="background: var(--primary-color); color: white; padding: 10px 25px; border-radius: 8px; text-decoration: none; font-weight: 600;">Get Started</a>
+            
+            <div class="theme-wrapper">
+               <select id="theme-selector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" 
+                       oninput="updateCustomColor(this.value)" 
+                       title="Click to change theme color"
+                       style="display: none;">
+            </div>
         </div>
     </nav>
 
     <section class="hero">
         <h1>Your Academic Life,<br>Simplified & Unified.</h1>
-        <p>The central digital platform for all tertiary students in Ghana. Manage your GPA, register courses, access the National Library, and connect with peers from every university.</p>
+        <p>The central digital platform for all tertiary students in Ghana. Manage your GPA, register courses, access the National Library, and connect with students from every university.</p>
         
         <div class="btn-group">
-            <a href="/signup.html" class="btn-hero btn-primary-hero">Create Free Account</a>
-            <a href="/login.html" class="btn-hero btn-outline-hero">Student Login</a>
+            <a href="signup.html" class="btn-hero btn-primary-hero">Create Free Account</a>
+            <a href="login.html" class="btn-hero btn-outline-hero">Student Login</a>
         </div>
     </section>
 
@@ -195,12 +326,12 @@
         <div class="feature-card">
             <div class="icon-box">📊</div>
             <h3 style="color: var(--text-color);">GPA Calculator</h3>
-            <p style="color: var(--text-muted);">Track your academic performance with our 4.0/5.0 scale calculator. Save your history semester by semester to visualize your progress.</p>
+            <p style="color: var(--text-muted);">Track your academic performance with our 4.0 and 5.0 scale calculator. Save your history semester(trimester) by semester (trimester) to visualize your progress.</p>
         </div>
         <div class="feature-card">
             <div class="icon-box">📚</div>
             <h3 style="color: var(--text-color);">National Library</h3>
-            <p style="color: var(--text-muted);">Access thousands of Past Questions, Slides, and Textbooks uploaded by students from KNUST, Legon, UCC, UMaT, and more.</p>
+            <p style="color: var(--text-muted);">Access thousands of Past Questions, Slides, and Textbooks uploaded by admin, students, and lecturers from KNUST, UG (Legon), UDS, UCC, UMaT, and more.</p>
         </div>
         <div class="feature-card">
             <div class="icon-box">💬</div>
@@ -211,24 +342,27 @@
 
     <section class="partners">
         <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">SERVING STUDENTS FROM</p>
-        <div class="partner-logos">
-            <span>UG (Legon)</span>
-            <span>KNUST</span>
-            <span>UCC</span>
-            <span>UDS</span>
-            <span>UEW</span>
-            <span>UMaT</span>
-            <span>UPSA</span>
-            <span>GIMPA</span>
-            <span>KsTU</span>
-            <span>TTU</span>
-            <span>KTU</span>
-            <span>ATU</span>
-            <span>AAMUSTED</span>
-            <span>SEDACOE</span>
-            <span>ANGUTECH</span>
-            <span>CCTU</span>
+        
+        <div class="logo-grid">
+            <img src="images/logos/ug.png" alt="UG Legon" class="uni-logo" title="University of Ghana">
+            <img src="images/logos/knust.png" alt="KNUST" class="uni-logo" title="Kwame Nkrumah University of Science and Technology">
+            <img src="images/logos/ucc.png" alt="UCC" class="uni-logo" title="University of Cape Coast">
+            <img src="images/logos/uew.png" alt="UEW" class="uni-logo" title="University of Education, Winneba">
+            <img src="images/logos/uds.png" alt="UDS" class="uni-logo" title="University for Development Studies">
+            <img src="images/logos/umat.png" alt="UMaT" class="uni-logo" title="University of Mines and Technology">
+            <img src="images/logos/upsa.png" alt="UPSA" class="uni-logo" title="University of Professional Studies, Accra">
+            <img src="images/logos/uenr.png" alt="UENR" class="uni-logo" title="University of Energy and Natural Resources">
+            <img src="images/logos/ktu.png" alt="KTU" class="uni-logo" title="Koforidua Technical University">
+            <img src="images/logos/kstu.png" alt="KsTU" class="uni-logo" title="Kumasi Technical University">
+            <img src="images/logos/gctu.png" alt="GCTU" class="uni-logo" title="Ghana Communication Technology University"> 
+            <img src="images/logos/stu.png" alt="STU" class="uni-logo" title="Sunyani Technical University">
+            <img src="images/logos/gimpa.png" alt="GIMPA" class="uni-logo" title="Ghana Institute of Management and Public Administration">
         </div>
+
+        <p style="margin-top: 30px; color: var(--text-muted); font-size: 0.9rem;">
+            And many others including 
+            <span style="color: var(--primary-color); font-weight: 600;">KsTU, TTU, ATU, CCTU, AAMUSTED...</span>
+        </p>
     </section>
 
     <footer class="footer" id="contact">
@@ -237,14 +371,14 @@
             <div class="footer-col">
                 <h3>About This Portal</h3>
                 <p>Designed to assist Ghanaian students navigate their academic journey smarter and with ease. A unified tool for excellence.</p>
-                <p>📧 Support: <a href="mailto:admin@portalsupport.com" style="display:inline; color:#38bdf8;">admin@portalsupport.com</a></p>
+                <p>Support: <a href="mailto:admin@portalsupport.com" style="display:inline; color:#38bdf8;">admin@portalsupport.com</a></p>
             </div>
             
             <div class="footer-col">
                 <h3>Quick Links</h3>
-                <a href="/login.html">Student Login</a>
-                <a href="/signup.html">Create Account</a>
-                <a href="/admin.html">Admin Portal</a>
+                <a href="login.html">Student Login</a>
+                <a href="signup.html">Create Account</a>
+                <a href="admin.html">Admin Portal</a>
                 <a href="#features">Features</a>
             </div>
 
@@ -254,31 +388,44 @@
                     <p style="color: white; font-weight: 700; font-size: 1.1rem; margin-bottom: 5px;">Louis Baffoe-Tachie</p>
                     <p style="font-size: 0.9rem;">Full Stack Engineer</p>
                     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
-                    <p>📞 <b>+233 59 457 8434</b></p>
-                    <p>📧 <b>baffoetachielouis@gmail.com</b></p>
+                    <p><b>+233 59 457 8434</b></p>
+                    <p><b>baffoetachielouis@gmail.com</b></p>
                 </div>
             </div>
         </div>
 
         <div style="text-align: center; margin-top: 60px; padding-top: 20px; border-top: 1px solid #334155; color: #64748b; font-size: 0.9rem;">
-            &copy; <script>document.write(new Date().getFullYear())</script> National Tertiary Portal. All rights reserved.
+            &copy; <script>document.write(new Date().getFullYear())</script> National Student Portal. All rights reserved.
+        </div>
+        
+        <div class="social-links">
+            <a href="http://linkedin.com/in/louis-b-t"><i class="fab fa-linkedin"></i></a>
+            <a href="https://www.instagram.com/louisbray.11?igsh=cjQxN3U5YWV3OGJ2&utm_source=qr"><i class="fab fa-instagram"></i></a>
+            <a href="https://github.com/Louis-BT"><i class="fab fa-github"></i></a>
+            <a href="https://www.facebook.com/share/17F9QdeYir/?mibextid=wwXIfr"><i class="fab fa-facebook"></i></a>
         </div>
     </footer>
 
+    <script src="theme.js"></script>
+
     <script>
+        // Set dropdown value on load
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem("portal-theme") || "system";
+            const selector = document.getElementById("theme-selector");
+            if (selector) selector.value = savedTheme;
+        });
+
         // FETCH LIVE NEWS FOR TICKER
         fetch('/api/news')
             .then(res => res.json())
             .then(data => {
-                // Filter for "Urgent" or take the latest
                 const urgentNews = data.find(n => n.category === 'Urgent') || data[0];
-                
                 if (urgentNews) {
                     const ticker = document.getElementById('news-ticker');
                     const text = document.getElementById('ticker-text');
                     
                     ticker.style.display = 'block';
-                    // Repeat text for smooth infinite scroll effect
                     const msg = `📢 UPDATE: ${urgentNews.title} - ${urgentNews.message}`;
                     text.innerText = `${msg}   |   ${msg}   |   ${msg}`; 
                 }

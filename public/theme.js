@@ -1,112 +1,117 @@
 /**
- * theme.js - The "Brain" of the Portal's Appearance
- * Handles System, Light, Dark, and Custom themes.
+ * theme.js - Enterprise Grade Theme Manager
+ * Capabilities: System Sync, Light/Dark Toggle, Custom Color Injection, State Persistence
  */
 
-// 1. Initialize on Page Load
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('theme') || 'system';
-    
-    // Apply immediately
-    setTheme(savedTheme);
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Initialize State
+    const savedTheme = localStorage.getItem("portal-theme") || "system";
+    const savedColor = localStorage.getItem("portal-custom-color") || "#2563eb";
 
-    // Sync Dropdowns (if they exist on the page)
-    const selectors = document.querySelectorAll('select[onchange="setTheme(this.value)"]');
-    selectors.forEach(sel => sel.value = savedTheme);
+    // 2. Sync UI Elements (Dropdown & Picker)
+    const selector = document.getElementById("theme-selector");
+    const picker = document.getElementById("custom-theme-picker");
 
-    // Sync Color Picker (if it exists)
-    const colorPicker = document.getElementById('custom-color');
-    if (colorPicker) {
-        colorPicker.value = localStorage.getItem('customColor') || '#2563eb';
-        colorPicker.addEventListener('input', (e) => {
-            handleCustomColorChange(e.target.value);
-        });
-    }
+    if (selector) selector.value = savedTheme;
+    if (picker) picker.value = savedColor;
+
+    // 3. Apply Logic (Visuals only, no interaction triggers)
+    applyTheme(savedTheme, savedColor);
 });
 
-// 2. Main Theme Switcher Function (Global)
-window.setTheme = function(theme) {
-    // Save Preference
-    localStorage.setItem('theme', theme);
-    
-    const root = document.documentElement;
-    const colorPicker = document.getElementById('custom-color');
-
-    // Show/Hide Color Picker based on mode
-    if (colorPicker) {
-        colorPicker.style.display = (theme === 'custom') ? 'inline-block' : 'none';
-    }
-
-    // --- LOGIC ---
-    if (theme === 'system') {
-        resetCustomStyles();
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        root.setAttribute('data-theme', systemDark ? 'dark' : 'light');
-    } 
-    else if (theme === 'light') {
-        resetCustomStyles();
-        root.setAttribute('data-theme', 'light');
-    } 
-    else if (theme === 'dark') {
-        resetCustomStyles();
-        root.setAttribute('data-theme', 'dark');
-    } 
-    else if (theme === 'custom') {
-        root.setAttribute('data-theme', 'custom');
-        
-        // Retrieve saved color or ask user
-        let color = localStorage.getItem('customColor');
-        
-        if (!color) {
-            // If no color picker input exists, prompt the user
-            if (!document.getElementById('custom-color')) {
-                color = prompt("Enter a Hex Color for your theme (e.g. #ff5733):", "#2563eb");
-            }
-            // Default if cancelled
-            if (!color) color = "#2563eb"; 
-            
-            localStorage.setItem('customColor', color);
-        }
-        
-        applyCustomColor(color);
-    }
-}
-
-// 3. Apply Custom Logic
-function applyCustomColor(color) {
-    const root = document.documentElement;
-    
-    // Save it
-    localStorage.setItem('customColor', color);
-
-    // Apply Brand Color
-    root.style.setProperty('--primary-color', color);
-    
-    // Calculate a matching secondary color (slightly darker)
-    // You can also change the background here if you wish, 
-    // but usually, it's safer to keep the background neutral (dark/light) 
-    // and only pop the primary elements.
-    root.style.setProperty('--secondary-color', color);
-}
-
-function handleCustomColorChange(color) {
-    const currentTheme = localStorage.getItem('theme');
-    if (currentTheme === 'custom') {
-        applyCustomColor(color);
-    }
-}
-
-// 4. Helper: Reset to default CSS variables
-function resetCustomStyles() {
-    const root = document.documentElement;
-    root.style.removeProperty('--primary-color');
-    root.style.removeProperty('--secondary-color');
-    root.style.removeProperty('--bg-color');
-}
-
-// 5. Listener for System Changes (if user is in 'System' mode)
+/**
+ * LISTENER: Watch for System (OS) Theme Changes
+ * Updates real-time if the user is in "System" mode.
+ */
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    if (localStorage.getItem('theme') === 'system') {
-        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    if (localStorage.getItem("portal-theme") === 'system') {
+        applySystemTheme();
     }
 });
+
+/**
+ * ACTION: User selects a theme from the dropdown
+ */
+function setTheme(theme) {
+    const savedColor = localStorage.getItem("portal-custom-color") || "#2563eb";
+    const picker = document.getElementById("custom-theme-picker");
+
+    // 1. Save Preference
+    localStorage.setItem("portal-theme", theme);
+
+    // 2. Apply Visuals
+    applyTheme(theme, savedColor);
+
+    // 3. Interaction: Auto-open picker ONLY when manually switching to Custom
+    if (theme === 'custom' && picker) {
+        setTimeout(() => picker.click(), 50); 
+    }
+}
+
+/**
+ * ACTION: User drags the Color Picker
+ */
+function updateCustomColor(color) {
+    // 1. Save Data
+    localStorage.setItem("portal-custom-color", color);
+    localStorage.setItem("portal-theme", "custom"); // Force theme to custom
+
+    // 2. Sync Dropdown (Visual Feedback)
+    const selector = document.getElementById("theme-selector");
+    if (selector) selector.value = "custom";
+
+    // 3. Apply Changes
+    applyTheme("custom", color);
+}
+
+/**
+ * CORE LOGIC: Applies CSS Classes, Variables & Visibility
+ * This is the Single Source of Truth for UI State.
+ */
+function applyTheme(theme, color) {
+    const body = document.body;
+    const root = document.documentElement;
+    const picker = document.getElementById("custom-theme-picker");
+
+    // 1. Reset everything to baseline
+    body.classList.remove("dark-mode", "custom-mode");
+    root.style.removeProperty('--primary-color');
+
+    // 2. Handle Picker Visibility (Default to hidden)
+    if (picker) picker.style.display = 'none';
+
+    // 3. Switch Logic
+    switch (theme) {
+        case 'system':
+            applySystemTheme();
+            break;
+
+        case 'dark':
+            body.classList.add("dark-mode");
+            break;
+
+        case 'custom':
+            body.classList.add("custom-mode");
+            root.style.setProperty('--primary-color', color);
+            // Only show picker in Custom mode
+            if (picker) picker.style.display = 'inline-block';
+            break;
+
+        case 'light':
+        default:
+            // Default behavior (Light mode)
+            break;
+    }
+}
+
+/**
+ * HELPER: Determines if System is Dark or Light
+ */
+function applySystemTheme() {
+    const systemIsDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (systemIsDark) {
+        document.body.classList.add("dark-mode");
+    } else {
+        document.body.classList.remove("dark-mode");
+    }
+}

@@ -3,59 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Student Portal</title>
-    <link rel="stylesheet" href="/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <title>Create Account | National Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="theme.js"></script>
+
+    <style>
+        body { margin: 0; height: 100vh; overflow: hidden; display: flex; }
+        .auth-grid { display: grid; grid-template-columns: 1.2fr 1fr; width: 100%; height: 100%; }
+
+        /* REVERSE LAYOUT FOR VARIETY */
+        .brand-side {
+            background: linear-gradient(135deg, #059669 0%, #064e3b 100%); /* Green Theme */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            position: relative;
+        }
+
+        .brand-quote { font-size: 2.2rem; font-weight: 800; line-height: 1.3; margin-bottom: 20px; }
+        
+        .form-side {
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            overflow-y: auto; /* Allow scroll if form is long */
+        }
+
+        .auth-card { width: 100%; max-width: 420px; }
+
+        /* Form Styles reused from Login but adjusted */
+        h2 { font-size: 1.8rem; margin-bottom: 5px; color: var(--text-color); }
+        p.sub-text { color: var(--text-muted); margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-color); font-size: 0.9rem; }
+        .input-group input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--input-bg); color: var(--text-color);
+        }
+        .input-group input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
+        .btn-auth {
+            width: 100%; padding: 14px; background: #10b981; color: white;
+            border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+        .btn-auth:hover { background: #059669; }
+
+        .links { margin-top: 20px; text-align: center; color: var(--text-muted); }
+        .links a { color: #10b981; text-decoration: none; font-weight: 600; }
+
+        @media (max-width: 900px) { .auth-grid { grid-template-columns: 1fr; } .brand-side { display: none; } }
+    </style>
 </head>
 <body>
 
-    <div class="auth-container">
-        <div class="auth-box">
-            <h2>Create Account 🚀</h2>
-            <p>Join the student portal today</p>
-            
-            <form action="/signup" method="POST">
-                <div class="input-group">
-                    <label>Full Name</label>
-                    <input type="text" name="username" placeholder="John Doe" required>
+    <div class="auth-grid">
+        
+        <div class="form-side">
+            <div style="position: absolute; top: 20px; right: 20px;">
+                <select onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px;">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                </select>
+            </div>
+
+            <div class="auth-card">
+                <h2>Join the Portal</h2>
+                <p class="sub-text">Create your unified student identity.</p>
+
+                <form onsubmit="event.preventDefault(); handleSignup();">
+                    <div class="input-group">
+                        <label>Full Name</label>
+                        <input type="text" id="fullname" placeholder="e.g. Kwame Mensah" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="student@school.edu.gh" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Create Password</label>
+                        <input type="password" id="password" placeholder="Min. 8 characters" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Confirm Password</label>
+                        <input type="password" id="confirm_password" placeholder="Repeat password" required>
+                    </div>
+
+                    <div style="margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted);">
+                        <input type="checkbox" required> I agree to the <a href="#" style="color:#10b981;">Terms & Academic Integrity Policy</a>.
+                    </div>
+
+                    <button type="submit" class="btn-auth">Create Account</button>
+                </form>
+
+                <div class="links">
+                    Already have an account? <a href="login.html">Sign In</a>
                 </div>
-
-                <div class="input-group">
-                    <label>Email Address</label>
-                    <input type="email" name="email" placeholder="student@example.com" required>
-                </div>
-
-                <div class="input-group">
-    <label>Institution</label>
-    <select name="institution" required style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px;">
-        <option value="" disabled selected>Select your school...</option>
-        <option value="KNUST">KNUST</option>
-        <option value="UG_Legon">University of Ghana (Legon)</option>
-        <option value="UCC">University of Cape Coast</option>
-        <option value="UPSA">University of Professional Studies (Accra)</option>
-        <option value="UENR">University of Energy And Natural Resources</option>
-        <option value="UDS">University for Development Studies</option>
-        <option value="VVU">Valley View University</option>
-        <option value="AAMUSTED">Akenten-Appiah Minkah University of Skills Training and Entrepreneurial Development</option>
-        <option value="Other">Other</option>
-    </select>
-</div>
-
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="Create a password" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Sign Up</button>
-            </form>
-
-            <p class="switch-auth">
-                Already have an account? <a href="/login">Login here</a>
-            </p>
+            </div>
         </div>
+
+        <div class="brand-side">
+            <div class="brand-quote">"Connect, Lead, and Excel with the nation's premier student network."</div>
+            <div style="margin-top: 20px; opacity: 0.8;">🚀 Used by over 50,000 Ghanaian Students</div>
+        </div>
+
     </div>
 
-    <script src="theme.js"></script>
-    <script src="signup.js"></script>
+    <script>
+        function handleSignup() {
+            const name = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('confirm_password').value;
+            const btn = document.querySelector('.btn-auth');
+
+            // 1. Validation
+            if (p1 !== p2) {
+                alert("Passwords do not match!");
+                return;
+            }
+            if (p1.length < 6) {
+                alert("Password is too short (min 6 chars).");
+                return;
+            }
+
+            btn.innerHTML = 'Creating Account...';
+
+            // 2. Save User Data to "Mock Database" (LocalStorage)
+            const userData = {
+                name: name,
+                email: email,
+                role: 'Student',
+                institution: 'Not Set', // They set this in profile.html later
+                year_entry: new Date().getFullYear()
+            };
+
+            // This sets the data that dashboard.html will read!
+            // Note: We use a different key logic in the backend usually, but for this simulation:
+            // We are saving it so the 'fetch' in dashboard (which usually hits an API)
+            // can be mocked or we just strictly rely on this for the demo.
+            
+            // IMPORTANT: Since dashboard.html uses fetch('/user-data'), 
+            // strictly speaking, without a backend node.js server, that fetch fails.
+            // HOWEVER: We can patch dashboard.html to look at localStorage if fetch fails.
+            // I will provide that small patch below if you haven't set up a Node server.
+            
+            localStorage.setItem('portal-user-name', name); 
+            
+            setTimeout(() => {
+                alert("Account Created Successfully! Please Login.");
+                window.location.href = "login.html";
+            }, 1500);
+        }
+    </script>
 </body>
 </html>

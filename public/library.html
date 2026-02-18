@@ -3,63 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resource Library | Student Portal</title>
+    <title>National Library | Resources</title>
     <link rel="stylesheet" href="style.css">
-    <script src="/theme.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        .library-container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        /* HEADER & SEARCH */
-        .lib-header {
+        /* LIBRARY SPECIFIC STYLES */
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
+            gap: 10px;
+        }
+        
+        .section-header h3 {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .search-bar {
-            flex: 1;
+        .library-filters {
             display: flex;
             gap: 10px;
-            max-width: 600px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .search-bar input {
-            padding: 12px;
-            border-radius: 25px;
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
-            width: 100%;
-            background: var(--input-bg);
+            background: var(--card-bg);
             color: var(--text-color);
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
-        .btn-upload {
+        .filter-btn.active, .filter-btn:hover {
             background: var(--primary-color);
             color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-color: var(--primary-color);
         }
-        .btn-upload:hover { opacity: 0.9; }
 
-        /* RESOURCE GRID */
         .resource-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
         }
 
         .resource-card {
@@ -67,228 +65,317 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 20px;
-            transition: transform 0.2s;
+            transition: 0.3s;
             position: relative;
-        }
-        .resource-card:hover { transform: translateY(-5px); border-color: var(--primary-color); }
-
-        .file-icon {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        .res-title { font-weight: 700; color: var(--text-color); margin-bottom: 5px; }
-        .res-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; }
-        
-        .badge-uni {
-            background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;
+        .resource-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .btn-download {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background: var(--bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 8px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-        .btn-download:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
+        .card-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
-            z-index: 1000;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
         }
-        .modal-content {
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
+
+        /* Color Coding for Categories */
+        .type-academic { background: rgba(37, 99, 235, 0.1); color: #2563eb; } /* Blue */
+        .type-finance { background: rgba(16, 185, 129, 0.1); color: #10b981; } /* Green */
+        .type-psych { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; } /* Purple */
+        .type-relation { background: rgba(236, 72, 153, 0.1); color: #ec4899; } /* Pink */
+        .type-growth { background: rgba(245, 158, 11, 0.1); color: #f59e0b; } /* Orange */
+
+        .resource-title {
+            font-weight: 700;
+            margin-bottom: 5px;
             color: var(--text-color);
+            font-size: 1.05rem;
+        }
+
+        .resource-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            flex-grow: 1; /* Pushes button to bottom */
+            line-height: 1.5;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .download-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: var(--input-bg);
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">National Library</div>
-        <div style="display: flex; gap: 15px;">
-            <a href="/dashboard.html">Dashboard</a>
-            <a href="/logout" style="color: red;">Logout</a>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            🇬🇭 Student Portal
         </div>
-    </nav>
+        <ul class="sidebar-links">
+            <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
+            <li><a href="connect.html"><i class="fas fa-comments"></i> Student Connect</a></li>
+            <li class="active"><a href="library.html"><i class="fas fa-book"></i> National Library</a></li>
+            <li><a href="leadership.html"><i class="fas fa-flag"></i> Leadership</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
 
-    <div class="library-container">
+    <div class="main-content" style="margin-left: 280px; padding: 20px;">
         
-        <div class="lib-header">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-                <h2 style="color: var(--primary-color); margin: 0;">Resource Hub</h2>
-                <p style="color: var(--text-muted); margin: 5px 0 0 0;">Past Questions, Slides & Books from all Universities.</p>
+                <h2 style="color: var(--text-color);">National Library 📚</h2>
+                <p style="color: var(--text-muted);">Academics, Personal Growth & Life Skills Repository.</p>
             </div>
             
-            <button class="btn-upload" onclick="openModal()">
-                <span></span> Upload Material
-            </button>
+            <div class="theme-wrapper">
+                <select id="theme-selector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+            </div>
+        </header>
+
+        <div class="library-filters">
+            <button class="filter-btn active">All Resources</button>
+            <button class="filter-btn">Academic Textbooks</button>
+            <button class="filter-btn">Past Questions</button>
+            <button class="filter-btn">Financial Literacy</button>
+            <button class="filter-btn">Relationships & Marriage</button>
+            <button class="filter-btn">Mental Health</button>
+            <button class="filter-btn">Career & Motivation</button>
         </div>
 
-        <div class="search-bar" style="margin-bottom: 30px;">
-            <input type="text" id="searchInput" placeholder="Search by Course Name, Code, or University (e.g. 'Calculus KNUST')...">
+        <div class="section-header">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Academic Course Materials</h3>
         </div>
 
-        <div style="margin-bottom: 20px; display: flex; gap: 10px;">
-            <select id="uniFilter" onchange="filterResources()" style="padding: 8px; border-radius: 8px; width: auto;">
-                <option value="All">All Universities</option>
-                <option value="UG">University of Ghana (Legon)</option>
-                <option value="KNUST">KNUST</option>
-                <option value="UCC">UCC</option>
-                <option value="UMaT">UMaT</option>
-                <option value="UPSA">UPSA</option>
-            </select>
-        </div>
-
-        <div id="resource-grid" class="resource-grid">
-            <p>Loading resources...</p>
-        </div>
-    </div>
-
-    <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <h3>📤 Upload Study Material</h3>
-            <form id="uploadForm">
-                <div style="margin-bottom: 15px;">
-                    <label>File Title</label>
-                    <input type="text" name="title" placeholder="e.g. UGRC 150 Past Questions 2024" required>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label>University</label>
-                        <select name="university">
-                            <option value="UG">Legon</option>
-                            <option value="KNUST">KNUST</option>
-                            <option value="UCC">UCC</option>
-                            <option value="UMaT">UMaT</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Course Code</label>
-                        <input type="text" name="course_code" placeholder="e.g. MATH 121" required>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <label>Select Document (PDF, Word, PPT)</label>
-                    <input type="file" name="document" accept=".pdf,.doc,.docx,.ppt,.pptx" required style="padding: 10px;">
-                </div>
-
-                <div style="text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
-                    <button type="button" onclick="closeModal()" style="padding: 10px; background: #ccc; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
-                    <button type="submit" style="padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;">Upload</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        // --- 1. MODAL LOGIC ---
-        const modal = document.getElementById('uploadModal');
-        function openModal() { modal.style.display = 'flex'; }
-        function closeModal() { modal.style.display = 'none'; }
-
-        // --- 2. UPLOAD LOGIC ---
-        document.getElementById('uploadForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
+        <div class="resource-grid">
             
-            fetch('/api/upload-resource', {
-                method: 'POST',
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                alert("Upload Successful!");
-                closeModal();
-                loadResources(); // Refresh grid
-            });
-        });
-
-        // --- 3. FETCH & DISPLAY LOGIC ---
-        let allResources = [];
-
-        function loadResources() {
-            fetch('/api/resources')
-            .then(res => res.json())
-            .then(data => {
-                allResources = data;
-                renderResources(data);
-            });
-        }
-
-        function renderResources(list) {
-            const grid = document.getElementById('resource-grid');
-            if(list.length === 0) {
-                grid.innerHTML = '<p>No resources found.</p>';
-                return;
-            }
-
-            grid.innerHTML = list.map(res => {
-                // Determine Icon
-                let icon = '📄';
-                if(res.file_type === '.pdf') icon = '📕';
-                else if(res.file_type.includes('doc')) icon = '📝';
-                else if(res.file_type.includes('ppt')) icon = '📊';
-
-                return `
-                <div class="resource-card">
-                    <span class="file-icon">${icon}</span>
-                    <div class="res-title">${res.title}</div>
-                    <div class="res-meta">
-                        <span class="badge-uni">${res.university}</span> • ${res.course_code}
-                    </div>
-                    <div style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">
-                        Uploaded by ${res.uploaded_by}
-                    </div>
-                    <a href="/uploads/${res.file_path}" download class="btn-download">⬇️ Download</a>
+            <div class="resource-card">
+                <span class="badge">MATHEMATICS</span>
+                <div class="card-icon-wrapper type-academic">
+                    <i class="fas fa-calculator"></i>
                 </div>
-                `;
-            }).join('');
-        }
+                <div class="resource-title">Calculus & Analysis I</div>
+                <div class="resource-meta">
+                    Comprehensive textbook covering limits, derivatives, and integrals. Essential for Engineering students.
+                </div>
+                <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
+            </div>
 
-        // --- 4. SEARCH & FILTER LOGIC ---
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            const filtered = allResources.filter(r => 
-                r.title.toLowerCase().includes(val) || 
-                r.course_code.toLowerCase().includes(val) ||
-                r.university.toLowerCase().includes(val)
-            );
-            renderResources(filtered);
-        });
+            <div class="resource-card">
+                <span class="badge">ECONOMICS</span>
+                <div class="card-icon-wrapper type-academic">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="resource-title">Microeconomics: Principles</div>
+                <div class="resource-meta">
+                    Standard course slides from UG Legon. Covers supply, demand, and market structures.
+                </div>
+                <button class="download-btn"><i class="fas fa-download"></i> Download PPT</button>
+            </div>
 
-        function filterResources() {
-            const uni = document.getElementById('uniFilter').value;
-            if(uni === 'All') renderResources(allResources);
-            else {
-                const filtered = allResources.filter(r => r.university === uni);
-                renderResources(filtered);
-            }
-        }
+            <div class="resource-card">
+                <span class="badge">PHYSICS</span>
+                <div class="card-icon-wrapper type-academic">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <div class="resource-title">University Physics Vol. 2</div>
+                <div class="resource-meta">
+                    Past questions (2018-2024) from KNUST and UCC. Solutions included.
+                </div>
+                <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
+            </div>
 
-        // Load on start
-        loadResources();
-    </script>
+            <div class="resource-card">
+                <span class="badge">COMPUTER SCIENCE</span>
+                <div class="card-icon-wrapper type-academic">
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="resource-title">Intro to Java Programming</div>
+                <div class="resource-meta">
+                    Lab manual and project exercises for Level 200 CS students.
+                </div>
+                <button class="download-btn"><i class="fas fa-download"></i> Download ZIP</button>
+            </div>
+
+        </div>
+
+        <div class="section-header">
+            <i class="fas fa-seedling"></i>
+            <h3>The Life Library: Personal Growth</h3>
+        </div>
+
+        <div class="resource-grid">
+
+            <div class="resource-card">
+                <span class="badge">FINANCIAL LITERACY</span>
+                <div class="card-icon-wrapper type-finance">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="resource-title">Money Management 101</div>
+                <div class="resource-meta">
+                    A guide to budgeting, saving, and investing while in school. "Rich Dad Poor Dad" summary included.
+                </div>
+                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
+            </div>
+
+            <div class="resource-card">
+                <span class="badge">RELATIONSHIPS</span>
+                <div class="card-icon-wrapper type-relation">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="resource-title">Building Healthy Connections</div>
+                <div class="resource-meta">
+                    Navigating friendships, dating, and conflict resolution emotionally and maturely.
+                </div>
+                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
+            </div>
+
+            <div class="resource-card">
+                <span class="badge">MENTAL STRENGTH</span>
+                <div class="card-icon-wrapper type-psych">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="resource-title">The Psychology of Success</div>
+                <div class="resource-meta">
+                    Understanding motivation, discipline, and overcoming academic anxiety.
+                </div>
+                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
+            </div>
+
+            <div class="section-header">
+    <i class="fas fa-compass"></i>
+    <h3>The School of Life: Career & Identity</h3>
+</div>
+
+<div class="resource-grid">
+    <div class="resource-card">
+        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
+        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
+            <i class="fas fa-briefcase"></i>
+        </div>
+        <div class="resource-title">The 21st Century Career Guide</div>
+        <div class="resource-meta">
+            Mapping your path from classroom to boardroom. Includes CV templates and LinkedIn optimization.
+        </div>
+        <button class="download-btn"><i class="fas fa-book-open"></i> Read Guide</button>
+    </div>
+
+    <div class="resource-card">
+        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
+        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
+            <i class="fas fa-network-wired"></i>
+        </div>
+        <div class="resource-title">Networking in Ghana</div>
+        <div class="resource-meta">
+            A specialized resource on how to build professional connections within the Ghanaian corporate space.
+        </div>
+        <button class="download-btn"><i class="fas fa-video"></i> Watch Masterclass</button>
+    </div>
+
+    <div class="resource-card">
+        <span class="badge" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">CAREER DEVELOPMENT</span>
+        <div class="card-icon-wrapper" style="background: rgba(56, 189, 248, 0.1); color: #0ea5e9;">
+            <i class="fas fa-lightbulb"></i>
+        </div>
+        <div class="resource-title">The Multi-Potentialite Student</div>
+        <div class="resource-meta">
+            How to balance multiple skills and side-hustles without dropping your academic grades.
+        </div>
+        <button class="download-btn"><i class="fas fa-download"></i> Download PDF</button>
+    </div>
+
+    <div class="resource-card">
+        <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">KNOWING YOURSELF</span>
+        <div class="card-icon-wrapper" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+            <i class="fas fa-fingerprint"></i>
+        </div>
+        <div class="resource-title">Identity & Temperament Test</div>
+        <div class="resource-meta">
+            Discover your personality type (Sanguine, Choleric, etc.) to understand how you learn and lead.
+        </div>
+        <button class="download-btn"><i class="fas fa-tasks"></i> Take Test</button>
+    </div>
+
+    <div class="resource-card">
+        <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">KNOWING YOURSELF</span>
+        <div class="card-icon-wrapper" style="background: rgba(168, 85, 247, 0.1); color: #a855f7;">
+            <i class="fas fa-eye"></i>
+        </div>
+        <div class="resource-title">Purpose Discovery Journal</div>
+        <div class="resource-meta">
+            A 30-day guided prompt to help you find your "Why" before you graduate.
+        </div>
+        <button class="download-btn"><i class="fas fa-file-pdf"></i> Download Journal</button>
+    </div>
+</div>
+
+            <div class="resource-card">
+                <span class="badge">MOTIVATION</span>
+                <div class="card-icon-wrapper type-growth">
+                    <i class="fas fa-mountain"></i>
+                </div>
+                <div class="resource-title">Atomic Habits (Guide)</div>
+                <div class="resource-meta">
+                    Practical strategies to build good habits, break bad ones, and achieve your life goals.
+                </div>
+                <button class="download-btn"><i class="fas fa-book-open"></i> Read Now</button>
+            </div>
+
+        </div>
+
+        <div style="height: 50px;"></div>
+
+    </div>
+
+    <script src="theme.js"></script>
 </body>
 </html>

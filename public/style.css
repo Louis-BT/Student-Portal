@@ -1,19 +1,62 @@
 /* =========================================
-   1. VARIABLES & RESET (DEFAULT / LIGHT THEME)
+   1. GLOBAL VARIABLES ("The Brain")
    ========================================= */
 :root {
-    /* Default Colors (Light Mode) */
-    --primary-color: #1e3a8a;
+    /* --- LIGHT MODE (Default) --- */
+    --primary-color: #2563eb;  /* Dynamic: Changed by Color Picker */
     --secondary-color: #3b82f6;
-    --bg-color: #f8fafc; /* Your specific light grey */
-    --card-bg: #ffffff;
-    --text-color: #333333;
-    --text-muted: #666666;
-    --border-color: #eeeeee; /* Added for theme switching */
+    --bg-color: #ffffff;
+    --card-bg: #f8fafc;
+    --text-color: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --input-bg: #f1f5f9;
+    
+    /* Sidebar Specifics */
     --sidebar-width: 280px;
-    --input-bg: #fafafa;
+    --sidebar-bg: #ffffff;
+    --sidebar-text: #1e293b;
+    --sidebar-active: #eff6ff;
 }
 
+/* =========================================
+   2. THEME OVERRIDES
+   ========================================= */
+
+/* --- 🌙 DARK MODE --- */
+body.dark-mode {
+    --bg-color: #0f172a;       /* Deep Navy/Black */
+    --card-bg: #1e293b;        /* Slate Blue Grey */
+    --text-color: #f8fafc;     /* White-ish */
+    --text-muted: #94a3b8;     /* Light Grey */
+    --border-color: #334155;   /* Dark Borders */
+    --input-bg: #020617;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #f8fafc;
+    --sidebar-active: #334155;
+    
+    /* Make the logo white in dark mode */
+    --primary-color: #60a5fa; 
+}
+
+/* --- 🎨 CUSTOM MODE --- */
+/* Custom Mode usually looks best with a Dark Background 
+   to let the Neon Colors pop, but we keep the structure clean. */
+body.custom-mode {
+    --bg-color: #1a1a1a;
+    --card-bg: #2a2a2a;
+    --text-color: #ffffff;
+    --text-muted: #a3a3a3;
+    --border-color: #404040;
+    --input-bg: #333333;
+    --sidebar-bg: #2a2a2a;
+    --sidebar-text: #ffffff;
+    --sidebar-active: #404040;
+}
+
+/* =========================================
+   3. BASE & TYPOGRAPHY
+   ========================================= */
 * {
     margin: 0;
     padding: 0;
@@ -24,377 +67,293 @@ body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
+    line-height: 1.6;
     overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Smooth Theme Transition for all elements */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
 /* =========================================
-   2. NAVBAR & HAMBURGER
+   4. NAVIGATION BAR
    ========================================= */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background-color: var(--card-bg);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 1rem 5%;
+    background-color: var(--bg-color); /* Matches body */
+    border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0;
-    z-index: 100;
-    border-bottom: 1px solid var(--border-color); /* Updated for dark mode */
-}
-
-.nav-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--bg-color), 0.9);
 }
 
 .logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-/* Hamburger Icon */
-.hamburger {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.hamburger span {
-    display: block;
-    width: 25px;
-    height: 3px;
-    background-color: var(--text-color);
-    border-radius: 3px;
-    transition: 0.3s;
-}
-
-.nav-controls {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-color);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
+/* Theme Dropdown Styling */
+.theme-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+    padding: 5px 12px;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+}
+
+.theme-select {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+}
+
+/* Circular Color Input (Custom Mode) */
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: hidden;
+    padding: 0;
+    background: none;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--border-color); }
+
 /* =========================================
-   3. SIDEBAR (The Drawer)
+   5. SIDEBAR (Dashboard)
    ========================================= */
 .sidebar {
     position: fixed;
     top: 0;
-    left: -100%; /* Hidden by default */
+    left: -100%; /* Hidden Mobile */
     width: var(--sidebar-width);
     height: 100vh;
-    background-color: var(--card-bg);
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    z-index: 1000;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    z-index: 1100;
     transition: 0.3s ease;
     display: flex;
     flex-direction: column;
-    border-right: 1px solid var(--border-color); /* Updated for dark mode */
 }
 
-.sidebar.active {
-    left: 0; /* Slide in */
-}
+.sidebar.active { left: 0; }
 
 .sidebar-header {
     padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border-color); /* Updated */
+    border-bottom: 1px solid var(--border-color);
+    color: var(--sidebar-text);
+    font-weight: 800;
+    font-size: 1.2rem;
 }
 
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-color);
-}
-
-.sidebar-links {
-    list-style: none;
-    padding: 20px;
-}
-
-.sidebar-links li {
-    margin-bottom: 15px;
-}
+.sidebar-links { padding: 20px; }
+.sidebar-links li { margin-bottom: 8px; }
 
 .sidebar-links a {
-    text-decoration: none;
-    color: var(--text-color);
-    font-size: 16px;
-    font-weight: 500;
-    display: block;
-    padding: 10px;
-    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: var(--sidebar-text);
+    border-radius: 8px;
     transition: 0.2s;
+    font-weight: 500;
 }
 
-.sidebar-links a:hover, .sidebar-links a.active {
-    background-color: var(--bg-color);
+.sidebar-links a:hover, 
+.sidebar-links li.active a {
+    background-color: var(--sidebar-active);
     color: var(--primary-color);
 }
 
 .sidebar-footer {
     margin-top: auto;
     padding: 20px;
-    border-top: 1px solid var(--border-color); /* Updated */
-}
-
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
-    display: none;
-}
-
-.sidebar-overlay.active {
-    display: block;
+    border-top: 1px solid var(--border-color);
 }
 
 /* =========================================
-   4. DASHBOARD CONTENT & RESPONSIVENESS
+   6. HERO SECTION & BUTTONS
    ========================================= */
-.dashboard-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.hero-section {
-    text-align: center;
-    padding: 40px 0;
-}
-
-.hero-section h1 {
-    font-size: clamp(32px, 5vw, 48px);
-    font-weight: 800;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-    line-height: 1.2;
-}
-
-.hero-section .subtitle {
-    font-size: 16px;
-    color: var(--text-muted);
-    margin-bottom: 25px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Green "Get Started" Button */
-.btn-get-started {
-    background-color: #22c55e;
+.btn-primary {
+    background-color: var(--primary-color);
     color: white;
-    padding: 12px 30px;
-    font-size: 16px;
+    padding: 12px 25px;
+    border-radius: 8px;
     font-weight: 600;
     border: none;
-    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
-    transition: transform 0.2s;
+    transition: transform 0.2s, opacity 0.2s;
+    display: inline-block;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
-.btn-get-started:hover {
-    transform: scale(1.05);
-}
-
-/* Features Grid */
-.features-section h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--border-color); /* Updated */
-    padding-bottom: 10px;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-    gap: 20px;
+/* =========================================
+   7. FEATURES & CARDS
+   ========================================= */
+.features {
+    padding: 4rem 5%;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .feature-card {
     background: var(--card-bg);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 2rem;
+    border-radius: 16px;
     border: 1px solid var(--border-color);
-    cursor: pointer;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
-/* Feature Hover Effect */
 .feature-card:hover {
-    background-color: var(--primary-color);
+    border-color: var(--primary-color);
     transform: translateY(-5px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
 }
 
-.feature-card:hover h3, 
-.feature-card:hover p,
-.feature-card:hover .icon {
-    color: white;
-}
-
-.feature-card .icon { font-size: 32px; margin-bottom: 10px; }
-.feature-card h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-color); }
-.feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
-
-/* Footer Responsive */
-.footer-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
-}
-
-@media (min-width: 768px) {
-    .footer-content {
-        flex-direction: row;
-        justify-content: space-between;
-        text-align: left;
-    }
-}
+.feature-card h3 { color: var(--text-color); margin-bottom: 0.5rem; }
+.feature-card p { color: var(--text-muted); font-size: 0.95rem; }
 
 /* =========================================
-   5. THEME OVERRIDES (DARK & CUSTOM)
+   8. UNIVERSITY LOGO GRID (New!)
    ========================================= */
-
-/* --- 🌙 DARK MODE --- */
-[data-theme="dark"] {
-    --bg-color: #121212;      /* Very Dark Grey Background */
-    --card-bg: #1e1e1e;       /* Slightly Lighter Grey Cards */
-    --text-color: #e5e7eb;    /* White/Grey Text */
-    --text-muted: #9ca3af;
-    --primary-color: #60a5fa; /* Lighter Blue for contrast */
-    --border-color: #333333;  /* Dark Borders */
-    --input-bg: #2d2d2d;
+.partners {
+    background: var(--card-bg);
+    padding: 4rem 1rem;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
 }
 
-/* --- 🎨 CUSTOM MODE --- */
-/* Uses dark background, but Primary Color is set by JS */
-[data-theme="custom"] {
-    --bg-color: #1a1a1a;
-    --card-bg: #2a2a2a;
-    --text-color: #ffffff;
-    --text-muted: #aaaaaa;
-    --border-color: #444444;
-    --input-bg: #333333;
+.logo-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    max-width: 1000px;
+    margin: 2rem auto;
 }
 
-/* --- Specific Fixes for Dark/Custom --- */
-
-/* Fix: Make hamburger menu white in dark mode */
-[data-theme="dark"] .hamburger span,
-[data-theme="custom"] .hamburger span {
-    background-color: var(--text-color);
+.uni-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    /* Grayscale Effect */
+    filter: grayscale(100%) opacity(0.6); 
+    transition: all 0.4s ease;
+    cursor: pointer;
 }
 
-/* Fix: Auth/Login Box Colors */
-[data-theme="dark"] .auth-box,
-[data-theme="custom"] .auth-box {
-    background-color: var(--card-bg);
-    color: var(--text-color);
+/* Hover: Color & Scale */
+.uni-logo:hover {
+    filter: grayscale(0%) opacity(1);
+    transform: scale(1.1);
 }
 
-[data-theme="dark"] input,
-[data-theme="custom"] input {
-    background-color: var(--input-bg);
-    color: var(--text-color);
-    border-color: var(--border-color);
+/* Dark Mode Fix for Black Logos */
+body.dark-mode .uni-logo {
+    filter: grayscale(100%) brightness(1.5) opacity(0.5);
+}
+body.dark-mode .uni-logo:hover {
+    filter: grayscale(0%) brightness(1) opacity(1);
 }
 
 /* =========================================
-   6. AUTHENTICATION PAGES (Login/Signup)
+   9. AUTH PAGES (Login/Signup)
    ========================================= */
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: var(--bg-color); /* Uses variable now */
+    min-height: 80vh; /* Centers vertically */
+    padding: 20px;
 }
 
 .auth-box {
-    background: var(--card-bg); /* Uses variable now */
+    background: var(--card-bg);
     padding: 2.5rem;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
     width: 100%;
     max-width: 400px;
-    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
 .auth-box h2 {
+    color: var(--text-color);
+    text-align: center;
     margin-bottom: 0.5rem;
-    color: var(--text-color); /* Uses variable now */
 }
 
 .auth-box p {
-    color: var(--text-muted); /* Uses variable now */
+    color: var(--text-muted);
+    text-align: center;
     margin-bottom: 2rem;
     font-size: 0.9rem;
 }
 
-.input-group {
-    text-align: left;
-    margin-bottom: 1.2rem;
-}
+.input-group { margin-bottom: 1.2rem; }
 
 .input-group label {
     display: block;
-    font-size: 0.85rem;
     margin-bottom: 0.5rem;
-    color: var(--text-color); /* Uses variable now */
-    font-weight: 600;
-}
-
-.input-group input, 
-.input-group select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--border-color); /* Uses variable now */
-    border-radius: 8px;
-    font-size: 1rem;
-    background: var(--input-bg); /* Uses variable now */
     color: var(--text-color);
-}
-
-.btn-primary {
-    width: 100%;
-    padding: 12px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-}
-
-.switch-auth {
-    margin-top: 1.5rem;
     font-size: 0.9rem;
-    color: var(--text-color);
 }
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    outline: none;
+}
+
+.input-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+/* =========================================
+   10. FOOTER
+   ========================================= */
+footer {
+    background: #0f172a; /* Always dark for footer */
+    color: white;
+    padding: 4rem 5% 2rem;
+}
+
+footer a { color: #cbd5e1; transition: 0.2s; }
+footer a:hover { color: var(--primary-color); }
+
+/* =========================================
+   11. UTILITIES
+   ========================================= */
+.highlight { color: var(--primary-color); font-weight: 700; }
+.text-center { text-align: center; }

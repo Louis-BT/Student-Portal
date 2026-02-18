@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Performance Tracker | Student Portal</title>
+    <title>GPA Calculator | Student Portal</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="/theme.js"></script>
+    <script src="theme.js"></script>
 
     <style>
         /* PAGE SPECIFIC STYLES */
         .gpa-layout {
             display: grid;
-            grid-template-columns: 1.5fr 1fr; /* Left: Calc, Right: Results/Guide */
+            grid-template-columns: 1.5fr 1fr;
             gap: 30px;
             max-width: 1100px;
             margin: 40px auto;
@@ -20,10 +20,9 @@
         }
 
         @media (max-width: 850px) {
-            .gpa-layout { grid-template-columns: 1fr; } /* Stack on mobile */
+            .gpa-layout { grid-template-columns: 1fr; }
         }
 
-        /* Calculator Card */
         .calc-card {
             background: var(--card-bg);
             padding: 30px;
@@ -32,7 +31,6 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
         }
 
-        /* Course Row Grid */
         .course-header, .course-row {
             display: grid;
             grid-template-columns: 3fr 1fr 1.2fr auto;
@@ -50,8 +48,7 @@
             margin-bottom: 15px;
         }
 
-        /* Inputs */
-        .course-row input, .course-row select {
+        .course-row input {
             padding: 12px;
             border: 1px solid var(--border-color);
             background: var(--input-bg);
@@ -62,13 +59,12 @@
             transition: 0.2s;
         }
 
-        .course-row input:focus, .course-row select:focus {
+        .course-row input:focus {
             border-color: var(--primary-color);
             outline: none;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        /* Buttons */
         .btn-remove {
             background: #fee2e2;
             color: #ef4444;
@@ -114,7 +110,7 @@
         }
         .btn-calc:hover { transform: translateY(-2px); }
 
-        /* RESULT SECTION (Right Side) */
+        /* RESULT SECTION */
         .result-card {
             background: var(--card-bg);
             border-radius: 16px;
@@ -131,7 +127,6 @@
             line-height: 1;
             margin: 15px 0;
             letter-spacing: -2px;
-            /* Color set dynamically via JS */
         }
 
         .stat-grid {
@@ -156,22 +151,11 @@
             padding: 20px;
             border-radius: 10px;
             text-align: left;
-            border-left: 5px solid #ccc; /* Changed via JS */
+            border-left: 5px solid #ccc;
             margin-bottom: 25px;
         }
 
-        .reference-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            margin-top: 20px;
-        }
-        .reference-table th { text-align: left; color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--border-color); }
-        .reference-table td { padding: 8px; border-bottom: 1px solid var(--border-color); color: var(--text-color); }
-
-        /* Dark Mode Specific Overrides */
         [data-theme="dark"] .btn-remove { background: #451a1a; color: #fca5a5; }
-        [data-theme="dark"] .btn-remove:hover { background: #7f1d1d; }
     </style>
 </head>
 <body>
@@ -179,14 +163,16 @@
     <nav class="navbar">
         <div class="logo">🎓 Academic Tracker</div>
         <div style="display: flex; align-items: center; gap: 20px;">
-            <a href="/dashboard.html" style="font-weight: 600;">Dashboard</a>
-            
-            <select onchange="setTheme(this.value)" style="padding: 5px; border-radius: 8px; width: auto;">
-                <option value="system">💻 System</option>
-                <option value="light">☀️ Light</option>
-                <option value="dark">🌙 Dark</option>
-                <option value="custom">🎨 Custom</option>
-            </select>
+            <a href="dashboard.html" style="font-weight: 600;">Dashboard</a>
+            <div class="theme-wrapper">
+                <select id="theme-selector" class="theme-select" onchange="setTheme(this.value)">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+            </div>
         </div>
     </nav>
 
@@ -194,9 +180,9 @@
         
         <section class="calc-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="color: var(--text-color);">Current Semester</h2>
+                <h2 style="color: var(--text-color); margin: 0;">Calculate GPA</h2>
                 
-                <select id="scale-mode" onchange="updateReferenceTable()" style="width: auto; padding: 8px 15px;">
+                <select id="gpa-scale" style="width: auto; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color);">
                     <option value="4.0">Standard 4.0 Scale</option>
                     <option value="5.0">Weighted 5.0 Scale</option>
                 </select>
@@ -206,22 +192,22 @@
                 <div class="course-header">
                     <span>Course Name</span>
                     <span>Credits</span>
-                    <span>Grade</span>
+                    <span>Score (0-100)</span>
                     <span></span>
                 </div>
 
-                <div id="course-list">
+                <div id="grade-rows">
                     </div>
 
-                <button type="button" class="btn-add" onclick="addRow()">+ Add Another Course</button>
+                <button type="button" class="btn-add" onclick="addGPARow()">+ Add Another Course</button>
                 <button type="submit" class="btn-calc">Calculate Results 📊</button>
             </form>
         </section>
 
         <aside class="result-card" id="result-section" style="display: none;">
             
-            <h3 style="color: var(--text-muted); margin: 0; font-size: 1rem;">CUMULATIVE WEIGHTED AVERAGE</h3>
-            <div id="gpaValue" class="gpa-display">0.00</div>
+            <h3 style="color: var(--text-muted); margin: 0; font-size: 1rem;">CUMULATIVE GPA</h3>
+            <div id="modal-gpa-result" class="gpa-display">0.00</div>
 
             <div class="stat-grid">
                 <div class="stat-box">
@@ -235,309 +221,183 @@
             </div>
 
             <div id="commentBox" class="advisor-note">
-                <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Advisor's Comment:</strong>
+                <strong style="display: block; margin-bottom: 5px; color: var(--text-color);">Remarks:</strong>
                 <span id="commentText" style="color: var(--text-muted); font-style: italic;">...</span>
             </div>
 
-            <button id="btn-save" onclick="saveGPA()" class="btn-primary" style="background: #0f172a;">
+            <button id="btn-save" onclick="saveGPA()" type="button" class="btn-primary" style="background: var(--text-color); width: 100%;">
                 💾 Save to Profile
             </button>
             <p id="save-msg" style="color: #10b981; font-weight: bold; margin-top: 10px; display: none;">✅ Saved Successfully!</p>
-
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-            <h4 style="text-align: left; color: var(--text-muted); margin-bottom: 10px;">Grading Reference</h4>
-            <table class="reference-table">
-                <thead>
-                    <tr><th>Range</th><th>Grade</th><th>Point</th></tr>
-                </thead>
-                <tbody id="grading-body">
-                    </tbody>
-            </table>
         </aside>
 
         <aside class="result-card" id="empty-state">
             <div style="font-size: 3rem;">👋</div>
-            <h3 style="color: var(--text-color);">Ready to calculate?</h3>
-            <p style="color: var(--text-muted);">Enter your courses on the left and hit calculate to see your standing, class, and advisor comments.</p>
-            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-             <h4 style="text-align: left; color: var(--text-muted); margin-bottom: 10px;">Grading Reference</h4>
-            <table class="reference-table">
-                <thead>
-                    <tr><th>Range</th><th>Grade</th><th>Point</th></tr>
-                </thead>
-                <tbody id="grading-body-preview"></tbody>
-            </table>
+            <h3 style="color: var(--text-color);">Ready?</h3>
+            <p style="color: var(--text-muted);">Enter your course scores (0-100) on the left and hit calculate to see your standing.</p>
         </aside>
 
     </main>
 
+    <footer style="margin-top: 50px; text-align: center; color: var(--text-muted); padding: 20px; border-top: 1px solid var(--border-color);">
+        <p>&copy; 2026 National Student Portal. All Rights Reserved.</p>
+    </footer>
+
     <script>
-        // --- 1. CONFIGURATION: Grading Scales ---
-        const scales = {
-            "4.0": [
-                { grade: "A",  point: 4.00, min: 80, label: "Excellent" },
-                { grade: "B+", point: 3.50, min: 75, label: "Very Good" },
-                { grade: "B",  point: 3.00, min: 70, label: "Good" },
-                { grade: "C+", point: 2.50, min: 65, label: "Average" },
-                { grade: "C",  point: 2.00, min: 60, label: "Fair" },
-                { grade: "D+", point: 1.50, min: 55, label: "Barely Pass" },
-                { grade: "D",  point: 1.00, min: 50, label: "Weak Pass" },
-                { grade: "E",  point: 0.50, min: 45, label: "Failure" },
-                { grade: "F",  point: 0.00, min: 0,  label: "Failure" },
-            ],
-            "5.0": [
-                { grade: "A+", point: 5.00, min: 85 },
-                { grade: "A",  point: 4.50, min: 75 },
-                { grade: "B+", point: 4.00, min: 70 },
-                { grade: "B",  point: 3.50, min: 65 },
-                { grade: "C+", point: 3.00, min: 60 },
-                { grade: "C",  point: 2.50, min: 55 },
-                { grade: "D+", point: 2.00, min: 50 },
-                { grade: "D",  point: 1.50, min: 45 },
-                { grade: "F",  point: 0.00, min: 0 } 
-            ]
-        };
+        let courseCount = 0;
 
-        // --- 2. INITIALIZATION ---
+        // 1. INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
-            updateReferenceTable();
-            
-            // LOAD SAVED DATA
-            fetch('/user-data')
-                .then(res => res.json())
-                .then(user => {
-                    const container = document.getElementById('course-list');
-                    container.innerHTML = ""; // Clear loader
-
-                    if (user.courses) {
-                        try {
-                            const savedCourses = JSON.parse(user.courses);
-                            if (savedCourses.length > 0) {
-                                savedCourses.forEach(c => addRow(c.name, c.credits, c.grade));
-                                // Auto calculate if data exists
-                                calculateResults(); 
-                                return;
-                            }
-                        } catch(e) { console.log("No valid course data found"); }
-                    }
-                    
-                    // Default: Add 4 empty rows
-                    for(let i=0; i<4; i++) addRow();
-                })
-                .catch(() => {
-                    // Offline fallback
-                    for(let i=0; i<4; i++) addRow();
-                });
+            // Add default rows
+            for(let i=0; i<4; i++) addGPARow();
         });
 
-        // --- 3. UI FUNCTIONS ---
-        function updateReferenceTable() {
-            const mode = document.getElementById('scale-mode').value;
-            const data = scales[mode];
+        // 2. ADD NEW ROW
+        function addGPARow() {
+            courseCount++;
+            const container = document.getElementById("grade-rows");
+            const div = document.createElement("div");
+            div.className = "course-row"; // Using the styled class
             
-            // Update both reference tables (Active and Preview)
-            ['grading-body', 'grading-body-preview'].forEach(id => {
-                const tbody = document.getElementById(id);
-                if(tbody) {
-                    tbody.innerHTML = "";
-                    data.forEach(item => {
-                        tbody.innerHTML += `
-                            <tr>
-                                <td>${item.min}% - 100%</td>
-                                <td><b>${item.grade}</b></td>
-                                <td>${item.point.toFixed(2)}</td>
-                            </tr>`;
-                    });
-                }
-            });
-        }
-
-        function addRow(name = "", credits = "", grade = "") {
-            const container = document.getElementById('course-list');
-            const div = document.createElement('div');
-            div.className = 'course-row';
-            
-            // Build Options based on current scale
-            const mode = document.getElementById('scale-mode').value;
-            const options = scales[mode].map(g => 
-                `<option value="${g.grade}" ${grade === g.grade ? 'selected' : ''}>${g.grade}</option>`
-            ).join('');
-
             div.innerHTML = `
-                <input type="text" class="course-name" placeholder="e.g. Calculus I" value="${name}" required>
-                <input type="number" class="credits" placeholder="3" min="1" max="6" value="${credits}" required>
-                <select class="grade" required>
-                    <option value="" disabled ${!grade ? 'selected' : ''}>Select</option>
-                    ${options}
-                </select>
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Remove Course">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <input type="text" placeholder="Course ${courseCount}" class="course-name">
+                <input type="number" class="credit-input" placeholder="3" min="1" max="6">
+                <input type="number" class="score-input" placeholder="e.g. 85" min="0" max="100">
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Remove">
+                    <i class="fas fa-trash"></i>
                 </button>
             `;
             container.appendChild(div);
         }
 
-        // --- 4. CALCULATION ENGINE ---
+        // 3. CALCULATION ENGINE (USER'S EXACT LOGIC)
         document.getElementById('gpaForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            calculateResults();
+            calculateGPA();
         });
 
-        function calculateResults() {
-            const mode = document.getElementById('scale-mode').value;
-            const currentScale = scales[mode];
+        function calculateGPA() {
+            const scale = document.getElementById("gpa-scale").value; // "4.0" or "5.0"
             const rows = document.querySelectorAll('.course-row');
             
             let totalPoints = 0;
             let totalCredits = 0;
 
             rows.forEach(row => {
-                const credits = parseFloat(row.querySelector('.credits').value);
-                const gradeLetter = row.querySelector('.grade').value;
+                let credit = parseFloat(row.querySelector('.credit-input').value);
+                let score = parseFloat(row.querySelector('.score-input').value);
 
-                if (credits && gradeLetter) {
-                    const gradeData = currentScale.find(g => g.grade === gradeLetter);
-                    if (gradeData) {
-                        totalPoints += (credits * gradeData.point);
-                        totalCredits += credits;
+                if (!isNaN(credit) && !isNaN(score)) {
+                    let gradePoint = 0;
+
+                    if (scale === "5.0") {
+                        // FIXED 5.0 SCALE (As requested)
+                        if (score >= 80) gradePoint = 5.00;      // A+
+                        else if (score >= 70) gradePoint = 4.50; // A
+                        else if (score >= 65) gradePoint = 4.00; // B+
+                        else if (score >= 60) gradePoint = 3.50; // B
+                        else if (score >= 55) gradePoint = 3.00; // C+
+                        else if (score >= 50) gradePoint = 2.50; // C
+                        else if (score >= 45) gradePoint = 2.00; // D+
+                        else if (score >= 40) gradePoint = 1.50; // D
+                        else gradePoint = 0.00;                    // F
+                    } else {
+                        // STANDARD 4.0 SCALE (As requested)
+                        if (score >= 70) gradePoint = 4.00;
+                        else if (score >= 60) gradePoint = 3.50;
+                        else if (score >= 50) gradePoint = 3.00;
+                        else if (score >= 45) gradePoint = 2.50;
+                        else if (score >= 40) gradePoint = 2.00;
+                        else gradePoint = 0.00;
                     }
+
+                   
+
+                    totalPoints += (gradePoint * credit);
+                    totalCredits += credit;
                 }
             });
 
-            if(totalCredits === 0) return;
+            if (totalCredits === 0) return;
 
-            // 1. Math
-            const cgpa = (totalPoints / totalCredits).toFixed(2);
+            const gpa = (totalPoints / totalCredits).toFixed(2);
             
-            // 2. Switch Views
+            // UPDATE UI
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('result-section').style.display = 'block';
-
-            // 3. Populate Data
-            document.getElementById('gpaValue').innerText = cgpa;
-            document.getElementById('totalCredits').innerText = totalCredits;
-
-            // 4. Run Analysis
-            analyzePerformance(parseFloat(cgpa), mode);
+            
+            document.getElementById("modal-gpa-result").innerText = gpa;
+            document.getElementById("totalCredits").innerText = totalCredits;
+            
+            // ANALYZE & REMARKS
+            analyzePerformance(parseFloat(gpa), scale);
         }
 
-        // --- 5. ADVISOR LOGIC (Class, Color, Comment) ---
-        function analyzePerformance(cgpa, mode) {
+        function analyzePerformance(cgpa, scale) {
             let className = "";
             let color = "";
             let advice = "";
 
-            // Standard Ghana 4.0 Scale Logic
-            if (mode === "4.0") {
-                if (cgpa >= 3.60) {
-                    className = "First Class Honours";
-                    color = "#22c55e"; // Green
-                    advice = "Outstanding! You are operating at the highest level of academic excellence. Keep pushing for perfection!";
-                } else if (cgpa >= 3.00) {
-                    className = "Second Class (Upper)";
-                    color = "#22c55e"; // Green
-                    advice = "Very impressive. You are solid and consistent. A little extra effort could push you into First Class territory.";
-                } else if (cgpa >= 2.00) {
-                    className = "Second Class (Lower)";
-                    color = "#eab308"; // Yellow/Gold
-                    advice = "You are in the safe zone, but don't get comfortable. Review your study habits to climb higher next semester.";
-                } else if (cgpa >= 1.50) {
-                    className = "Third Class";
-                    color = "#f97316"; // Orange
-                    advice = "You are passing, but barely. This is a wake-up call. Please form a study group or see your academic advisor.";
-                } else {
-                    className = "Fail / Withdrawn";
-                    color = "#ef4444"; // Red
-                    advice = "Critical Warning: Your current standing is dangerous. You need to completely restructure your academic approach immediately.";
+            if (scale === "5.0") {
+                if (cgpa >= 4.50) { 
+                    className = "First Class Honours"; 
+                    color = "#22c55e"; 
+                    advice = "Outstanding! You are operating at the highest level of academic excellence. Keep pushing for perfection!"; 
                 }
-            } 
-            // 5.0 Scale Logic
-            else {
-                if (cgpa >= 4.50) { className = "First Class Honours"; color = "#22c55e"; advice = "Outstanding! You are operating at the highest level of academic excellence. Keep pushing for perfection!"; }
-                else if (cgpa >= 3.50) { className = "Second Class (Upper)"; color = "#22c55e"; advice = "Very impressive. You are solid and consistent. A little extra effort could push you into First Class territory."; }
-                else if (cgpa >= 2.50) { className = "Second Class(Lower)"; color = "#eab308"; advice = "You are in the safe zone, but don't get comfortable. Review your study habits to climb higher next trimester.."; }
-                else if (cgpa >= 1.50) { className = "Third Class"; color = "#f97316"; advice = "You are passing, but barely. This is a wake-up call. Please form a study group or see your academic advisor."; }
-                else { className = "Pass/Fail"; color = "#ef4444"; advice = "Critical Warning: Your current standing is dangerous. You need to completely restructure your academic approach immediately."; }
+                else if (cgpa >= 3.50) { 
+                    className = "Second Class (Upper)"; 
+                    color = "#22c55e"; 
+                    advice = "Very impressive. You are solid and consistent. A little extra effort could push you into First Class territory."; 
+                }
+                else if (cgpa >= 2.50) { 
+                    className = "Second Class (Lower)"; 
+                    color = "#eab308"; 
+                    advice = "You are in the safe zone, but don't get comfortable. Review your study habits to climb higher next trimester."; 
+                }
+                else if (cgpa >= 1.50) { 
+                    className = "Third Class"; 
+                    color = "#f97316"; 
+                    advice = "You are passing, but barely. This is a wake-up call. Please form a study group or see your academic advisor."; 
+                }
+                else { 
+                    className = "Pass/Fail"; 
+                    color = "#ef4444"; 
+                    advice = "Critical Warning: Your current standing is dangerous. You need to completely restructure your academic approach immediately."; 
+                }
+            } else {
+                // 4.0 Scale Remarks
+                if (cgpa >= 3.60) { className = "First Class Honours"; color = "#22c55e"; advice = "Outstanding performance! Keep it up."; }
+                else if (cgpa >= 3.00) { className = "Second Class (Upper)"; color = "#22c55e"; advice = "Great job! Aim for the top."; }
+                else if (cgpa >= 2.50) { className = "Second Class (Lower)"; color = "#eab308"; advice = "Good, but there is room for improvement."; }
+                else if (cgpa >= 2.00) { className = "Third Class"; color = "#f97316"; advice = "Warning zone. Work harder next semester."; }
+                else { className = "Fail"; color = "#ef4444"; advice = "Critical Warning: Academic standing is low."; }
             }
 
-            // Inside your calculation function
-function calculateGPA() {
-    let totalPoints = 0;
-    let totalCredits = 0;
-
-    // Select all your input rows
-    const rows = document.querySelectorAll('.gpa-row');
-    
-    rows.forEach(row => {
-        const grade = parseFloat(row.querySelector('.grade-input').value);
-        const credit = parseInt(row.querySelector('.credit-input').value);
-
-        // 🛑 VALIDATION RULE
-        if (grade > 5.0 || grade < 0) {
-            alert("Grade Point must be between 0.0 and 5.0");
-            return;
-        }
-        if (credit <= 0 || credit > 10) {
-            alert("Please enter a valid Credit Hour (1-10)");
-            return;
-        }
-
-        totalPoints += (grade * credit);
-        totalCredits += credit;
-    });
-
-    const finalGPA = totalPoints / totalCredits;
-    // ... rest of your save logic
-}
-
-            // Apply Styles
-            const gpaDisplay = document.getElementById('gpaValue');
+            const gpaDisplay = document.getElementById('modal-gpa-result');
             const classDisplay = document.getElementById('classStand');
             const noteBox = document.getElementById('commentBox');
             
             gpaDisplay.style.color = color;
             classDisplay.innerText = className;
             classDisplay.style.color = color;
-            
             noteBox.style.borderLeftColor = color;
             document.getElementById('commentText').innerText = advice;
         }
 
-        // --- 6. SAVE FUNCTION ---
         function saveGPA() {
-            const gpaVal = document.getElementById('gpaValue').innerText;
+            const gpaVal = document.getElementById('modal-gpa-result').innerText;
+            // Save to LocalStorage so Dashboard sees it
+            localStorage.setItem("portal-gpa", gpaVal);
+            
             const btn = document.getElementById('btn-save');
             const msg = document.getElementById('save-msg');
             
-            // Gather Data
-            const courses = [];
-            document.querySelectorAll('.course-row').forEach(row => {
-                const name = row.querySelector('.course-name').value;
-                const credits = row.querySelector('.credits').value;
-                const grade = row.querySelector('.grade').value;
-                if(name && credits && grade) {
-                    courses.push({ name, credits, grade });
-                }
-            });
-
             btn.innerText = "Saving...";
-            
-            fetch('/api/save-gpa', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gpa: gpaVal, courses: courses })
-            })
-            .then(res => res.json())
-            .then(data => {
+            setTimeout(() => {
                 btn.innerText = "💾 Save to Profile";
                 msg.style.display = 'block';
-                setTimeout(() => msg.style.display = 'none', 4000);
-            })
-            .catch(err => {
-                console.error(err);
-                btn.innerText = "Error Saving";
-            });
+                setTimeout(() => msg.style.display = 'none', 3000);
+            }, 1000);
         }
     </script>
 </body>

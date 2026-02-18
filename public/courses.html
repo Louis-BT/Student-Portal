@@ -3,122 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Registration | Student Portal</title>
-    <link rel="stylesheet" href="style.css"> <script src="/theme.js"></script> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Course Registration & Timetable | Student Portal</title>
     
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="theme.js"></script>
+
     <style>
         /* PAGE LAYOUT */
-        .reg-container {
-            max-width: 900px;
-            margin: 40px auto;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-        }
-
-        h1 { color: var(--primary-color); margin-bottom: 5px; }
-        p.subtitle { color: var(--text-muted); margin-bottom: 30px; }
-
-        /* --- 1. THE SEARCH BAR & INPUTS --- */
-        .input-grid {
+        .page-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr auto; /* Search | Code | Add Button */
-            gap: 15px;
-            align-items: start;
-            position: relative; /* For dropdown positioning */
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
 
-        /* Search Input Styling */
-        .search-wrapper { position: relative; width: 100%; }
+        @media (max-width: 900px) { .page-grid { grid-template-columns: 1fr; } }
+
+        /* CARDS */
+        .action-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            height: 100%;
+        }
+
+        h2 { color: var(--text-color); margin-top: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
         
-        input[type="text"], input[type="number"] {
+        /* SEARCH BAR */
+        .search-container { position: relative; margin-bottom: 15px; }
+        
+        input[type="text"] {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 1rem;
             background: var(--input-bg);
             color: var(--text-color);
-            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.95rem;
         }
+        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
-        /* HOVER & FOCUS EFFECTS */
-        input:hover {
-            border-color: #93c5fd; /* Light Blue on Hover */
-        }
-
-        input:focus {
-            border-color: var(--primary-color); /* Dark Blue on Click */
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); /* Glow effect */
-        }
-
-        /* --- 2. THE SEARCHABLE DROPDOWN --- */
         .suggestions-list {
             position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+            top: 100%; left: 0; right: 0;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             max-height: 250px;
             overflow-y: auto;
             z-index: 100;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            display: none; /* Hidden by default */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
             margin-top: 5px;
         }
 
         .suggestion-item {
-            padding: 10px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-color);
-            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
         }
+        .suggestion-item:hover { background: var(--primary-color); color: white; }
 
-        .suggestion-item:hover {
-            background-color: var(--primary-color);
-            color: white;
+        /* REGISTERED LIST */
+        .course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
         }
+        .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.9rem; }
+        .course-name { font-size: 0.9rem; color: var(--text-color); }
 
-        .suggestion-item strong { color: inherit; }
+        .btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; padding: 5px; }
+        .btn-delete:hover { color: #b91c1c; transform: scale(1.1); }
 
-        /* --- BUTTONS --- */
-        .btn-add {
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 25px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            height: 46px; /* Match input height */
-            transition: transform 0.2s;
+            margin-top: 15px;
+            transition: 0.2s;
         }
-        .btn-add:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        /* --- TABLE --- */
-        .reg-table {
+        /* RESOURCE TOOLKIT STYLES */
+        .toolkit-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+        .resource-tag {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--input-bg);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            transition: 0.2s;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+        .resource-tag:hover { border-color: #ff0000; background: rgba(255, 0, 0, 0.05); }
+        .yt-icon { color: #ff0000; font-size: 1.2rem; }
+
+        /* TIMETABLE STYLES */
+        .timetable-section {
+            margin: 40px auto;
+            max-width: 1200px;
+            padding: 0 20px;
+            display: none; 
+        }
+
+        .timetable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mode-select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--primary-color);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .timetable {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .reg-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border-color); color: var(--text-muted); }
-        .reg-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-color); }
-        
-        .btn-delete {
-            background: #fee2e2; color: #ef4444; border: none;
-            padding: 5px 10px; border-radius: 6px; cursor: pointer;
-        }
-        .btn-delete:hover { background: #fecaca; }
 
-        /* Mobile Responsive */
-        @media (max-width: 600px) {
-            .input-grid { grid-template-columns: 1fr; }
+        .timetable th {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .timetable td {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-color);
+            font-size: 0.85rem;
+        }
+
+        .cell-filled {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-color);
+            font-weight: 700;
+            border-radius: 4px;
+        }
+        .cell-study { background: rgba(16, 185, 129, 0.1); color: #10b981; font-style: italic; }
+        .break-row td {
+            background: var(--input-bg);
+            color: var(--text-muted);
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            padding: 8px;
         }
     </style>
 </head>
@@ -127,117 +201,152 @@
     <nav class="navbar">
         <div class="logo">🎓 Academic Portal</div>
         <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="/dashboard.html">Dashboard</a>
-            <select onchange="setTheme(this.value)" style="padding: 5px; width: auto;">
-                <option value="system">💻 System</option>
-                <option value="light">☀️ Light</option>
-                <option value="dark">🌙 Dark</option>
-            </select>
+            <a href="dashboard.html" style="font-weight: 600;">Dashboard</a>
+            <div class="theme-wrapper">
+                <select id="theme-selector" onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px;">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+            </div>
         </div>
     </nav>
 
-    <div class="reg-container">
-        <h1>Course Registration</h1>
-        <p class="subtitle">Search and register for your semester/trimester courses below.</p>
+    <div class="page-grid">
+        
+        <div class="action-card">
+            <h2><i class="fas fa-search"></i> Course Registration</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Search courses or add manually.</p>
 
-        <div class="input-grid">
-            
-            <div class="search-wrapper">
-                <input type="text" id="courseSearch" placeholder="🔍 Search Course (e.g. African Studies...)" autocomplete="off">
+            <div class="search-container">
+                <input type="text" id="courseSearch" placeholder="Type course name (e.g. African Studies)..." autocomplete="off">
                 <div id="suggestions" class="suggestions-list"></div>
             </div>
 
-            <div>
-                <input type="text" id="courseCode" placeholder="Code (e.g. UGRC 110)" style="text-transform: uppercase;">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="text" id="manualCode" placeholder="Code (e.g. UGRC 150)" style="text-transform: uppercase; width: 40%;">
+                <input type="text" id="manualName" placeholder="Course Title" style="width: 60%;">
             </div>
 
-            <button class="btn-add" onclick="registerCourse()">+ Add</button>
+            <button class="btn-primary" onclick="addManualCourse()">+ Add Course</button>
         </div>
 
-        <table class="reg-table">
-            <thead>
-                <tr>
-                    <th style="width: 20%;">Code</th>
-                    <th style="width: 60%;">Course Title</th>
-                    <th style="width: 20%;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="reg-body">
-                </tbody>
-        </table>
+        <div class="action-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2><i class="fas fa-list-check"></i> My Courses</h2>
+                <span id="course-count" style="background: var(--input-bg); padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: bold;">0</span>
+            </div>
+            
+            <div id="registered-list" style="margin-top: 15px; min-height: 80px;">
+                <p style="color: var(--text-muted); text-align: center; font-style: italic; margin-top: 30px;">No courses added yet.</p>
+            </div>
 
-        <div style="margin-top: 30px; text-align: right;">
-            <button onclick="saveRegistration()" style="background: #22c55e; color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: bold;">
-                💾 Confirm Registration
+            <div id="toolkit-area" class="toolkit-section" style="display: none;">
+                <h4 style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 10px;">
+                    ⚡ Recommended Study Tools
+                </h4>
+                <div id="resource-list">
+                    </div>
+            </div>
+
+            <button id="btn-generate" class="btn-primary" style="background: #10b981; display: none;" onclick="generateTimetable()">
+                <i class="fas fa-calendar-alt"></i> Generate Timetable
             </button>
         </div>
     </div>
 
+    <div id="timetable-display" class="timetable-section">
+        <div class="timetable-header">
+            <h2 style="color: var(--text-color); margin: 0;"><i class="fas fa-table"></i> Weekly Schedule</h2>
+            
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="schedule-mode" class="mode-select" onchange="generateTimetable()">
+                    <option value="standard">Standard Day (8:00 AM - 5:00 PM)</option>
+                    <option value="extended">Extended Day (5:00 AM - 11:30 PM)</option>
+                </select>
+
+                <button onclick="window.print()" style="padding: 10px 15px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-download"></i> PDF
+                </button>
+            </div>
+        </div>
+        
+        <table class="timetable">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Time</th>
+                    <th style="width: 17%;">Monday</th>
+                    <th style="width: 17%;">Tuesday</th>
+                    <th style="width: 17%;">Wednesday</th>
+                    <th style="width: 17%;">Thursday</th>
+                    <th style="width: 17%;">Friday</th>
+                </tr>
+            </thead>
+            <tbody id="timetable-body">
+                </tbody>
+        </table>
+    </div>
+
     <script>
-        // --- 1. MOCK DATABASE OF GHANAIAN COURSES ---
-        // This simulates a database of courses common in Ghana (UG, KNUST, UCC, etc.)
-        const courseDatabase = [
-            "African Studies: Culture and Development",
-            "Academic Writing I",
-            "Academic Writing II",
-            "Communication Skills",
-            "Introduction to Computer Science",
-            "Calculus I",
-            "Calculus II",
-            "Linear Algebra",
-            "Principles of Economics (Micro)",
-            "Principles of Economics (Macro)",
-            "Financial Accounting I",
-            "Business Law",
-            "Information Technology Skills",
-            "Introduction to Psychology",
-            "Fundamentals of Nursing",
-            "Human Anatomy",
-            "Graphic Design Fundamentals",
-            "Engineering Mathematics",
-            "Physics for Engineers",
-            "Chemistry I",
-            "Introduction to Sociology",
-            "Political Science: Introduction",
-            "French for Beginners",
-            "Marketing Management",
-            "Human Resource Management",
-            "Entrepreneurship & Innovation",
-            "Environmental Science",
-            "Data Structures & Algorithms"
+        // 1. DATA: GHANAIAN UNIVERSITY COURSES
+        const courseDB = [
+            { name: "Academic Writing I", code: "UGRC 110" },
+            { name: "Academic Writing II", code: "UGRC 210" },
+            { name: "African Studies", code: "UGRC 150" },
+            { name: "Calculus I", code: "MATH 121" },
+            { name: "Calculus II", code: "MATH 122" },
+            { name: "Intro to Computer Science", code: "CSCD 101" },
+            { name: "Programming Fundamentals", code: "CSCD 102" },
+            { name: "Economics I", code: "ECON 101" },
+            { name: "Psychology I", code: "PSYC 101" },
+            { name: "Communication Skills", code: "COMM 101" },
+            { name: "Financial Accounting", code: "ACCT 201" },
+            { name: "Physics for Engineers", code: "PHYS 205" },
+            { name: "French Language I", code: "FREN 101" }
         ];
 
-        // --- 2. SEARCH BAR LOGIC ---
+        // 2. STUDY RESOURCES MAPPING (Contextual AI)
+        const resourceMap = [
+            { key: "math", name: "Professor Leonard (Calculus)", url: "https://www.youtube.com/@ProfessorLeonard" },
+            { key: "calculus", name: "3Blue1Brown (Visual Math)", url: "https://www.youtube.com/@3blue1brown" },
+            { key: "computer", name: "CS50 by Harvard (YouTube)", url: "https://www.youtube.com/cs50" },
+            { key: "programming", name: "FreeCodeCamp", url: "https://www.freecodecamp.org/" },
+            { key: "economics", name: "Jacob Clifford (Econ)", url: "https://www.youtube.com/@JacobAClifford" },
+            { key: "accounting", name: "Accounting Stuff", url: "https://www.youtube.com/@AccountingStuff" },
+            { key: "physics", name: "Organic Chemistry Tutor", url: "https://www.youtube.com/@TheOrganicChemistryTutor" },
+            { key: "writing", name: "Purdue OWL (Writing Lab)", url: "https://owl.purdue.edu/" },
+            { key: "french", name: "Learn French with Alexa", url: "https://www.youtube.com/@learnfrenchwithalexa" }
+        ];
+
+        let myCourses = [];
+
+        // 3. SEARCH LOGIC
         const searchInput = document.getElementById('courseSearch');
         const suggestionsBox = document.getElementById('suggestions');
-        const codeInput = document.getElementById('courseCode');
 
-        // Listen for typing
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase();
-            suggestionsBox.innerHTML = ''; // Clear previous
-
+            suggestionsBox.innerHTML = '';
+            
             if (query.length < 1) {
                 suggestionsBox.style.display = 'none';
                 return;
             }
 
-            // Filter the list
-            const matches = courseDatabase.filter(course => course.toLowerCase().includes(query));
-
+            const matches = courseDB.filter(c => c.name.toLowerCase().includes(query));
+            
             if (matches.length > 0) {
                 suggestionsBox.style.display = 'block';
-                matches.forEach(course => {
+                matches.forEach(c => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
-                    // Highlight the matching text
-                    div.innerHTML = course.replace(new RegExp(query, "gi"), (match) => `<strong>${match}</strong>`);
-                    
-                    // Click to Select
+                    div.innerHTML = `<span>${c.name}</span> <small>${c.code}</small>`;
                     div.onclick = () => {
-                        searchInput.value = course;
+                        addCourse(c.name, c.code);
+                        searchInput.value = '';
                         suggestionsBox.style.display = 'none';
-                        codeInput.focus(); // Jump to code input automatically
                     };
                     suggestionsBox.appendChild(div);
                 });
@@ -246,86 +355,177 @@
             }
         });
 
-        // Hide dropdown if user clicks outside
         document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
-                suggestionsBox.style.display = 'none';
-            }
+            if (!searchInput.contains(e.target)) suggestionsBox.style.display = 'none';
         });
 
-        // --- 3. ADD & REMOVE COURSES ---
-        function registerCourse() {
-            const name = searchInput.value;
-            const code = codeInput.value.toUpperCase();
+        // 4. ADD / REMOVE LOGIC
+        function addManualCourse() {
+            const code = document.getElementById('manualCode').value.toUpperCase();
+            const name = document.getElementById('manualName').value;
+            if(code && name) {
+                addCourse(name, code);
+                document.getElementById('manualCode').value = '';
+                document.getElementById('manualName').value = '';
+            } else {
+                alert("Please enter both Code and Name.");
+            }
+        }
 
-            if(!name || !code) {
-                alert("Please select a course and enter a code.");
+        function addCourse(name, code) {
+            if(myCourses.find(c => c.code === code)) return;
+            myCourses.push({ name, code });
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('registered-list');
+            const count = document.getElementById('course-count');
+            const genBtn = document.getElementById('btn-generate');
+            
+            list.innerHTML = '';
+            count.innerText = myCourses.length;
+
+            if(myCourses.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No courses added yet.</p>';
+                genBtn.style.display = 'none';
+                document.getElementById('toolkit-area').style.display = 'none';
                 return;
             }
 
-            const tbody = document.getElementById('reg-body');
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">${code}</span></td>
-                <td>${name}</td>
-                <td><button class="btn-delete" onclick="this.closest('tr').remove()">Remove</button></td>
-            `;
-            
-            tbody.appendChild(row);
+            myCourses.forEach((c, index) => {
+                const item = document.createElement('div');
+                item.className = 'course-item';
+                item.innerHTML = `
+                    <div class="course-info">
+                        <span class="course-code">${c.code}</span>
+                        <span class="course-name">${c.name}</span>
+                    </div>
+                    <button class="btn-delete" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
+                `;
+                list.appendChild(item);
+            });
 
-            // Clear inputs
-            searchInput.value = "";
-            codeInput.value = "";
+            if(myCourses.length >= 3) genBtn.style.display = 'block';
+            else genBtn.style.display = 'none';
+
+            updateStudyToolkit();
         }
 
-        // --- 4. LOAD & SAVE (Using existing Server API) ---
-        // Load saved courses on startup
-        document.addEventListener('DOMContentLoaded', () => {
-            fetch('/user-data')
-                .then(res => res.json())
-                .then(user => {
-                    if (user.courses) {
-                        try {
-                            const courses = JSON.parse(user.courses);
-                            const tbody = document.getElementById('reg-body');
-                            courses.forEach(c => {
-                                const row = `<tr>
-                                    <td><span style="background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">${c.code || 'N/A'}</span></td>
-                                    <td>${c.name}</td>
-                                    <td><button class="btn-delete" onclick="this.closest('tr').remove()">Remove</button></td>
-                                </tr>`;
-                                tbody.innerHTML += row;
-                            });
-                        } catch(e) {}
-                    }
+        function removeCourse(index) {
+            myCourses.splice(index, 1);
+            renderList();
+        }
+
+        // 5. RESOURCE GENERATOR (The "Study Tools" Logic)
+        function updateStudyToolkit() {
+            const toolkitArea = document.getElementById('toolkit-area');
+            const resourceList = document.getElementById('resource-list');
+            
+            // Get all course names as a single lowercase string
+            const allText = myCourses.map(c => c.name.toLowerCase()).join(" ");
+            
+            // Find matches
+            const matches = resourceMap.filter(res => allText.includes(res.key));
+            
+            // Remove duplicates based on URL
+            const uniqueMatches = [...new Map(matches.map(item => [item['url'], item])).values()];
+
+            if (uniqueMatches.length > 0) {
+                toolkitArea.style.display = 'block';
+                resourceList.innerHTML = '';
+                uniqueMatches.forEach(r => {
+                    resourceList.innerHTML += `
+                        <a href="${r.url}" target="_blank" class="resource-tag">
+                            <i class="fab fa-youtube yt-icon"></i>
+                            <div>
+                                <div style="font-weight:600; font-size:0.9rem;">${r.name}</div>
+                                <div style="font-size:0.75rem; opacity:0.7;">Recommended for your courses</div>
+                            </div>
+                        </a>
+                    `;
                 });
-        });
-
-        // Save to Database
-        function saveRegistration() {
-            const rows = document.querySelectorAll('#reg-body tr');
-            const courseList = [];
-
-            rows.forEach(row => {
-                const code = row.cells[0].innerText;
-                const name = row.cells[1].innerText;
-                courseList.push({ name: name, code: code });
-            });
-
-            // We reuse the /api/save-courses endpoint (assuming you want to store this in the same 'courses' column)
-            // Note: This overrides GPA courses if they share the same column. 
-            // Ideally, the server should have a separate 'registered_courses' column, 
-            // but for now, we save it as a JSON string.
-            
-            fetch('/api/save-courses', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courses: courseList })
-            }).then(() => {
-                alert("✅ Registration Successful!");
-            });
+            } else {
+                toolkitArea.style.display = 'none';
+            }
         }
+
+        // 6. TIMETABLE LOGIC (Standard vs Extended)
+        function generateTimetable() {
+            const section = document.getElementById('timetable-display');
+            const tbody = document.getElementById('timetable-body');
+            const mode = document.getElementById('schedule-mode').value;
+            
+            section.style.display = 'block';
+            tbody.innerHTML = '';
+
+            let schedule = [];
+
+            if (mode === 'standard') {
+                // STANDARD MODE (8am - 5pm)
+                schedule = [
+                    { time: "8:00 AM - 10:00 AM", type: "Lecture" },
+                    { time: "10:00 AM - 12:00 PM", type: "Lecture" },
+                    { time: "12:00 PM - 1:00 PM", type: "Break", label: "LUNCH BREAK" },
+                    { time: "1:00 PM - 3:00 PM", type: "Lecture" },
+                    { time: "3:00 PM - 5:00 PM", type: "Lecture" }
+                ];
+            } else {
+                // EXTENDED MODE (5am - 11:30pm)
+                schedule = [
+                    { time: "5:00 AM - 7:00 AM", type: "Study" },
+                    { time: "7:30 AM - 9:30 AM", type: "Lecture" },
+                    { time: "9:30 AM - 11:30 AM", type: "Lecture" },
+                    { time: "11:30 AM - 12:30 PM", type: "Break", label: "LUNCH BREAK" },
+                    { time: "12:30 PM - 2:30 PM", type: "Lecture" },
+                    { time: "2:30 PM - 4:30 PM", type: "Lecture" },
+                    { time: "4:30 PM - 6:30 PM", type: "Lecture" },
+                    { time: "6:30 PM - 7:30 PM", type: "Break", label: "SUPPER / RECESS" },
+                    { time: "7:30 PM - 9:30 PM", type: "Lecture" },
+                    { time: "9:30 PM - 11:30 PM", type: "Study" }
+                ];
+            }
+            
+            schedule.forEach(slot => {
+                let rowHtml = "";
+
+                if (slot.type === "Break") {
+                    rowHtml = `<tr class="break-row"><td>${slot.time}</td><td colspan="5" style="text-align: center;">--- ${slot.label} ---</td></tr>`;
+                } else {
+                    rowHtml = `<tr><td><strong>${slot.time}</strong></td>`;
+                    for(let i=0; i<5; i++) {
+                        if (slot.type === "Study") {
+                            rowHtml += `<td class="cell-study">Personal Study</td>`;
+                        } else {
+                            const showCourse = Math.random() > 0.4;
+                            if (showCourse && myCourses.length > 0) {
+                                const randomCourse = myCourses[Math.floor(Math.random() * myCourses.length)];
+                                rowHtml += `<td class="cell-filled">
+                                            <div style="font-size:0.8rem;">${randomCourse.code}</div>
+                                            <div style="font-size:0.7rem; opacity:0.8;">Venue: N${Math.floor(Math.random()*30)}</div>
+                                        </td>`;
+                            } else {
+                                rowHtml += `<td>-</td>`;
+                            }
+                        }
+                    }
+                    rowHtml += "</tr>";
+                }
+                tbody.innerHTML += rowHtml;
+            });
+
+            section.scrollIntoView({ behavior: 'smooth' });
+            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
+        }
+
+        // Load saved
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('portal-courses');
+            if(saved) {
+                myCourses = JSON.parse(saved);
+                renderList();
+            }
+        });
     </script>
 </body>
 </html>

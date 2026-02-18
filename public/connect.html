@@ -3,207 +3,375 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Connect | Global Chat</title>
+    <title>Student Connect | Secure Messaging</title>
+    
     <link rel="stylesheet" href="style.css">
-    <script src="/theme.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="theme.js"></script>
+
     <style>
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
+        /* CHAT APP LAYOUT (Split Screen) */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: calc(100vh - 80px); /* Fill height minus header */
+            max-width: 1600px;
+            margin: 0 auto;
             background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        @media (max-width: 850px) {
+            .chat-layout { grid-template-columns: 1fr; }
+            .chat-sidebar { display: none; } /* Hide sidebar on mobile for now */
+        }
+
+        /* SIDEBAR (User List) */
+        .chat-sidebar {
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
-            height: 80vh; /* Takes up most of the screen */
+        }
+
+        .chat-search {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .chat-search input {
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: 0.2s;
+        }
+        .user-item:hover, .user-item.active {
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .avatar {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+        }
+        .user-status {
+            width: 10px; height: 10px;
+            background: #10b981; /* Green for online */
+            border-radius: 50%;
+            position: absolute;
+            bottom: 2px; right: 2px;
+            border: 2px solid var(--card-bg);
+        }
+
+        /* MAIN CHAT AREA */
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            background: var(--card-bg);
+            position: relative;
         }
 
         .chat-header {
-            padding: 15px;
+            padding: 15px 20px;
             border-bottom: 1px solid var(--border-color);
-            background: var(--primary-color);
-            color: white;
-            border-radius: 12px 12px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: var(--bg-color);
         }
 
-        .chat-window {
+        .admin-badge {
+            font-size: 0.7rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            font-weight: 600;
+        }
+
+        .messages-area {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
-            background: var(--bg-color);
+            /* Subtle pattern background */
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .message-bubble {
+        .msg {
             max-width: 70%;
-            padding: 10px 15px;
-            border-radius: 10px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
             position: relative;
-            word-wrap: break-word;
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* My messages (Right) */
-        .my-msg {
+        .msg-in {
+            align-self: flex-start;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 2px;
+        }
+
+        .msg-out {
             align-self: flex-end;
             background: var(--primary-color);
             color: white;
-            border-bottom-right-radius: 0;
+            border-bottom-right-radius: 2px;
         }
 
-        /* Others' messages (Left) */
-        .other-msg {
-            align-self: flex-start;
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            border-bottom-left-radius: 0;
+        .msg-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+            text-align: right;
+            display: block;
         }
 
-        .msg-info {
-            font-size: 0.75rem;
-            margin-bottom: 4px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            opacity: 0.8;
-        }
-
-        .chat-input-area {
+        .chat-input {
             padding: 15px;
-            background: var(--card-bg);
             border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
-            border-radius: 0 0 12px 12px;
+            background: var(--bg-color);
+            align-items: center;
         }
 
-        .chat-input-area input {
+        .chat-input input {
             flex: 1;
-            padding: 12px;
+            padding: 12px 15px;
             border-radius: 25px;
             border: 1px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-color);
+            outline: none;
+            font-size: 0.95rem;
         }
 
-        .send-btn {
+        .btn-send {
+            width: 45px; height: 45px;
+            border-radius: 50%;
             background: var(--primary-color);
             color: white;
             border: none;
-            padding: 0 25px;
-            border-radius: 25px;
             cursor: pointer;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: 0.2s;
         }
-
-        /* Admin Delete Button styling */
-        .admin-del {
-            font-size: 0.7rem;
-            color: red;
-            cursor: pointer;
-            margin-left: 10px;
-            background: white;
-            padding: 2px 5px;
-            border-radius: 4px;
-            border: 1px solid red;
-        }
+        .btn-send:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo"> Student Connect</div>
-        <div style="display: flex; gap: 15px;">
-            <a href="/dashboard.html">Dashboard</a>
-            <a href="/logout" style="color: red;">Logout</a>
+        <div class="logo">🎓 Student Connect</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="dashboard.html" style="font-weight: 600;">Dashboard</a>
+            <div class="theme-wrapper">
+                <select id="theme-selector" onchange="setTheme(this.value)" style="padding: 5px; border-radius: 6px;">
+                    <option value="system">💻 System</option>
+                    <option value="light">☀️ Light</option>
+                    <option value="dark">🌙 Dark</option>
+                    <option value="custom">🎨 Custom</option>
+                </select>
+                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none;">
+            </div>
         </div>
     </nav>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <h3>🇬🇭 National Student Chat</h3>
-            <span style="font-size: 0.8rem; opacity: 0.9;">Live Room</span>
-        </div>
+    <div class="chat-layout">
+        
+        <aside class="chat-sidebar">
+            <div class="chat-search">
+                <input type="text" placeholder="Search students or groups...">
+            </div>
+            
+            <div class="user-list">
+                <div class="user-item active" onclick="loadChat('National General Room', true)">
+                    <div style="position: relative;">
+                        <div style="width: 45px; height: 45px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">GH</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-color);">National General Room</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">1,402 Students Online</div>
+                    </div>
+                </div>
 
-        <div id="chat-window" class="chat-window">
-            <div style="text-align: center; color: gray;">Loading chat...</div>
-        </div>
+                <div style="padding: 15px 15px 5px; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Direct Messages</div>
 
-        <form id="chat-form" class="chat-input-area">
-            <input type="text" id="msg-input" placeholder="Type a message..." required autocomplete="off">
-            <button type="submit" class="send-btn">Send ➤</button>
-        </form>
+                <div class="user-item" onclick="loadChat('Kwame (KNUST)', false)">
+                    <div style="position: relative;">
+                        <img src="https://via.placeholder.com/45" class="avatar">
+                        <div class="user-status"></div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-color);">Kwame (KNUST)</div>
+                        <div style="font-size: 0.8rem; color: var(--primary-color);">Typing...</div>
+                    </div>
+                </div>
+
+                <div class="user-item" onclick="loadChat('Sarah (UG Legon)', false)">
+                    <div style="position: relative;">
+                        <img src="https://via.placeholder.com/45" class="avatar">
+                        <div class="user-status" style="background: #fbbf24;"></div> </div>
+                    <div>
+                        <div style="font-weight: 600; color: var(--text-color);">Sarah (UG Legon)</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Sent a file</div>
+                    </div>
+                </div>
+
+                <div class="user-item" onclick="loadChat('Portal Administrator', true)" style="background: rgba(239, 68, 68, 0.05); border-left: 3px solid #ef4444;">
+                    <div style="position: relative;">
+                        <div style="width: 45px; height: 45px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">AD</div>
+                        <div class="user-status"></div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: #ef4444;">Portal Administrator</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Official Support</div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <main class="chat-main">
+            
+            <header class="chat-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <h3 id="current-chat-name" style="margin: 0; color: var(--text-color);">National General Room</h3>
+                    <div class="admin-badge" title="For safety reasons, Admins can review flagged messages.">
+                        <i class="fas fa-shield-alt"></i> Secure & Monitored
+                    </div>
+                </div>
+                <div style="color: var(--text-muted); cursor: pointer; font-size: 1.2rem;">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+            </header>
+
+            <div class="messages-area" id="msg-container">
+                <div class="msg msg-in" style="background: rgba(254, 243, 199, 0.5); border-color: #fcd34d;">
+                    <strong><i class="fas fa-bullhorn"></i> System Bot</strong><br>
+                    Welcome to the secure student network. Please maintain professional conduct. All chats are encrypted but monitored for safety violations.
+                    <span class="msg-time">Today</span>
+                </div>
+                
+                <div class="msg msg-in">
+                    <strong>Emmanuel (UCC)</strong><br>
+                    Has anyone seen the updated timetable for Level 200s?
+                    <span class="msg-time">10:05 AM</span>
+                </div>
+                
+                <div class="msg msg-out">
+                    Check the Course Reg page, I think it's generated automatically now!
+                    <span class="msg-time">10:07 AM</span>
+                </div>
+            </div>
+
+            <div class="chat-input">
+                <button style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fas fa-paperclip"></i></button>
+                <input type="text" id="msg-input" placeholder="Type a secure message...">
+                <button class="btn-send" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+
+        </main>
     </div>
 
+    <footer style="margin-top: 0; text-align: center; color: var(--text-muted); padding: 10px; border-top: 1px solid var(--border-color); font-size: 0.8rem; background: var(--bg-color);">
+        <p>&copy; 2026 National Student Portal. All chats are end-to-end encrypted.</p>
+    </footer>
+
     <script>
-        const chatWindow = document.getElementById('chat-window');
-        const chatForm = document.getElementById('chat-form');
-        const msgInput = document.getElementById('msg-input');
-        let myName = "";
-        let isAdmin = false;
+        // CHAT LOGIC
+        const msgContainer = document.getElementById('msg-container');
+        const input = document.getElementById('msg-input');
+        const chatName = document.getElementById('current-chat-name');
 
-        // 1. Get User Info First
-        fetch('/user-data').then(res => res.json()).then(user => {
-            myName = user.name;
-            isAdmin = (user.role === 'ADMIN');
-            loadMessages(); // Load immediately
-            setInterval(loadMessages, 3000); // Refresh every 3 seconds (Polling)
-        });
+        function loadChat(name, isGroup) {
+            chatName.innerText = name;
+            
+            // Clear current chat
+            msgContainer.innerHTML = '';
 
-        // 2. Load Messages Function
-        function loadMessages() {
-            fetch('/api/chat')
-                .then(res => res.json())
-                .then(msgs => {
-                    chatWindow.innerHTML = "";
-                    
-                    msgs.forEach(msg => {
-                        const isMe = (msg.user_name === myName);
-                        const div = document.createElement('div');
-                        div.className = `message-bubble ${isMe ? 'my-msg' : 'other-msg'}`;
-                        
-                        // Admin Control: Delete Button
-                        const deleteBtn = isAdmin ? `<span class="admin-del" onclick="deleteMessage(${msg.id})">DEL</span>` : '';
+            // Add Security Notice
+            msgContainer.innerHTML += `
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem; margin: 20px 0; opacity: 0.8;">
+                    <i class="fas fa-lock"></i> Messages are secure. Admins may review flagged content.
+                </div>
+            `;
 
-                        div.innerHTML = `
-                            <div class="msg-info">
-                                <span>${msg.user_name} <small>(${msg.institution || 'Student'})</small></span>
-                                ${deleteBtn}
-                            </div>
-                            <div>${msg.message}</div>
-                        `;
-                        chatWindow.appendChild(div);
-                    });
-                });
+            if (isGroup) {
+                msgContainer.innerHTML += `
+                    <div class="msg msg-in">
+                        <strong>Emmanuel (UCC)</strong><br>
+                        Hello everyone! Is the library open today?
+                        <span class="msg-time">10:05 AM</span>
+                    </div>
+                `;
+            } else {
+                msgContainer.innerHTML += `
+                    <div class="msg msg-in">
+                        Hi! Is this ${name}?
+                        <span class="msg-time">Just now</span>
+                    </div>
+                `;
+            }
         }
 
-        // 3. Send Message
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const text = msgInput.value;
-            if(!text) return;
+        function sendMessage() {
+            const text = input.value;
+            if(!text.trim()) return;
 
-            fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: text })
-            }).then(() => {
-                msgInput.value = "";
-                loadMessages(); // Refresh instantly
-            });
-        });
-
-        // 4. Admin Delete Function
-        function deleteMessage(id) {
-            if(!confirm("Admin: Permanently delete this message?")) return;
-            fetch(`/api/chat/${id}`, { method: 'DELETE' })
-                .then(() => loadMessages());
+            const html = `
+                <div class="msg msg-out">
+                    ${text}
+                    <span class="msg-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                </div>
+            `;
+            
+            msgContainer.innerHTML += html;
+            input.value = '';
+            msgContainer.scrollTop = msgContainer.scrollHeight; // Auto scroll
         }
+
+        // Send on Enter key
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
     </script>
 </body>
 </html>
