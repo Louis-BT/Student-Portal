@@ -2,7 +2,7 @@
   "name": "National Tertiary Student Portal",
   "short_name": "Portal",
   "description": "The premier academic network for tertiary students.",
-  "start_url": "/login.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#2563eb",
