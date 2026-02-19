@@ -256,6 +256,23 @@ app.post('/auth/logout', (req, res) => {
     res.json({ success: true });
 });
 
+// --- FORGOT PASSWORD ENDPOINT ---
+app.post('/api/auth/forgot-password', (req, res) => {
+    const { email } = req.body;
+    
+    // Log the request to the console (simulating an email service)
+    console.log(`[PASSWORD RESET REQUEST] Email: ${email}`);
+    
+    // Simulate a short delay so it feels real to the user
+    setTimeout(() => {
+        // We always return success for security (so hackers can't "fish" for valid emails)
+        res.json({ 
+            success: true, 
+            message: "If an account exists, a reset link has been sent to your email." 
+        });
+    }, 1500);
+});
+
 // --- PROFILE & ACADEMICS ---
 app.get('/api/user/profile', isAuthenticated, async (req, res) => {
     const result = await pool.query("SELECT * FROM users WHERE id = $1", [req.session.userId]);

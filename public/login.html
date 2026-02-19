@@ -101,7 +101,7 @@
         /* ACTIONS */
         .form-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 0.9rem; }
         .remember-me { display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; }
-        .forgot-pass { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+        .forgot-pass { color: var(--primary-color); text-decoration: none; font-weight: 600; cursor: pointer; }
         .forgot-pass:hover { text-decoration: underline; }
 
         .btn-auth {
@@ -130,6 +130,23 @@
 
         /* THEME TOGGLE */
         .theme-float { position: absolute; top: 30px; right: 30px; }
+
+        /* MODAL STYLES (NEW) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box {
+            background: var(--card-bg); padding: 30px; border-radius: 16px;
+            width: 90%; max-width: 400px; border: 1px solid var(--border-color);
+            position: relative; transform: translateY(20px); transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+        .close-btn { position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
@@ -180,7 +197,7 @@
                         <label class="remember-me">
                             <input type="checkbox"> Remember me
                         </label>
-                        <a href="#" class="forgot-pass">Forgot Password?</a>
+                        <a onclick="toggleForgotModal(true)" class="forgot-pass">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="btn-auth">
@@ -193,6 +210,31 @@
                     Don't have an account? <a href="signup.html">Create Account</a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="forgot-modal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="close-btn" onclick="toggleForgotModal(false)">&times;</button>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="background: rgba(37, 99, 235, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <i class="fas fa-lock-open" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                </div>
+                <h3 style="margin: 0; color: var(--text-color); font-size: 1.5rem;">Reset Password</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">
+                    Enter your student email. We'll send you a secure link to reset your access.
+                </p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); handleForgotSubmit();">
+                <div class="input-group">
+                    <input type="email" id="reset-email" placeholder="student@university.edu.gh" required>
+                </div>
+                <button type="submit" class="btn-auth" id="reset-btn" style="margin-top: 15px;">
+                    <i class="fas fa-paper-plane"></i> Send Reset Link
+                </button>
+            </form>
+            <div id="reset-feedback" style="margin-top: 15px; font-size: 0.9rem; text-align: center; display: none;"></div>
         </div>
     </div>
 

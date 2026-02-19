@@ -6,7 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. DOM ELEMENTS ---
-    const loginForm = document.querySelector('form');
+    const loginForm = document.querySelector('form[onsubmit*="handleLogin"]'); // Adjusted selector to avoid conflict if multiple forms exist
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const toggleIcon = document.querySelector('.toggle-password');
@@ -34,19 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 4. LOGIN HANDLER ---
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // Stop default HTML submission
-            handleAuthentication();
-        });
-    }
-
-    /**
-     * Core Authentication Function
-     * Validates input, simulates server request, and sets session data.
-     */
-    function handleAuthentication() {
+    // --- 4. LOGIN HANDLER (EXPOSED TO GLOBAL SCOPE FOR HTML CALLS) ---
+    window.handleLogin = function() {
         const email = emailInput.value.trim().toLowerCase();
         const password = passwordInput.value.trim();
 
@@ -67,83 +56,80 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Authenticating...';
         submitBtn.style.opacity = '0.7';
 
-        // C. AUTHENTICATION LOGIC (Simulated Server Delay)
-        setTimeout(() => {
-            
-            // 1. Handle "Remember Me"
-            if (rememberMeCheckbox && rememberMeCheckbox.checked) {
-                localStorage.setItem('portal-remember-email', email);
+        // C. AUTHENTICATION LOGIC (REAL SERVER CALL)
+        // Replaced setTimeout with fetch to talk to server.js
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                // Login Failed
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                alert(data.error);
             } else {
-                localStorage.removeItem('portal-remember-email');
-            }
-
-            // 2. Role Detection & Session Setup
-            if (email === 'admin@portal.edu.gh') {
-                // --- ADMIN SESSION ---
-                createSession({
-                    role: 'ADMIN',
-                    name: 'System Administrator',
-                    id: 'ADM-001',
-                    avatar: 'https://via.placeholder.com/70/ef4444/ffffff?text=AD',
-                    institution: 'National Directorate'
-                });
-            } else {
-                // --- STUDENT SESSION ---
-                // If user signed up previously, use that name. Otherwise default.
-                const storedName = localStorage.getItem('portal-user-name') || 'Student User';
+                // Login Success
                 
-                createSession({
-                    role: 'STUDENT',
-                    name: storedName,
-                    id: '10293844',
-                    avatar: null, // Will use default placeholder
-                    institution: 'University of Ghana' // Default for demo
-                });
+                // 1. Handle "Remember Me"
+                if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+                    localStorage.setItem('portal-remember-email', email);
+                } else {
+                    localStorage.removeItem('portal-remember-email');
+                }
+
+                // 2. Set Session
+                createSession(data.user);
+
+                // 3. Success Visuals
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Success!';
+                submitBtn.style.background = '#10b981'; // Green
+                
+                setTimeout(() => {
+                    // Redirect based on Role
+                    if (data.user.role === 'ADMIN') {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "dashboard.html";
+                    }
+                }, 500);
             }
-
-            // 3. Success & Redirect
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> Success!';
-            submitBtn.style.background = '#10b981'; // Green
-            
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 500);
-
-        }, 1500); // 1.5s simulated delay
-    }
+        })
+        .catch(err => {
+            console.error("Login Error:", err);
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            alert("Connection Error. Please try again.");
+        });
+    };
 
     /**
      * Helper: Create Session in LocalStorage
-     * Acts as the "cookie" for the application.
      */
     function createSession(user) {
         localStorage.setItem('portal-user-role', user.role);
         localStorage.setItem('portal-user-name', user.name);
+        localStorage.setItem('portal-user-email', user.email);
         localStorage.setItem('portal-user-id', user.id);
         
-        // Only set avatar if one is provided (Admin), otherwise let dashboard use default
         if (user.avatar) {
             localStorage.setItem('portal-avatar', user.avatar);
         } else {
             localStorage.removeItem('portal-avatar');
         }
-
-        // Initialize empty data if new user
-        if (!localStorage.getItem('portal-gpa')) {
-            localStorage.setItem('portal-gpa', '0.00');
-        }
     }
 
     /**
      * Helper: Visual Error Feedback
-     * Shakes the input field and highlights it red.
      */
     function showError(inputElement, message) {
-        // Reset styles first
         inputElement.style.borderColor = '#ef4444';
         inputElement.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.1)';
         
-        // Shake Animation
         inputElement.animate([
             { transform: 'translateX(0)' },
             { transform: 'translateX(-10px)' },
@@ -154,10 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
             iterations: 1
         });
 
-        // Focus back
         inputElement.focus();
 
-        // Reset after interaction
         inputElement.addEventListener('input', () => {
             inputElement.style.borderColor = '';
             inputElement.style.boxShadow = '';
@@ -166,11 +150,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Helper: Email Validator
-     * Basic Regex to ensure proper email format
      */
     function validateEmail(email) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(email);
     }
+
+
+    // --- 5. NEW: FORGOT PASSWORD LOGIC ---
+
+    // Toggle Modal Visibility
+    window.toggleForgotModal = function(show) {
+        const modal = document.getElementById('forgot-modal');
+        const resetEmailInput = document.getElementById('reset-email');
+        
+        if (show) {
+            modal.classList.add('active');
+            if(resetEmailInput) resetEmailInput.focus();
+        } else {
+            modal.classList.remove('active');
+            // Reset modal state
+            document.getElementById('reset-feedback').style.display = 'none';
+            if(resetEmailInput) resetEmailInput.value = ''; 
+        }
+    };
+
+    // Close modal if clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('forgot-modal');
+        if (event.target === modal) {
+            toggleForgotModal(false);
+        }
+    };
+
+    // Handle Reset Submission
+    window.handleForgotSubmit = function() {
+        const email = document.getElementById('reset-email').value;
+        const feedback = document.getElementById('reset-feedback');
+        const btn = document.getElementById('reset-btn');
+
+        if (!validateEmail(email)) {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<span style="color: #ef4444;">Please enter a valid email.</span>`;
+            return;
+        }
+
+        // Loading State
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.disabled = true;
+
+        // Call Server API
+        fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        })
+        .then(res => res.json())
+        .then(data => {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<span style="color: #10b981;"><i class="fas fa-check-circle"></i> ${data.message}</span>`;
+            
+            // Auto Close after 3 seconds
+            setTimeout(() => toggleForgotModal(false), 3000);
+        })
+        .catch(err => {
+            feedback.style.display = 'block';
+            feedback.innerHTML = `<span style="color: #ef4444;">Server Error. Try again later.</span>`;
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    };
 
 });
