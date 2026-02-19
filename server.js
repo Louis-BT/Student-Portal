@@ -92,7 +92,23 @@ const initDB = async () => {
             );
         `);
 
-        // 2. Leadership Applications
+        // 2. Users Table (Your existing code is here...)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                // ... 
+            );
+        `);
+
+        // 👉 PASTE THIS PATCH RIGHT HERE:
+        try {
+            await client.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;");
+            console.log("🛠️ Database Patched: Added missing phone column.");
+        } catch (e) { 
+            console.log("Patch notice:", e.message); 
+        }
+
+        // 3. Leadership Applications
         await client.query(`
             CREATE TABLE IF NOT EXISTS leadership_apps (
                 id SERIAL PRIMARY KEY,
@@ -108,7 +124,7 @@ const initDB = async () => {
             );
         `);
 
-        // 3. News & Announcements
+        // 4. News & Announcements
         await client.query(`
             CREATE TABLE IF NOT EXISTS news (
                 id SERIAL PRIMARY KEY,
@@ -119,7 +135,7 @@ const initDB = async () => {
             );
         `);
 
-        // 4. Library Resources
+        // 5. Library Resources
         await client.query(`
             CREATE TABLE IF NOT EXISTS resources (
                 id SERIAL PRIMARY KEY,
@@ -132,7 +148,7 @@ const initDB = async () => {
             );
         `);
 
-        // 5. Support Tickets
+        // 6. Support Tickets
         await client.query(`
             CREATE TABLE IF NOT EXISTS support_tickets (
                 id SERIAL PRIMARY KEY,
