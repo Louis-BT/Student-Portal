@@ -190,6 +190,7 @@ function checkAdmin(req, res, next) {
 
 // --- AUTHENTICATION ---
 // FIXED: Route Prefix matched to Frontend '/api/auth/signup'
+// --- 1. SIGNUP ---
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, phone } = req.body;
     try {
@@ -208,7 +209,7 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 });
 
-// FIXED: Route Prefix matched to Frontend '/api/auth/login'
+// --- 2. LOGIN ---
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -216,22 +217,27 @@ app.post('/api/auth/login', async (req, res) => {
         const user = result.rows[0];
 
         if (user && await bcrypt.compare(password, user.password)) {
-            // Set Session
+            // Start Session
             req.session.userId = user.id;
             req.session.role = user.role;
             
-            // Return Safe User Object
-            const safeUser = { 
-                id: user.id, name: user.name, email: user.email, 
-                role: user.role, institution: user.institution, avatar: user.profile_pic 
-            };
-            res.json({ success: true, user: safeUser });
+            res.json({ 
+                success: true, 
+                user: { 
+                    id: user.id, 
+                    name: user.name, 
+                    email: user.email, 
+                    role: user.role, 
+                    institution: user.institution, 
+                    avatar: user.profile_pic 
+                } 
+            });
         } else {
-            res.status(401).json({ error: "Invalid Credentials" });
+            res.status(401).json({ error: "Invalid Email or Password" });
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Login System Error" });
+        console.error("Login Error:", err);
+        res.status(500).json({ error: "Database Connection Error" });
     }
 });
 
