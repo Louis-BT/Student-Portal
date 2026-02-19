@@ -7,118 +7,89 @@
     
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
+
+    <link rel="apple-touch-icon" href="icon.png?v=v2">
+    <link rel="icon" type="image/png" href="icon.png?v=v2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
 
     <style>
         /* --- LAYOUT --- */
         body { margin: 0; height: 100vh; overflow: hidden; display: flex; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); }
         .auth-grid { display: grid; grid-template-columns: 1.2fr 1fr; width: 100%; height: 100%; }
 
-        /* BRAND SIDE (Visual Anchor) */
-        .brand-side {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 60px;
-            position: relative;
-            overflow: hidden;
-        }
-        .brand-side::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 60%);
-        }
-
+        /* BRAND SIDE */
+        .brand-side { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; display: flex; flex-direction: column; justify-content: center; padding: 60px; position: relative; overflow: hidden; }
+        .brand-side::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(37,99,235,0.1) 0%, transparent 60%); }
         .brand-quote { font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 20px; position: relative; z-index: 1; }
         .brand-sub { font-size: 1.1rem; opacity: 0.8; line-height: 1.5; max-width: 80%; position: relative; z-index: 1; }
 
         /* FORM SIDE */
-        .form-side {
-            background: var(--bg-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        .auth-card { width: 100%; max-width: 480px; }
+        .form-side { background: var(--bg-color); display: flex; align-items: center; justify-content: center; padding: 40px; overflow-y: auto; position: relative; }
+        .auth-card { width: 100%; max-width: 480px; animation: fadeUp 0.6s ease-out; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         h2 { font-size: 2rem; margin-bottom: 5px; color: var(--text-color); font-weight: 800; }
-        p.sub-text { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
+        p.sub-text { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
+
+        /* Professional Error & Success Banners */
+        .error-message { display: none; background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #fca5a5; font-weight: 500; }
+        .success-message { display: none; background: #d1fae5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #6ee7b7; font-weight: 500; }
 
         /* INPUT STYLING */
-        .input-group { margin-bottom: 15px; }
+        .input-group { margin-bottom: 15px; position: relative; }
         .input-group label { display: block; margin-bottom: 6px; font-weight: 600; color: var(--text-color); font-size: 0.85rem; }
-        .input-group input {
-            width: 100%; padding: 12px 15px; border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--input-bg); color: var(--text-color);
-            font-family: inherit; font-size: 0.95rem; box-sizing: border-box;
-            transition: 0.2s;
-        }
+        .input-group input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.95rem; box-sizing: border-box; transition: 0.2s; }
         .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-
-        /* Name Grid for Professional Format */
         .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        .btn-auth {
-            width: 100%; padding: 14px; background: var(--primary-color); color: white;
-            border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px;
-            transition: transform 0.1s, opacity 0.2s;
-        }
+        .btn-auth { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: transform 0.1s, opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
         .btn-auth:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
         .links { margin-top: 25px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
         .links a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
-
-        /* Theme Toggle Positioning */
         .theme-float { position: absolute; top: 25px; right: 25px; display: flex; gap: 10px; align-items: center; }
         
-        /* Mobile Responsive */
-        @media (max-width: 900px) { 
-            .auth-grid { grid-template-columns: 1fr; } 
-            .brand-side { display: none; } 
-        }
+        @media (max-width: 900px) { .auth-grid { grid-template-columns: 1fr; } .brand-side { display: none; } }
     </style>
 </head>
 <body>
 
     <div class="auth-grid">
-        
         <div class="brand-side">
             <div class="brand-quote">"Leadership is the capacity to translate vision into reality."</div>
-            <div class="brand-sub">Join the premier academic network for Ghanaian tertiary students. Connect, excel, and lead.</div>
+            <div class="brand-sub">Join the premier academic network for tertiary students. Connect, excel, and lead.</div>
         </div>
 
         <div class="form-side">
-            
             <div class="theme-float">
                 <select onchange="setTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer;">
                     <option value="system">💻 System</option>
                     <option value="light">☀️ Light</option>
                     <option value="dark">🌙 Dark</option>
-                    <option value="custom">🎨 Custom</option>
                 </select>
-                <input type="color" id="custom-theme-picker" oninput="updateCustomColor(this.value)" style="display: none; width: 25px; height: 25px; border: none; cursor: pointer; background: none;">
             </div>
 
             <div class="auth-card">
                 <h2>Create Account</h2>
                 <p class="sub-text">Enter your details to generate your student profile.</p>
 
-                <form onsubmit="event.preventDefault(); handleSignup();">
-                    
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <form id="signupForm">
                     <div class="name-grid">
                         <div class="input-group">
                             <label>First Name <span style="color:red">*</span></label>
-                            <input type="text" id="fname" placeholder="Kwame" required>
+                            <input type="text" id="fname" placeholder="Kingsley" required>
                         </div>
                         <div class="input-group">
                             <label>Surname <span style="color:red">*</span></label>
-                            <input type="text" id="sname" placeholder="Mensah" required>
+                            <input type="text" id="sname" placeholder="Owusu" required>
                         </div>
                     </div>
                     
@@ -143,26 +114,99 @@
                             <input type="password" id="password" placeholder="Min. 8 chars" required>
                         </div>
                         <div class="input-group">
-                            <label>Confirm Password <span style="color:red">*</span></label>
+                            <label>Confirm <span style="color:red">*</span></label>
                             <input type="password" id="confirm_password" placeholder="Repeat" required>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 8px; align-items: start;">
                         <input type="checkbox" required style="width: auto; margin-top: 3px;"> 
-                        <span>I agree to the <a href="#">Terms of Service</a> & <a href="#">Academic Integrity Policy</a>.</span>
+                        <span>I agree to the Terms of Service & Academic Integrity Policy.</span>
                     </div>
 
-                    <button type="submit" class="btn-auth">Register Account</button>
+                    <button type="submit" class="btn-auth" id="submitBtn">
+                        <span>Register Account</span>
+                        <i class="fas fa-user-plus"></i>
+                    </button>
                 </form>
 
                 <div class="links">
-                    Already have an ID? <a href="login.html">Sign In</a>
+                    Already have an account? <a href="login.html">Sign In</a>
                 </div>
             </div>
         </div>
     </div>
 
-   <script src="signup.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const signupForm = document.getElementById('signupForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+
+                // 1. Gather the data
+                const fname = document.getElementById('fname').value.trim();
+                const sname = document.getElementById('sname').value.trim();
+                const oname = document.getElementById('oname').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const email = document.getElementById('email').value.trim().toLowerCase();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+
+                // 2. Validate Passwords Match
+                if (password !== confirmPassword) {
+                    errorMessage.textContent = "Passwords do not match!";
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // 3. Merge names cleanly for the database
+                const fullName = `${fname} ${oname} ${sname}`.replace(/\s+/g, ' ').trim();
+
+                // 4. Loading State
+                const originalHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
+
+                try {
+                    // 5. Fire off to the CORRECT backend door
+                    const response = await fetch('/api/auth/signup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: fullName, email, password, phone })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || "Registration failed. Please try again.");
+                    }
+
+                    // 6. Success State
+                    signupForm.style.display = 'none'; // Hide form on success
+                    successMessage.innerHTML = "<strong>Account Created Successfully!</strong><br>Redirecting you to login...";
+                    successMessage.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 2000);
+
+                } catch (err) {
+                    console.error("Signup Error:", err);
+                    errorMessage.textContent = err.message;
+                    errorMessage.style.display = 'block';
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHtml;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
