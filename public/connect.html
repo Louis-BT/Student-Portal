@@ -244,36 +244,64 @@
     </div>
 
     <script>
-        // --- 1. DATA CONFIGURATION ---
-        const users = [
+        // --- 1. CONFIGURATION & STATE ---
+        let users = [
             { id: 'admin', name: 'Portal Administrator', role: 'Support', status: 'online', avatar: 'AD', color: '#ef4444' },
-            { id: 'general', name: 'National General Room', role: 'Group', status: 'online', avatar: 'GH', color: '#2563eb' },
+            { id: 'general', name: 'National General Room', role: 'Global Group', status: 'online', avatar: 'GH', color: '#2563eb' }
             { id: 'u1', name: 'Kwame (KNUST)', role: 'Student', status: 'online', img: 'https://via.placeholder.com/45' },
             { id: 'u2', name: 'Sarah (UG Legon)', role: 'Student', status: 'busy', img: 'https://via.placeholder.com/45' },
             { id: 'u3', name: 'Emmanuel (UCC)', role: 'Student', status: 'offline', img: 'https://via.placeholder.com/45' }
         ];
 
-        let activeChatId = null;
+        let activeChatId = 'general'; // Default to General Room
 
         // --- 2. INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchRealUsers(); // Get registered students from DB
             renderUserList();
-            const savedChat = localStorage.getItem('portal-active-chat');
-            if(savedChat && window.innerWidth > 850) {
-                openChat(savedChat);
-            }
             
-            // Close menu when clicking elsewhere
+            // Auto-open last chat or General
+            const savedChat = localStorage.getItem('portal-active-chat') || 'general';
+            openChat(savedChat);
+
+            // Live Refresh (Every 3 seconds for the "Real-time" feel)
+            setInterval(() => {
+                if (activeChatId === 'general') loadMessages('general');
+            }, 3000);
+
+            // Close attachment menu when clicking elsewhere
             document.addEventListener('click', (e) => {
                 const menu = document.getElementById('attachMenu');
                 const btn = document.querySelector('.action-btn');
-                if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                if (menu && !menu.contains(e.target) && btn && !btn.contains(e.target)) {
                     menu.classList.remove('active');
                 }
             });
         });
 
-        // --- 3. RENDER USER LIST ---
+        // --- 3. FETCH USERS FROM DATABASE ---
+        async function fetchRealUsers() {
+            try {
+                const res = await fetch('/api/admin/users'); // Use the endpoint we created
+                const students = await res.json();
+                
+                // Add real students to our list
+                students.forEach(s => {
+                    if (s.role !== 'ADMIN') {
+                        users.push({
+                            id: s.id.toString(),
+                            name: s.name,
+                            role: s.institution || 'Student',
+                            status: 'online',
+                            avatar: s.name.charAt(0),
+                            color: '#10b981'
+                        });
+                    }
+                });
+            } catch (e) { console.warn("Could not sync real-time user list."); }
+        }
+
+        // --- 4. RENDER USER LIST (Preserved Design) ---
         function renderUserList() {
             const list = document.getElementById('userList');
             list.innerHTML = '';
@@ -286,7 +314,7 @@
                 let statusColor = user.status === 'online' ? '#10b981' : (user.status === 'busy' ? '#fbbf24' : '#94a3b8');
 
                 list.innerHTML += `
-                    <div class="user-item" onclick="openChat('${user.id}')" data-name="${user.name.toLowerCase()}">
+                    <div class="user-item ${activeChatId === user.id ? 'active' : ''}" onclick="openChat('${user.id}')" data-name="${user.name.toLowerCase()}">
                         <div class="avatar-wrapper">
                             ${avatarHTML}
                             <div class="status-dot" style="background: ${statusColor}"></div>
@@ -300,73 +328,77 @@
             });
         }
 
-        // --- 4. OPEN CHAT LOGIC ---
-        function openChat(userId) {
+        // --- 5. OPEN CHAT LOGIC (Database Integrated) ---
+        async function openChat(userId) {
             activeChatId = userId;
             const user = users.find(u => u.id === userId);
             if(!user) return;
 
             document.getElementById('chat-title').innerText = user.name;
-            document.getElementById('chat-status').innerText = user.status === 'online' ? 'Active Now' : 'Offline';
+            document.getElementById('chat-status').innerText = 'Active Now';
             document.getElementById('msg-input').disabled = false;
             document.getElementById('msg-input').focus();
-            document.getElementById('mainLayout').classList.add('mobile-chat-active');
+            
+            document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             localStorage.setItem('portal-active-chat', userId);
 
-            document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             loadMessages(userId);
         }
 
-        function closeChat() {
-            document.getElementById('mainLayout').classList.remove('mobile-chat-active');
-            activeChatId = null;
-        }
-
-        // --- 5. MESSAGE HANDLING ---
-        function loadMessages(chatId) {
+        // --- 6. MESSAGE HANDLING (Real-Time Pull) ---
+        async function loadMessages(chatId) {
             const container = document.getElementById('msg-container');
-            container.innerHTML = '';
-            const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
-
-            if (history.length === 0) {
-                container.innerHTML = `
-                    <div class="msg msg-in" style="background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.2); margin:0 auto; width:90%; text-align:center;">
-                        <small>This is the start of your encrypted conversation with <strong>${document.getElementById('chat-title').innerText}</strong>.</small>
-                    </div>
-                `;
+            
+            // Only the 'General' room uses the Real Server API for now
+            if (chatId === 'general') {
+                try {
+                    const res = await fetch('/api/chat');
+                    const messages = await res.json();
+                    
+                    container.innerHTML = '';
+                    messages.forEach(msg => {
+                        const type = msg.user_name === localStorage.getItem('portal-user-name') ? 'out' : 'in';
+                        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        appendMessageUI(`${msg.user_name}: ${msg.message}`, type, time);
+                    });
+                } catch (e) { console.error("Message sync failed."); }
             } else {
+                // Private chats use local storage fallback for this prototype
+                const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
+                container.innerHTML = history.length === 0 ? '<div class="msg msg-in"><small>Start of encrypted chat.</small></div>' : '';
                 history.forEach(msg => appendMessageUI(msg.text, msg.type, msg.time));
             }
             scrollToBottom();
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if (!text || !activeChatId) return;
 
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            saveMessage(activeChatId, text, 'out', time);
-            appendMessageUI(text, 'out', time);
-            input.value = '';
-            scrollToBottom();
 
-            if (activeChatId === 'admin') {
-                setTimeout(() => {
-                    const reply = "Thank you for contacting support. An agent will review your query shortly.";
-                    saveMessage(activeChatId, reply, 'in', time);
-                    appendMessageUI(reply, 'in', time);
-                    scrollToBottom();
-                }, 1500);
+            if (activeChatId === 'general') {
+                // SEND TO SERVER
+                try {
+                    await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text })
+                    });
+                    input.value = '';
+                    loadMessages('general');
+                } catch (e) { alert("Server connection error."); }
+            } else {
+                // LOCAL SIMULATION
+                saveMessage(activeChatId, text, 'out', time);
+                appendMessageUI(text, 'out', time);
+                input.value = '';
             }
+            scrollToBottom();
         }
 
-        function saveMessage(chatId, text, type, time) {
-            const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
-            history.push({ text, type, time });
-            localStorage.setItem(`chat_history_${chatId}`, JSON.stringify(history));
-        }
-
+        // --- 7. UI HELPERS ---
         function appendMessageUI(text, type, time) {
             const container = document.getElementById('msg-container');
             const msgDiv = document.createElement('div');
@@ -380,49 +412,7 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- 6. ATTACHMENT MENU LOGIC ---
-        function toggleMenu() {
-            const menu = document.getElementById('attachMenu');
-            menu.classList.toggle('active');
-        }
-
-        function triggerFileSelect(type) {
-            // In a real app, 'type' would filter the file input (accept="image/*", etc.)
-            const input = document.getElementById('fileInput');
-            if(type === 'image') input.accept = "image/*,video/*";
-            else if(type === 'audio') input.accept = "audio/*";
-            else input.accept = ".pdf,.doc,.docx,.txt";
-            
-            input.click();
-            document.getElementById('attachMenu').classList.remove('active');
-        }
-
-        function handleFileUpload(input) {
-            if (input.files && input.files[0]) {
-                const fileName = input.files[0].name;
-                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                // Simulate different icons based on file type
-                let icon = '📎';
-                if(input.accept.includes('image')) icon = '📷';
-                if(input.accept.includes('audio')) icon = '🎤';
-
-                const msg = `${icon} Sent file: <strong>${fileName}</strong>`;
-                
-                saveMessage(activeChatId, msg, 'out', time);
-                appendMessageUI(msg, 'out', time);
-                scrollToBottom();
-            }
-        }
-
-        function filterUsers() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const items = document.querySelectorAll('.user-item');
-            items.forEach(item => {
-                const name = item.getAttribute('data-name');
-                item.style.display = name.includes(term) ? 'flex' : 'none';
-            });
-        }
+        function toggleMenu() { document.getElementById('attachMenu').classList.toggle('active'); }
 
         document.getElementById('msg-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();

@@ -156,8 +156,12 @@
                         <table class="admin-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th><th>Name</th><th>Email</th><th>Institution</th><th>GPA</th><th>Actions</th>
-                                </tr>
+    <th>Date</th>
+    <th>File Name</th>
+    <th>Category</th>
+    <th>Status</th>
+    <th style="text-align: right;">Action</th>
+</tr>
                             </thead>
                             <tbody id="user-table-body">
                                 <tr><td colspan="6" class="text-center">Loading data...</td></tr>
@@ -442,41 +446,66 @@
         }
 
         // 4. LIBRARY MODULE
-        async function loadResources() { 
-            try {
-                const res = await fetch('/api/resources');
-                const data = await res.json();
-                document.getElementById('kpi-files').innerText = data.length;
-                
-                const tbody = document.getElementById('resource-table-body');
-                tbody.innerHTML = '';
-                
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="text-center">No files uploaded.</td></tr>`;
-                    return;
-                }
+        // REPLACE your existing loadResources function with this
+async function loadResources() { 
+    try {
+        // Fetch all resources (including pending ones)
+        const res = await fetch('/api/admin/pending-resources');
+        const data = await res.json();
+        
+        // Update the KPI on the dashboard
+        const pendingCount = data.filter(r => r.status === 'PENDING').length;
+        document.getElementById('kpi-files').innerText = data.length;
 
-                data.forEach(item => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${new Date(item.date).toLocaleDateString()}</td>
-                            <td>${item.title}</td>
-                            <td>${item.uploaded_by || 'Unknown'}</td>
-                            <td>${item.university || 'N/A'}</td>
-                            <td style="text-align:right;"><button class="btn btn-danger btn-sm" onclick="deleteResource(${item.id})">Delete</button></td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {}
+        const tbody = document.getElementById('resource-table-body');
+        tbody.innerHTML = '';
+        
+        if(data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center">No files in the queue.</td></tr>`;
+            return;
         }
 
-        async function deleteResource(id) {
-            if(confirm("Permanently remove this file from the server?")) {
-                await fetch(`/api/resources/${id}`, { method: 'DELETE' });
-                loadResources();
+        data.forEach(item => {
+            let actions = '';
+            // If it's pending, show Approve/Reject. Otherwise just Delete.
+            if(item.status === 'PENDING') {
+                actions = `
+                    <button class="btn btn-success btn-sm" onclick="reviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i></button>
+                `;
+            } else {
+                actions = `<button class="btn btn-danger btn-sm" onclick="deleteResource(${item.id})"><i class="fas fa-trash"></i></button>`;
             }
-        }
 
+            tbody.innerHTML += `
+                <tr>
+                    <td>${new Date(item.date).toLocaleDateString()}</td>
+                    <td><strong>${item.title}</strong><br><small>${item.uploaded_by || 'Staff'}</small></td>
+                    <td><span class="status-pill" style="background:#f1f5f9; color:#475569;">${item.category}</span></td>
+                    <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
+                    <td style="text-align:right;">${actions}</td>
+                </tr>
+            `;
+        });
+    } catch(e) {
+        console.error("Library load error:", e);
+    }
+}
+
+// ADD this new function below loadResources
+async function reviewResource(id, status) {
+    try {
+        const res = await fetch('/api/admin/resource-review', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, status })
+        });
+        if(res.ok) {
+            loadResources(); // Refresh the list
+            initDashboard(); // Update KPI counts
+        }
+    } catch(e) { alert("Error updating resource status."); }
+}
         // 5. REPORTS MODULE
         async function loadReports() { 
             try {

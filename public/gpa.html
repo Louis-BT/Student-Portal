@@ -217,6 +217,8 @@
 
                     <div id="classBadge" class="class-badge">Pending Calculation</div>
 
+                    <p id="gpaRemarks" style="margin: 10px 0; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); font-style: italic; line-height: 1.4;"></p>
+                  
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                         <div style="background: var(--bg-color); padding: 10px; border-radius: 8px;">
                             <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TOTAL CREDITS</div>
@@ -254,182 +256,234 @@
     </div>
 
     <script>
-        // --- 1. INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Add 5 default rows
-            for(let i=0; i<5; i++) addRow();
-            updateScaleReference();
+        // --- 1. INITIALIZATION & DATA LOADING ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if user has courses from the Registration page
+    const savedCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
+    
+    const container = document.getElementById('course-rows');
+    container.innerHTML = ''; // Clear initial state
+
+    if (savedCourses.length > 0) {
+        // Auto-fill rows based on registered courses
+        savedCourses.forEach(c => addRow(c.name, c.credits));
+    } else {
+        // Add 5 default blank rows if no courses registered
+        for(let i=0; i<5; i++) addRow();
+    }
+    updateScaleReference();
+});
+
+// --- 2. ROW MANAGEMENT (Add/Remove) ---
+function addRow(name = '', credits = '') {
+    const container = document.getElementById('course-rows');
+    const row = document.createElement('div');
+    row.className = 'course-row';
+    row.innerHTML = `
+        <input type="text" placeholder="Course Name" value="${name}" class="c-name">
+        <input type="number" placeholder="Credits" value="${credits}" min="1" max="6" class="c-credit">
+        <input type="number" placeholder="Score (0-100)" min="0" max="100" class="c-score">
+        <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
+            <i class="fas fa-trash-alt"></i>
+        </button>
+    `;
+    container.appendChild(row);
+}
+
+// --- 3. THE MATH ENGINE ---
+
+function calculate() {
+    const scale = document.getElementById('scaleSelect').value;
+    const rows = document.querySelectorAll('.course-row');
+    
+    let totalGradePoints = 0;
+    let totalCredits = 0;
+    let hasData = false;
+
+    rows.forEach(row => {
+        const cred = parseFloat(row.querySelector('.c-credit').value);
+        const score = parseFloat(row.querySelector('.c-score').value);
+
+        if (!isNaN(cred) && !isNaN(score)) {
+            hasData = true;
+            const pointPerCredit = getGradePoint(score, scale);
+            totalGradePoints += (pointPerCredit * cred);
+            totalCredits += cred;
+        }
+    });
+
+    if (!hasData) {
+        alert("Please enter credits and scores for at least one course.");
+        return;
+    }
+
+    const gpa = (totalGradePoints / totalCredits).toFixed(2);
+    
+    // Activate Results Panel
+    const resCard = document.getElementById('resultCard');
+    resCard.style.opacity = '1';
+    resCard.style.pointerEvents = 'all';
+
+    // Update Values with Animation
+    animateValue("gpaValue", 0, parseFloat(gpa), 800);
+    document.getElementById('totalCredits').innerText = totalCredits;
+    document.getElementById('totalPoints').innerText = totalGradePoints.toFixed(1);
+
+    // Update Badge and Colors
+    updateVisuals(parseFloat(gpa), scale);
+}
+
+// --- 4. GRADE SCALES (Strictly following your ranges) ---
+function getGradePoint(score, scale) {
+    if (scale === '5.0') {
+        if (score >= 80) return 5.00; // A+
+        if (score >= 70) return 4.50; // A
+        if (score >= 65) return 4.00; // B+
+        if (score >= 60) return 3.50; // B
+        if (score >= 55) return 3.00; // C+
+        if (score >= 50) return 2.50; // C
+        if (score >= 45) return 2.00; // D+
+        if (score >= 40) return 1.50; // D
+        return 0.00; // F
+    } else {
+        // 4.0 Scale Reference
+        if (score >= 70) return 4.00; // A
+        if (score >= 60) return 3.50; // B+
+        if (score >= 50) return 3.00; // B
+        if (score >= 45) return 2.50; // C+
+        if (score >= 40) return 2.00; // C
+        return 0.00; // F
+    }
+}
+
+// --- 5. VISUAL FEEDBACK & ANIMATION ---
+function updateVisuals(gpa, scale) {
+    const circle = document.getElementById('gpaCircle');
+    const badge = document.getElementById('classBadge');
+    let color = "#ef4444"; // Default Red
+    let label = "Academic Probation";
+
+    if (scale === '5.0') {
+        if(gpa >= 4.5) { color = "#22c55e"; label = "First Class Honours"; }
+        else if(gpa >= 3.5) { color = "#22c55e"; label = "Second Class (Upper)"; }
+        else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
+        else if(gpa >= 1.5) { color = "#f97316"; label = "Third Class"; }
+    } else {
+        if(gpa >= 3.6) { color = "#22c55e"; label = "First Class Honours"; }
+        else if(gpa >= 3.0) { color = "#22c55e"; label = "Second Class (Upper)"; }
+        else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
+        else if(gpa >= 2.0) { color = "#f97316"; label = "Third Class"; }
+    }
+
+    circle.style.borderColor = color;
+    circle.style.color = color;
+    badge.style.background = color + "20"; 
+    badge.style.color = color;
+    badge.innerText = label;
+}
+
+function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = (progress * (end - start) + start).toFixed(2);
+        if (progress < 1) window.requestAnimationFrame(step);
+        // --- DYNAMIC REMARKS LOGIC ---
+    const remarks = document.getElementById('gpaRemarks');
+    let remarkText = "";
+
+    if (scale === '5.0') {
+        if(gpa >= 4.5) remarkText = "Outstanding! You are demonstrating exceptional academic mastery.";
+        else if(gpa >= 3.5) remarkText = "Impressive work! You are maintaining a very strong academic record.";
+        else if(gpa >= 2.5) remarkText = "A solid performance. Consistency is key to reaching the next level.";
+        else if(gpa >= 1.5) remarkText = "You have passed, but there is significant room for improvement.";
+        else remarkText = "Your academic standing is at risk. Please prioritize your studies.";
+    } else {
+        if(gpa >= 3.6) remarkText = "Exceptional! You are currently among the top-performing students.";
+        else if(gpa >= 3.0) remarkText = "Very good! Your hard work is reflecting in your grades.";
+        else if(gpa >= 2.5) remarkText = "Good progress. Aim higher in the coming semesters to reach the top.";
+        else if(gpa >= 2.0) remarkText = "You are on track, but extra effort could yield much better results.";
+        else remarkText = "Urgent: Your grades are below standard. Seek academic support immediately.";
+    }
+    remarks.innerText = remarkText;
+    };
+    window.requestAnimationFrame(step);
+}
+
+// --- 6. DYNAMIC REFERENCE TABLE ---
+function updateScaleReference() {
+    const scale = document.getElementById('scaleSelect').value;
+    const tbody = document.getElementById('scaleTableBody');
+    tbody.innerHTML = '';
+
+    let data = [];
+    if (scale === '5.0') {
+        data = [
+            { range: '80 - 100', grade: 'A+', point: '5.00' },
+            { range: '70 - 79', grade: 'A', point: '4.50' },
+            { range: '65 - 69', grade: 'B+', point: '4.00' },
+            { range: '60 - 64', grade: 'B', point: '3.50' },
+            { range: '55 - 59', grade: 'C+', point: '3.00' },
+            { range: '50 - 54', grade: 'C', point: '2.50' },
+            { range: '45 - 49', grade: 'D+', point: '2.00' },
+            { range: '40 - 44', grade: 'D', point: '1.50' },
+            { range: '0 - 39', grade: 'F', point: '0.00' }
+        ];
+    } else {
+        data = [
+            { range: '70 - 100', grade: 'A', point: '4.00' },
+            { range: '60 - 69', grade: 'B+', point: '3.50' },
+            { range: '50 - 59', grade: 'B', point: '3.00' },
+            { range: '45 - 49', grade: 'C+', point: '2.50' },
+            { range: '40 - 44', grade: 'C', point: '2.00' },
+            { range: '0 - 39', grade: 'F', point: '0.00' }
+        ];
+    }
+
+    data.forEach(row => {
+        tbody.innerHTML += `<tr><td>${row.range}</td><td><b>${row.grade}</b></td><td>${row.point}</td></tr>`;
+    });
+}
+
+// --- 7. DATABASE SYNC (Dashboard Integration) ---
+async function saveToProfile() {
+    const gpaValue = document.getElementById('gpaValue').innerText;
+    const btn = document.querySelector('.btn-save');
+    
+    // UI Feedback
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+    btn.disabled = true;
+
+    try {
+        // Post current GPA and Courses to PostgreSQL
+        const res = await fetch('/api/user/save-gpa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                gpa: gpaValue,
+                courses: JSON.parse(localStorage.getItem('portal-courses') || '[]')
+            })
         });
 
-        // --- 2. ROW MANAGEMENT ---
-        function addRow() {
-            const container = document.getElementById('course-rows');
-            const row = document.createElement('div');
-            row.className = 'course-row';
-            row.innerHTML = `
-                <input type="text" placeholder="Course Name (e.g. Calculus)" class="c-name">
-                <input type="number" placeholder="3" min="1" max="6" class="c-credit">
-                <input type="number" placeholder="85" min="0" max="100" class="c-score">
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            `;
-            container.appendChild(row);
-        }
-
-        // --- 3. CALCULATION ENGINE ---
-        function calculate() {
-            const scale = document.getElementById('scaleSelect').value;
-            const rows = document.querySelectorAll('.course-row');
-            
-            let totalPoints = 0;
-            let totalCredits = 0;
-            let hasData = false;
-
-            rows.forEach(row => {
-                const cred = parseFloat(row.querySelector('.c-credit').value);
-                const score = parseFloat(row.querySelector('.c-score').value);
-
-                if (!isNaN(cred) && !isNaN(score)) {
-                    hasData = true;
-                    const point = getGradePoint(score, scale);
-                    totalPoints += (point * cred);
-                    totalCredits += cred;
-                }
-            });
-
-            if (!hasData) {
-                alert("Please enter at least one credit and score.");
-                return;
-            }
-
-            const gpa = (totalPoints / totalCredits).toFixed(2);
-            
-            // Render Results
-            const resCard = document.getElementById('resultCard');
-            resCard.style.opacity = '1';
-            resCard.style.pointerEvents = 'all';
-
-            // Animation for Numbers
-            animateValue("gpaValue", 0, gpa, 1000);
-            document.getElementById('totalCredits').innerText = totalCredits;
-            document.getElementById('totalPoints').innerText = totalPoints.toFixed(1);
-
-            // Determine Class & Color
-            updateVisuals(parseFloat(gpa), scale);
-        }
-
-        function getGradePoint(score, scale) {
-            if (scale === '5.00') {
-                if (score >= 80) return 5.00; // A+
-                if (score >= 70) return 4.50; // A
-                if (score >= 65) return 4.00; // B+
-                if (score >= 60) return 3.50; // B
-                if (score >= 55) return 3.00; // C+
-                if (score >= 50) return 2.50; // C
-                if (score >= 45) return 2.00; // D+
-                if (score >= 40) return 1.50; // D
-                else return 0.00; // F
-            } else {
-                // 4.0 Scale
-                if (score >= 70) return 4.00; // A
-                if (score >= 60) return 3.50; // B+
-                if (score >= 50) return 3.00; // B
-                if (score >= 45) return 2.50; // C+
-                if (score >= 40) return 2.00; // C
-                else return 0.00; // F
-            }
-        }
-
-        function updateVisuals(gpa, scale) {
-            const circle = document.getElementById('gpaCircle');
-            const badge = document.getElementById('classBadge');
-            let color = "#ef4444"; // Red (Fail)
-            let label = "Fail";
-
-            // Logic for Class Determination
-            if (scale === '5.0') {
-                if(gpa >= 4.5) { color = "#22c55e"; label = "First Class Honours"; }
-                else if(gpa >= 3.5) { color = "#22c55e"; label = "Second Class (Upper)"; }
-                else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
-                else if(gpa >= 1.5) { color = "#f97316"; label = "Third Class"; }
-            } else {
-                if(gpa >= 3.6) { color = "#22c55e"; label = "First Class Honours"; }
-                else if(gpa >= 3.0) { color = "#22c55e"; label = "Second Class (Upper)"; }
-                else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
-                else if(gpa >= 2.0) { color = "#f97316"; label = "Third Class"; }
-            }
-
-            circle.style.borderColor = color;
-            circle.style.color = color;
-            badge.style.background = color + "20"; // 20% opacity
-            badge.style.color = color;
-            badge.innerText = label;
-        }
-
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // --- 4. DYNAMIC REFERENCE TABLE ---
-        function updateScaleReference() {
-            const scale = document.getElementById('scaleSelect').value;
-            const tbody = document.getElementById('scaleTableBody');
-            tbody.innerHTML = '';
-
-            let data = [];
-            if (scale === '5.0') {
-                data = [
-                    { range: '80 - 100', grade: 'A+', point: '5.00' },
-                    { range: '70 - 79', grade: 'A', point: '4.50' },
-                    { range: '65 - 69', grade: 'B+', point: '4.00' },
-                    { range: '60 - 64', grade: 'B', point: '3.50' },
-                    { range: '55 - 59', grade: 'C+', point: '3.00' },
-                    { range: '50 - 54', grade: 'C', point: '2.50' },
-                    { range: '45 - 49', grade: 'D+', point: '2.00' },
-                    { range: '40 - 44', grade: 'D', point: '1.50' },
-                    { range: '0 - 39', grade: 'F', point: '0.00' }
-                ];
-            } else {
-                data = [
-                    { range: '70 - 100', grade: 'A', point: '4.00' },
-                    { range: '65 - 69', grade: 'B+', point: '3.50' },
-                    { range: '50 - 59', grade: 'B', point: '3.00' },
-                    { range: '45 - 49', grade: 'C+', point: '2.50' },
-                    { range: '40 - 44', grade: 'C', point: '2.00' }
-                    { range: '0 - 39', grade: 'F', point: '0.00' }
-                ];
-            }
-
-            data.forEach(row => {
-                tbody.innerHTML += `<tr><td>${row.range}</td><td><b>${row.grade}</b></td><td>${row.point}</td></tr>`;
-            });
-        }
-
-        // --- 5. SAVE FUNCTION ---
-        function saveToProfile() {
-            const gpa = document.getElementById('gpaValue').innerText;
-            localStorage.setItem('portal-gpa', gpa);
-            
-            const btn = document.querySelector('.btn-save');
-            const originalHTML = btn.innerHTML;
-            
-            btn.innerHTML = `<i class="fas fa-check"></i> Saved!`;
+        if (res.ok) {
+            localStorage.setItem('portal-gpa', gpaValue);
+            btn.innerHTML = `<i class="fas fa-check"></i> Saved Successfully!`;
             btn.style.background = "#22c55e";
             
             setTimeout(() => {
-                btn.innerHTML = originalHTML;
+                btn.innerHTML = `<i class="fas fa-save"></i> Save to Profile`;
                 btn.style.background = "var(--text-color)";
-            }, 2000);
-        }
+                btn.disabled = false;
+            }, 2500);
+        } else { throw new Error(); }
+    } catch (err) {
+        alert("Database Error. GPA saved locally only.");
+        btn.innerHTML = `<i class="fas fa-save"></i> Save to Profile`;
+        btn.disabled = false;
+    }
+}
     </script>
 </body>
 </html>

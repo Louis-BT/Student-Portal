@@ -299,65 +299,171 @@
     </div>
 
     <script>
-        // --- TAB LOGIC ---
-        function switchTab(tabId) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
-            // Hide all sections
-            document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
-            
-            // Activate selected
-            document.querySelector(`.lib-tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
-            document.getElementById(`tab-${tabId}`).style.display = 'block';
+        // --- 1. GLOBAL STATE & INITIALIZATION ---
+let allResources = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial UI Setup
+    updateScaleReference(); // If applicable
+    updateTicker();
+    
+    // Fetch real data from the database
+    fetchLibraryData();
+    
+    // Default Tab
+    switchTab('explore');
+});
+
+// --- 2. TAB LOGIC (Preserved) ---
+function switchTab(tabId) {
+    document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
+    
+    const activeTab = document.querySelector(`.lib-tab[onclick="switchTab('${tabId}')"]`);
+    if(activeTab) activeTab.classList.add('active');
+    
+    const section = document.getElementById(`tab-${tabId}`);
+    if(section) section.style.display = 'block';
+}
+
+// --- 3. DATABASE FETCH & RENDER ---
+async function fetchLibraryData() {
+    const container = document.getElementById('resource-grid');
+    if (!container) return;
+
+    try {
+        const response = await fetch('/api/library/resources');
+        allResources = await response.json();
+        
+        if (allResources.length === 0) {
+            container.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">No documents approved yet. Be the first to contribute!</p>`;
+            return;
         }
 
-        // --- UPLOAD LOGIC ---
-        function toggleModal() {
-            const modal = document.getElementById('uploadModal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
+        renderResources(allResources);
+    } catch (error) {
+        console.error("Library Fetch Error:", error);
+    }
+}
 
-        function handleUpload() {
+function renderResources(list) {
+    const container = document.getElementById('resource-grid');
+    container.innerHTML = '';
+
+    list.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'resource-card'; 
+        card.innerHTML = `
+            <div class="file-icon"><i class="fas ${getFileIcon(item.category)}"></i></div>
+            <h3 style="margin: 0; font-size: 1.1rem;">${item.title}</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 8px 0;">Uploaded by: ${item.uploaded_by || 'Staff'}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                <span class="category-badge" style="font-size:0.7rem; background:var(--input-bg); padding:4px 8px; border-radius:4px; font-weight:700;">${item.category}</span>
+                <a href="/uploads/${item.file_path}" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 700; font-size: 0.9rem;">
+                    View/Learn <i class="fas fa-external-link-alt"></i>
+                </a>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function getFileIcon(category) {
+    const map = { 'BOOK': 'fa-book', 'PAST_QUESTION': 'fa-file-signature', 'NOTES': 'fa-file-alt' };
+    return map[category] || 'fa-file';
+}
+
+// --- 4. FILTER LOGIC (For Category Sub-Tabs) ---
+function filterCategory(category, element) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    if(element) element.classList.add('active');
+
+    if (category === 'ALL') {
+        renderResources(allResources);
+    } else {
+        const filtered = allResources.filter(res => res.category === category);
+        renderResources(filtered);
+    }
+}
+
+// --- 5. REAL UPLOAD LOGIC ---
+function toggleModal() {
+    const modal = document.getElementById('uploadModal');
+    modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+async function handleUpload() {
+    const fileInput = document.getElementById('file-input'); // Ensure your input has this ID
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert("Please select a file first.");
+        return;
+    }
+
+    const title = prompt("Enter Document Title:");
+    const category = prompt("Enter Category (BOOK, PAST_QUESTION, or NOTES):").toUpperCase();
+
+    if (!title || !['BOOK', 'PAST_QUESTION', 'NOTES'].includes(category)) {
+        alert("Invalid input. Category must be BOOK, PAST_QUESTION, or NOTES.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('category', category);
+
+    try {
+        const response = await fetch('/api/library/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
             toggleModal();
-            // Simulate Admin Notification
-            alert("✅ Upload Successful!\n\nYour document has been sent to the Administration Queue for security vetting. You will be notified once approved.");
+            alert("✅ Upload Successful!\n\nYour document has been sent to the Administration Queue for security vetting.");
+            fetchLibraryData(); // Refresh list
+        } else {
+            alert("Upload failed. Make sure you are logged in.");
         }
+    } catch (err) {
+        alert("Connection error. Try again later.");
+    }
+}
 
-        // --- DICTIONARY LOGIC (Simulated) ---
-        function searchDictionary() {
-            const term = document.getElementById('dict-input').value;
-            const cat = document.getElementById('dict-category').value;
-            const resBox = document.getElementById('dict-result');
-            
-            if(!term) return;
+// --- 6. DICTIONARY LOGIC (Preserved) ---
+function searchDictionary() {
+    const term = document.getElementById('dict-input').value;
+    const cat = document.getElementById('dict-category').value;
+    const resBox = document.getElementById('dict-result');
+    
+    if(!term) return;
 
-            resBox.style.display = 'block';
-            resBox.innerHTML = `
-                <strong style="font-size: 1.2rem;">${term}</strong> <em style="color:var(--text-muted);">(${cat} dictionary)</em>
-                <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
-                <p><strong>Definition:</strong> [Simulated Result] A comprehensive definition of '${term}' would appear here based on the ${cat} database.</p>
-                <p><strong>Context:</strong> Used frequently in modern academic research.</p>
-            `;
-        }
+    resBox.style.display = 'block';
+    resBox.innerHTML = `
+        <strong style="font-size: 1.2rem;">${term}</strong> <em style="color:var(--text-muted);">(${cat} dictionary)</em>
+        <hr style="border:0; border-top:1px solid var(--border-color); margin:10px 0;">
+        <p><strong>Definition:</strong> [Simulated Result] A comprehensive definition of '${term}' would appear here based on the ${cat} database.</p>
+        <p><strong>Context:</strong> Used frequently in modern academic research.</p>
+    `;
+}
 
-        // --- LIVE GHANA UPDATER ---
-        const ghanaUpdates = [
-            "President to address the nation on Education Policy at 8 PM.",
-            "New Tourism Site discovered in the Volta Region.",
-            "National Cathedral project update released.",
-            "Ghana Stock Exchange reports 5% growth in Q1.",
-            "Black Stars announce squad for upcoming qualifiers."
-        ];
+// --- 7. LIVE GHANA UPDATER (Preserved) ---
+const ghanaUpdates = [
+    "President to address the nation on Education Policy at 8 PM.",
+    "New Tourism Site discovered in the Volta Region.",
+    "National Cathedral project update released.",
+    "Ghana Stock Exchange reports 5% growth in Q1.",
+    "Black Stars announce squad for upcoming qualifiers."
+];
 
-        function updateTicker() {
-            const ticker = document.getElementById('ghana-ticker');
-            // Randomly pick a headline or cycle them
-            ticker.innerText = ghanaUpdates.join(" ••• ");
-        }
+function updateTicker() {
+    const ticker = document.getElementById('ghana-ticker');
+    if(ticker) ticker.innerText = ghanaUpdates.join(" ••• ");
+}
 
-        setInterval(updateTicker, 300000); // Update every 5 mins
-        updateTicker(); // Initial run
-
+setInterval(updateTicker, 300000); // 5 mins
     </script>
 </body>
 </html>

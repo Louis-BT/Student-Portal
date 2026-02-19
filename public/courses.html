@@ -11,11 +11,10 @@
     <script src="theme.js"></script>
 
     <style>
-        /* --- WEB LAYOUT (Screen Only) --- */
+        /* --- WEB LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
 
-        /* Sidebar & Nav */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
@@ -23,11 +22,9 @@
         .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
         .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
 
-        /* Content Area */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-color); position: relative; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
 
-        /* Grid & Cards */
         .page-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 25px; max-width: 1400px; margin: 0 auto; }
         .action-card {
             background: var(--card-bg); padding: 25px; border-radius: 12px;
@@ -35,7 +32,6 @@
             display: flex; flex-direction: column;
         }
 
-        /* Inputs */
         input[type="text"], input[type="number"] {
             width: 100%; padding: 12px 15px; border: 1px solid var(--border-color);
             border-radius: 8px; background: var(--input-bg); color: var(--text-color);
@@ -44,7 +40,6 @@
         input:focus { outline: none; border-color: var(--primary-color); }
         .manual-entry-grid { display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 10px; margin-bottom: 10px; }
 
-        /* Suggestions Dropdown */
         .suggestions-list {
             position: absolute; top: 100%; left: 0; right: 0;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -54,7 +49,6 @@
         .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
         .suggestion-item:hover { background: var(--primary-color); color: white; }
 
-        /* Course List Items */
         .course-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px; border-bottom: 1px solid var(--border-color);
@@ -64,13 +58,11 @@
         .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.85rem; }
         .course-credits { font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content; }
 
-        /* Buttons */
         .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--primary-color); color: white; width: 100%; justify-content: center; }
         .btn-delete { background: #fee2e2; color: #ef4444; padding: 6px; border-radius: 4px; }
         .btn-print { background: #1e293b; color: white; }
 
-        /* Timetable */
         .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
         .timetable { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .timetable th { background: #0f172a; color: white; padding: 12px; text-align: center; font-size: 0.9rem; }
@@ -89,37 +81,24 @@
             background: #f9f9f9; padding: 15px; border: 1px solid #ddd;
         }
         .bio-item strong { display: inline-block; width: 100px; }
-
         .doc-title { text-align: center; text-transform: uppercase; font-weight: 800; text-decoration: underline; margin: 30px 0; font-size: 1.4rem; }
-        
-        .print-signature { display: none; margin-top: 80px; display: flex; justify-content: space-between; }
+        .print-signature { display: none; margin-top: 80px; justify-content: space-between; }
         .sign-line { border-top: 1px solid #000; width: 250px; padding-top: 10px; text-align: center; font-size: 0.9rem; }
-
-        @media (max-width: 1000px) { .page-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
 
         /* --- PRINT MODE CONFIGURATION --- */
         @media print {
-            @page { margin: 2cm; }
-            body { background: white; color: black; display: block; height: auto; overflow: visible; font-size: 12pt; }
+            @page { margin: 1.5cm; }
+            body { background: white !important; color: black !important; display: block; height: auto; overflow: visible; font-size: 11pt; }
             .wrapper, .main-content { display: block; padding: 0; overflow: visible; width: 100%; height: auto; }
-            
-            /* Hide UI Elements */
-            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, 
-            .btn, .btn-delete, .suggestions-list, h2 i { display: none !important; }
-
-            /* Show Official Elements */
-            .official-header { display: block; }
-            .print-signature { display: flex; }
-
-            /* Default: Hide content sections */
+            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, .btn, .btn-delete, .suggestions-list, h2 i { display: none !important; }
+            .official-header { display: block !important; }
+            .print-signature { display: flex !important; }
             .action-card, .timetable-section { display: none; border: none; box-shadow: none; padding: 0; }
 
-            /* MODE: REGISTRATION SLIP */
-            body.print-reg .action-card.course-card { display: block; width: 100%; }
-            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; }
+            body.print-reg .action-card.course-card { display: block !important; width: 100%; }
+            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; background: transparent !important; }
             
-            /* MODE: TIMETABLE */
-            body.print-time .timetable-section { display: block; width: 100%; }
+            body.print-time .timetable-section { display: block !important; width: 100%; }
             body.print-time .timetable th { background: #eee !important; color: black !important; border: 1px solid #000; }
             body.print-time .timetable td { border: 1px solid #000; }
         }
@@ -129,29 +108,24 @@
 
     <div class="official-header">
         <div class="header-top">
-            <div class="school-logo">
-                <i class="fas fa-university"></i> </div>
+            <div class="school-logo"><i class="fas fa-university"></i></div>
             <div class="school-info">
                 <h1 id="p-school-name">National Tertiary Portal</h1>
                 <p>Office of the Registrar • Academic Affairs</p>
             </div>
         </div>
-
         <div class="student-bio-grid">
-            <div class="bio-item"><strong>Name:</strong> <span id="p-student-name">Loading...</span></div>
-            <div class="bio-item"><strong>Student ID:</strong> <span id="p-student-id">10293844</span></div>
-            <div class="bio-item"><strong>Programme:</strong> Bachelor of Science</div>
+            <div class="bio-item"><strong>Name:</strong> <span id="p-student-name">...</span></div>
+            <div class="bio-item"><strong>Student ID:</strong> <span id="p-student-id">...</span></div>
+            <div class="bio-item"><strong>Programme:</strong> <span id="p-student-program">Degree Programme</span></div>
             <div class="bio-item"><strong>Date:</strong> <span id="p-print-date"></span></div>
         </div>
-
         <h2 class="doc-title" id="p-doc-title">Official Document</h2>
     </div>
 
     <div class="wrapper">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-graduation-cap"></i> Student Portal
-            </div>
+            <div class="sidebar-header"><i class="fas fa-graduation-cap"></i> Student Portal</div>
             <ul class="nav-links">
                 <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
@@ -180,22 +154,20 @@
             </header>
 
             <div class="page-grid">
-                
                 <div class="action-card">
                     <h2><i class="fas fa-search"></i> Find Courses</h2>
-                    
                     <div class="input-group">
                         <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Search Database</label>
-                        <input type="text" id="courseSearch" placeholder="E.g. Calculus..." autocomplete="off">
+                        <input type="text" id="courseSearch" placeholder="E.g. Calculus or MATH 121..." autocomplete="off">
                         <div id="suggestions" class="suggestions-list"></div>
                     </div>
 
                     <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
                         <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Manual Entry (If not found)</label>
                         <div class="manual-entry-grid">
-                            <input type="text" id="manualCode" placeholder="Code (e.g. CSCD 201)">
+                            <input type="text" id="manualCode" placeholder="Code">
                             <input type="text" id="manualName" placeholder="Course Title">
-                            <input type="number" id="manualCredit" placeholder="Cr" value="3" min="1">
+                            <input type="number" id="manualCredit" placeholder="Cr" value="3">
                         </div>
                         <button class="btn btn-primary" onclick="addManualCourse()">+ Add to List</button>
                     </div>
@@ -206,36 +178,19 @@
                         <h2 style="margin:0;"><i class="fas fa-list-ul"></i> Registered List</h2>
                         <span id="total-credits" style="font-size: 0.8rem; background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 10px; font-weight: 700;">0 Credits</span>
                     </div>
-
-                    <div class="course-list-container" id="registered-list">
-                        </div>
-
-                    <button class="btn btn-print" onclick="printDocument('registration')">
-                        <i class="fas fa-print"></i> Print Slip
-                    </button>
+                    <div class="course-list-container" id="registered-list"></div>
+                    <button class="btn btn-print" onclick="printDocument('registration')"><i class="fas fa-print"></i> Print Slip</button>
                 </div>
             </div>
 
+            
             <div class="timetable-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
                     <h2 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Weekly Schedule</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <select id="schedule-mode" onchange="generateTimetable()" style="padding: 8px; border-radius: 6px;">
-                            <option value="standard">Standard View</option>
-                            <option value="extended">Extended View</option>
-                        </select>
-                        <button class="btn btn-print" onclick="printDocument('timetable')">
-                            <i class="fas fa-print"></i> Print Timetable
-                        </button>
-                    </div>
+                    <button class="btn btn-print" onclick="printDocument('timetable')"><i class="fas fa-print"></i> Print Timetable</button>
                 </div>
-
                 <table class="timetable">
-                    <thead>
-                        <tr>
-                            <th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
                     <tbody id="timetable-body"></tbody>
                 </table>
             </div>
@@ -244,85 +199,57 @@
                 <div class="sign-line">Student Signature</div>
                 <div class="sign-line">Academic Officer / HOD</div>
             </div>
-
         </main>
     </div>
 
     <script>
-        // --- DATA & STATE ---
         const courseDB = [
             { name: "Academic Writing I", code: "UGRC 110", credits: 3 },
             { name: "Calculus I", code: "MATH 121", credits: 4 },
             { name: "Intro to Computer Science", code: "CSCD 101", credits: 3 },
             { name: "Programming Fundamentals", code: "CSCD 102", credits: 3 },
             { name: "Economics I", code: "ECON 101", credits: 3 },
-            { name: "Financial Accounting", code: "ACCT 201", credits: 3 }
+            { name: "Financial Accounting", code: "ACCT 201", credits: 3 },
+            { name: "Discrete Math", code: "MATH 123", credits: 3 }
         ];
 
         let myCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
 
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             renderList();
             generateTimetable();
             setupPrintHeader();
         });
 
-        // --- SMART PRINT LOGIC ---
-        function setupPrintHeader() {
-            // Fetch User Details from Storage
-            const name = localStorage.getItem('portal-user-name') || 'Student Name';
-            const school = localStorage.getItem('portal-institution') || 'University of Ghana';
-            
-            // Inject into Hidden Print Header
-            document.getElementById('p-student-name').innerText = name;
-            document.getElementById('p-school-name').innerText = school;
-            document.getElementById('p-print-date').innerText = new Date().toLocaleDateString();
+        async function setupPrintHeader() {
+            try {
+                const res = await fetch('/api/user/profile');
+                const data = await res.json();
+                document.getElementById('p-student-name').innerText = data.name || 'Student';
+                document.getElementById('p-student-id').innerText = data.id || 'N/A';
+                document.getElementById('p-student-program').innerText = data.program || 'N/A';
+                document.getElementById('p-school-name').innerText = data.institution || 'National Tertiary Portal';
+                document.getElementById('p-print-date').innerText = new Date().toLocaleDateString();
+            } catch(e) { console.error("Profile sync failed"); }
         }
 
-        function printDocument(type) {
-            const docTitle = document.getElementById('p-doc-title');
-            const name = localStorage.getItem('portal-user-name') || 'Student';
-            
-            // Clean slate class
-            document.body.className = ''; 
+        // --- CORE LOGIC WITH SERVER SYNC ---
+        async function syncWithServer() {
+            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
+            renderList();
+            generateTimetable();
 
-            if (type === 'registration') {
-                document.body.classList.add('print-reg');
-                docTitle.innerText = `${name}'s Course Registration Slip`;
-                document.title = "Registration_Slip.pdf";
-            } else if (type === 'timetable') {
-                document.body.classList.add('print-time');
-                docTitle.innerText = `${name}'s Personal Timetable`;
-                document.title = "Personal_Timetable.pdf";
-            }
-
-            window.print();
-
-            // Reset after print dialog closes
-            setTimeout(() => {
-                document.body.className = '';
-                document.title = "Course Registration | National Portal";
-            }, 1000);
+            // Sync to PostgreSQL DB (Ensures GPA calc sees the same data)
+            try {
+                const currentGPA = localStorage.getItem('portal-gpa') || 0.00;
+                await fetch('/api/user/save-gpa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gpa: currentGPA, courses: myCourses })
+                });
+            } catch (e) { console.warn("Background sync failed"); }
         }
 
-        // --- MANUAL COURSE ENTRY (REQUESTED) ---
-        function addManualCourse() {
-            const code = document.getElementById('manualCode').value.toUpperCase().trim();
-            const name = document.getElementById('manualName').value.trim();
-            const cred = parseInt(document.getElementById('manualCredit').value) || 3;
-
-            if (code && name) {
-                addCourse(name, code, cred);
-                // Clear fields
-                document.getElementById('manualCode').value = '';
-                document.getElementById('manualName').value = '';
-            } else {
-                alert("Please enter a Course Code and Title.");
-            }
-        }
-
-        // --- CORE COURSE LOGIC ---
         const searchInput = document.getElementById('courseSearch');
         const suggestionsBox = document.getElementById('suggestions');
 
@@ -331,7 +258,11 @@
             suggestionsBox.innerHTML = '';
             if (query.length < 1) { suggestionsBox.style.display = 'none'; return; }
 
-            const matches = courseDB.filter(c => c.name.toLowerCase().includes(query));
+            const matches = courseDB.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                c.code.toLowerCase().includes(query)
+            );
+
             if (matches.length > 0) {
                 suggestionsBox.style.display = 'block';
                 matches.forEach(c => {
@@ -349,79 +280,73 @@
         });
 
         function addCourse(name, code, credits) {
-            if(myCourses.find(c => c.code === code)) {
-                alert("Course already registered!");
-                return;
-            }
+            if(myCourses.find(c => c.code === code)) return alert("Already registered!");
             myCourses.push({ name, code, credits });
-            saveAndRender();
+            syncWithServer();
+        }
+
+        function addManualCourse() {
+            const code = document.getElementById('manualCode').value.toUpperCase().trim();
+            const name = document.getElementById('manualName').value.trim();
+            const cred = parseInt(document.getElementById('manualCredit').value) || 3;
+            if (code && name) {
+                addCourse(name, code, cred);
+                document.getElementById('manualCode').value = '';
+                document.getElementById('manualName').value = '';
+            }
         }
 
         function removeCourse(index) {
-            if(confirm("Remove this course?")) {
-                myCourses.splice(index, 1);
-                saveAndRender();
-            }
-        }
-
-        function saveAndRender() {
-            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
-            renderList();
-            generateTimetable();
+            myCourses.splice(index, 1);
+            syncWithServer();
         }
 
         function renderList() {
             const list = document.getElementById('registered-list');
             const totalDisplay = document.getElementById('total-credits');
-            list.innerHTML = '';
+            list.innerHTML = myCourses.length === 0 ? '<p style="text-align:center; padding:20px;">No courses.</p>' : '';
             let totalCr = 0;
-
-            if(myCourses.length === 0) {
-                list.innerHTML = '<p style="color:var(--text-muted); text-align:center; padding:20px;">No courses registered.</p>';
-            }
-
             myCourses.forEach((c, index) => {
                 totalCr += c.credits;
                 list.innerHTML += `
                     <div class="course-item">
                         <div class="course-meta">
                             <span class="course-code">${c.code}</span>
-                            <span style="font-weight:500;">${c.name}</span>
+                            <span>${c.name}</span>
                             <span class="course-credits">${c.credits} Credits</span>
                         </div>
                         <button class="btn-delete" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
+                    </div>`;
             });
             totalDisplay.innerText = `${totalCr} Total Credits`;
         }
 
-        // --- TIMETABLE GENERATOR ---
         function generateTimetable() {
             const tbody = document.getElementById('timetable-body');
             tbody.innerHTML = '';
+            const slots = ["08:00 - 10:00", "10:00 - 12:00", "12:00 - 13:00 (Break)", "13:00 - 15:00", "15:00 - 17:00"];
             
-            const slots = ["8:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 1:00 PM (Break)", "1:00 PM - 3:00 PM", "3:00 PM - 5:00 PM"];
-
-            slots.forEach(time => {
-                let row = `<tr><td><strong>${time}</strong></td>`;
-                
+            slots.forEach((time, idx) => {
                 if(time.includes("Break")) {
-                    row = `<tr><td style="background:#f1f5f9; font-weight:bold;">${time}</td><td colspan="5" style="background:#f1f5f9; letter-spacing:2px; color:#64748b; text-align:center;">--- RECESS ---</td></tr>`;
-                } else {
-                    for(let i=0; i<5; i++) {
-                        const hasClass = Math.random() > 0.6 && myCourses.length > 0;
-                        if(hasClass) {
-                            const course = myCourses[Math.floor(Math.random() * myCourses.length)];
-                            row += `<td class="cell-filled">${course.code}<br><small>Venue: N${Math.floor(Math.random()*20)}</small></td>`;
-                        } else {
-                            row += `<td>-</td>`;
-                        }
-                    }
-                    row += `</tr>`;
+                    tbody.innerHTML += `<tr><td style="background:#f1f5f9;">${time}</td><td colspan="5" style="text-align:center; background:#f1f5f9; color:#64748b;">--- RECESS ---</td></tr>`;
+                    return;
                 }
-                tbody.innerHTML += row;
+                let row = `<tr><td><strong>${time}</strong></td>`;
+                for(let i=0; i<5; i++) {
+                    const courseIdx = (idx + i) % myCourses.length;
+                    if(myCourses.length > 0 && Math.random() > 0.4) {
+                        const c = myCourses[courseIdx] || myCourses[0];
+                        row += `<td class="cell-filled">${c.code}<br><small>Venue: LT-${10+i}</small></td>`;
+                    } else { row += `<td>-</td>`; }
+                }
+                tbody.appendChild(Object.assign(document.createElement('tr'), {innerHTML: row + `</tr>`}));
             });
+        }
+
+        function printDocument(type) {
+            document.body.className = type === 'registration' ? 'print-reg' : 'print-time';
+            window.print();
+            setTimeout(() => document.body.className = '', 1000);
         }
     </script>
 </body>

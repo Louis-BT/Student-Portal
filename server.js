@@ -143,6 +143,16 @@ const initDB = async () => {
             );
         `);
 
+        await client.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        user_name TEXT,
+        user_role TEXT,
+        message TEXT NOT NULL,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`);
         // Default Admin Account (Auto-Provisioning)
         const adminCheck = await client.query("SELECT * FROM users WHERE email = $1", ['admin@portal.edu.gh']);
         if (adminCheck.rows.length === 0) {
@@ -369,6 +379,16 @@ app.post('/api/admin/leadership-review', checkAdmin, async (req, res) => {
     await pool.query("UPDATE leadership_apps SET status=$1 WHERE id=$2", [status, id]);
     res.json({ success: true });
 });
+// Add this to server.js
+app.post('/api/admin/resource-review', checkAdmin, async (req, res) => {
+    const { id, status } = req.body;
+    try {
+        await pool.query("UPDATE resources SET status = $1 WHERE id = $2", [status, id]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Failed to update resource" });
+    }
+});
 
 // --- NEWS FEED ---
 app.get('/api/news', async (req, res) => {
@@ -388,6 +408,51 @@ app.post('/api/support/create', isAuthenticated, async (req, res) => {
 // 404 HANDLER
 app.get('*', (req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public/index.html')); // Fallback to index
+});
+
+// --- LIBRARY SEEDER (Run this once to add samples) ---
+app.get('/api/admin/seed-library', checkAdmin, async (req, res) => {
+    try {
+        const samples = [
+            ['Calculus Study Guide', 'BOOK', 'calculus_guide.pdf', 'Academic Dept'],
+            ['Intro to CS Past Questions (2025)', 'PAST_QUESTION', 'cs_pq_2025.pdf', 'Student Union'],
+            ['Web Development Lecture Notes', 'NOTES', 'web_dev_notes.pdf', 'Dr. Arhin'],
+            ['Academic Writing Handbook', 'BOOK', 'writing_handbook.pdf', 'English Dept']
+        ];
+
+        for (const [title, category, path, user] of samples) {
+            await pool.query(
+                "INSERT INTO resources (title, category, file_path, uploaded_by, status) VALUES ($1, $2, $3, $4, 'APPROVED')",
+                [title, category, path, user]
+            );
+        }
+        res.json({ success: true, message: "Library seeded with professional samples!" });
+    } catch (e) {
+        res.status(500).json({ error: "Seeding failed" });
+    }
+});
+
+// --- CONNECT: GET ALL MESSAGES ---
+app.get('/api/chat', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM messages ORDER BY timestamp ASC LIMIT 50");
+        res.json(result.rows);
+    } catch (e) { res.status(500).json({ error: "Chat load failed" }); }
+});
+
+// --- CONNECT: POST NEW MESSAGE ---
+app.post('/api/chat', isAuthenticated, async (req, res) => {
+    const { message } = req.body;
+    const userRes = await pool.query("SELECT name, role FROM users WHERE id=$1", [req.session.userId]);
+    const user = userRes.rows[0];
+
+    try {
+        await pool.query(
+            "INSERT INTO messages (user_id, user_name, user_role, message) VALUES ($1, $2, $3, $4)",
+            [req.session.userId, user.name, user.role, message]
+        );
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: "Message failed" }); }
 });
 
 app.listen(PORT, () => {
