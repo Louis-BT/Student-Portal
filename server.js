@@ -210,6 +210,7 @@ function checkAdmin(req, res, next) {
 app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, phone } = req.body;
     try {
+        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;");
         const check = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
         if (check.rows.length > 0) return res.status(400).json({ error: "Email already registered." });
 
