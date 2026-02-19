@@ -419,6 +419,43 @@
             // Keep default static news if fetch fails
         }
     }
+
+    // Check Leadership Status and Reveal WhatsApp Link
+async function checkVanguardStatus() {
+    try {
+        const response = await fetch('/api/leadership/status');
+        const data = await response.json();
+
+        const applyBanner = document.getElementById('vanguard-banner');
+        const memberCard = document.getElementById('vanguard-member-card');
+
+        if (data.status === 'APPROVED') {
+            // 1. Hide the "Apply Now" banner
+            if (applyBanner) applyBanner.style.display = 'none';
+            
+            // 2. Reveal the exclusive WhatsApp Member Card
+            if (memberCard) memberCard.style.display = 'block';
+            
+        } else if (data.status === 'PENDING') {
+            // Optional: Change the apply banner to show it's under review
+            if (applyBanner) {
+                applyBanner.innerHTML = `
+                    <div>
+                        <strong style="color: #f59e0b; font-size: 1.1rem;">Leadership Vanguard</strong>
+                        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem;">Your application is currently Under Review.</p>
+                    </div>
+                    <button class="btn-gold" style="opacity: 0.5; cursor: not-allowed;">Pending</button>
+                `;
+            }
+        }
+    } catch (error) {
+        console.error("Failed to check vanguard status", error);
+    }
+}
+
+// Run the check as soon as the dashboard loads
+document.addEventListener('DOMContentLoaded', checkVanguardStatus);
+
 </script>
 
 </body>
