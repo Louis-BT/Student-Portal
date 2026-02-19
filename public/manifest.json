@@ -1,20 +1,23 @@
 {
-  "name": "Uni Student Portal",
+  "name": "National Tertiary Student Portal",
   "short_name": "Portal",
-  "start_url": "/",
+  "description": "The premier academic network for tertiary students.",
+  "start_url": "/login.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0f172a",
   "theme_color": "#2563eb",
   "icons": [
     {
       "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
