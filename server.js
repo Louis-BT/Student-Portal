@@ -4,12 +4,7 @@
  * ==============================================================================
  * @description Production-grade Node.js/Express server with PostgreSQL integration.
  * @author Lead Engineer
- * @version 2.5.0 (Stable/Premium)
- * * FEATURES:
- * - Persistent PostgreSQL Database Connection (Render-Ready)
- * - Secure Session Management
- * - File Upload Handling (Multer)
- * - API Endpoints: Auth, GPA, Library, Leadership, Admin, Chat
+ * @version 2.6.0 (Patched & Stable)
  */
 
 // --- 1. CORE DEPENDENCIES ---
@@ -20,12 +15,18 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cors = require('cors'); // Added for safety
+require('dotenv').config();
 
 // --- 2. CONFIGURATION ---
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Essential for Render/Heroku (Fixes "Cookie not saving" issues)
+app.set('trust proxy', 1);
+
 // Middleware Setup
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public')); // Serve static files (HTML, CSS, JS)
@@ -37,11 +38,12 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         secure: process.env.NODE_ENV === 'production', // Secure cookies in prod
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 // 24 Hours
     }
 }));
 
-// File Upload Configuration (Local Storage for Demo / Ephemeral on Render Free)
+// File Upload Configuration
 const uploadDir = path.join(__dirname, 'public/uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -63,7 +65,7 @@ if (!connectionString) {
 
 const pool = new Pool({
     connectionString: connectionString,
-    ssl: { rejectUnauthorized: false } // Required for Render/Heroku
+    ssl: { rejectUnauthorized: false } // Required for Render
 });
 
 // Database Initialization (Auto-Create Tables)
@@ -106,36 +108,6 @@ const initDB = async () => {
             );
         `);
 
-        // --- DANGER ZONE: RESET SYSTEM ---
-app.delete('/api/admin/reset-system', checkAdmin, async (req, res) => {
-    try {
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN'); // Start Transaction
-
-            // 1. Clear Dependent Data First (To prevent foreign key errors)
-            await client.query("DELETE FROM leadership_apps");
-            await client.query("DELETE FROM support_tickets");
-            // Optional: Clear chat if you want a full wipe
-            // await client.query("DELETE FROM global_chat"); 
-
-            // 2. Delete All Users EXCEPT Admins
-            await client.query("DELETE FROM users WHERE role != 'ADMIN'");
-
-            await client.query('COMMIT'); // Save Changes
-            res.json({ success: true, message: "System Reset Successful. All students removed." });
-        } catch (e) {
-            await client.query('ROLLBACK'); // Undo if error
-            throw e;
-        } finally {
-            client.release();
-        }
-    } catch (err) {
-        console.error("Reset Error:", err);
-        res.status(500).json({ error: "System Reset Failed" });
-    }
-});
-
         // 3. News & Announcements
         await client.query(`
             CREATE TABLE IF NOT EXISTS news (
@@ -155,7 +127,7 @@ app.delete('/api/admin/reset-system', checkAdmin, async (req, res) => {
                 category TEXT,
                 file_path TEXT,
                 uploaded_by TEXT,
-                status TEXT DEFAULT 'PENDING', -- Admin must approve
+                status TEXT DEFAULT 'PENDING',
                 date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -174,7 +146,7 @@ app.delete('/api/admin/reset-system', checkAdmin, async (req, res) => {
         // Default Admin Account (Auto-Provisioning)
         const adminCheck = await client.query("SELECT * FROM users WHERE email = $1", ['admin@portal.edu.gh']);
         if (adminCheck.rows.length === 0) {
-            const hashedPass = await bcrypt.hash('admin123', 10); // Default Password
+            const hashedPass = await bcrypt.hash('admin123', 10);
             await client.query(
                 `INSERT INTO users (name, email, password, role, institution) VALUES ($1, $2, $3, $4, $5)`,
                 ['System Administrator', 'admin@portal.edu.gh', hashedPass, 'ADMIN', 'National Directorate']
@@ -207,10 +179,10 @@ function checkAdmin(req, res, next) {
 // ==============================================================================
 
 // --- AUTHENTICATION ---
-app.post('/auth/signup', async (req, res) => {
+// FIXED: Route Prefix matched to Frontend '/api/auth/signup'
+app.post('/api/auth/signup', async (req, res) => {
     const { name, email, password, phone } = req.body;
     try {
-        // Check if user exists
         const check = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
         if (check.rows.length > 0) return res.status(400).json({ error: "Email already registered." });
 
@@ -226,7 +198,8 @@ app.post('/auth/signup', async (req, res) => {
     }
 });
 
-app.post('/auth/login', async (req, res) => {
+// FIXED: Route Prefix matched to Frontend '/api/auth/login'
+app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
     try {
         const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
@@ -237,7 +210,7 @@ app.post('/auth/login', async (req, res) => {
             req.session.userId = user.id;
             req.session.role = user.role;
             
-            // Return Safe User Object (No Password)
+            // Return Safe User Object
             const safeUser = { 
                 id: user.id, name: user.name, email: user.email, 
                 role: user.role, institution: user.institution, avatar: user.profile_pic 
@@ -247,25 +220,22 @@ app.post('/auth/login', async (req, res) => {
             res.status(401).json({ error: "Invalid Credentials" });
         }
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Login System Error" });
     }
 });
 
-app.post('/auth/logout', (req, res) => {
+// FIXED: Route Prefix
+app.post('/api/auth/logout', (req, res) => {
     req.session.destroy();
     res.json({ success: true });
 });
 
-// --- FORGOT PASSWORD ENDPOINT ---
+// FORGOT PASSWORD
 app.post('/api/auth/forgot-password', (req, res) => {
     const { email } = req.body;
-    
-    // Log the request to the console (simulating an email service)
     console.log(`[PASSWORD RESET REQUEST] Email: ${email}`);
-    
-    // Simulate a short delay so it feels real to the user
     setTimeout(() => {
-        // We always return success for security (so hackers can't "fish" for valid emails)
         res.json({ 
             success: true, 
             message: "If an account exists, a reset link has been sent to your email." 
@@ -280,13 +250,19 @@ app.get('/api/user/profile', isAuthenticated, async (req, res) => {
     res.json(result.rows[0]);
 });
 
+// FIXED: Added 'name' to the update query so name editing works
 app.post('/api/user/update-profile', isAuthenticated, async (req, res) => {
-    const { institution, faculty, department, program, level, financial, entry, completion } = req.body;
-    await pool.query(
-        `UPDATE users SET institution=$1, faculty=$2, department=$3, program=$4, level=$5, financial_status=$6, year_entry=$7, year_completion=$8 WHERE id=$9`,
-        [institution, faculty, department, program, level, financial, entry, completion, req.session.userId]
-    );
-    res.json({ success: true });
+    const { name, institution, faculty, department, program, level, financial, entry, completion } = req.body;
+    try {
+        await pool.query(
+            `UPDATE users SET name=$1, institution=$2, faculty=$3, department=$4, program=$5, level=$6, financial_status=$7, year_entry=$8, year_completion=$9 WHERE id=$10`,
+            [name, institution, faculty, department, program, level, financial, entry, completion, req.session.userId]
+        );
+        res.json({ success: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "Profile Update Failed" });
+    }
 });
 
 app.post('/api/user/save-gpa', isAuthenticated, async (req, res) => {
@@ -298,8 +274,6 @@ app.post('/api/user/save-gpa', isAuthenticated, async (req, res) => {
 // --- LEADERSHIP VANGUARD ---
 app.post('/api/leadership/apply', isAuthenticated, async (req, res) => {
     const { position, experience, vision, reference } = req.body;
-    
-    // Get User Details for the application
     const userRes = await pool.query("SELECT name, institution FROM users WHERE id=$1", [req.session.userId]);
     const user = userRes.rows[0];
 
@@ -317,7 +291,6 @@ app.get('/api/leadership/status', isAuthenticated, async (req, res) => {
 
 // --- LIBRARY & RESOURCES ---
 app.get('/api/library/resources', async (req, res) => {
-    // Public endpoint (Login not strictly required to VIEW list, but maybe to download)
     const result = await pool.query("SELECT * FROM resources WHERE status='APPROVED' ORDER BY date DESC");
     res.json(result.rows);
 });
@@ -333,7 +306,46 @@ app.post('/api/library/upload', isAuthenticated, upload.single('file'), async (r
     res.json({ success: true, message: "Uploaded for Review" });
 });
 
-// --- ADMIN CONSOLE ---
+// --- ADMIN CONSOLE & DANGER ZONE ---
+
+app.get('/api/admin/users', checkAdmin, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM users ORDER BY id DESC");
+        res.json(result.rows);
+    } catch (e) { res.status(500).json({ error: "Fetch Error" }); }
+});
+
+app.delete('/api/admin/delete-user/:id', checkAdmin, async (req, res) => {
+    try {
+        await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: "Delete Error" }); }
+});
+
+// FIXED: Moved Reset Logic to proper route handler
+app.delete('/api/admin/reset-system', checkAdmin, async (req, res) => {
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            // Clear all data except Admin
+            await client.query("DELETE FROM leadership_apps");
+            await client.query("DELETE FROM support_tickets");
+            await client.query("DELETE FROM users WHERE role != 'ADMIN'");
+            await client.query('COMMIT');
+            res.json({ success: true, message: "System Wiped" });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error("Reset Error:", err);
+        res.status(500).json({ error: "System Reset Failed" });
+    }
+});
+
 app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     const users = await pool.query("SELECT COUNT(*) FROM users WHERE role='STUDENT'");
     const leaders = await pool.query("SELECT COUNT(*) FROM leadership_apps WHERE status='PENDING'");
@@ -346,15 +358,15 @@ app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     });
 });
 
-app.post('/api/admin/approve-leader', checkAdmin, async (req, res) => {
-    const { appId, userId, action } = req.body; // action: 'APPROVED' or 'REJECTED'
-    await pool.query("UPDATE leadership_apps SET status=$1 WHERE id=$2", [action, appId]);
-    res.json({ success: true });
-});
-
 app.post('/api/admin/broadcast', checkAdmin, async (req, res) => {
     const { title, message, category } = req.body;
     await pool.query("INSERT INTO news (title, message, category) VALUES ($1, $2, $3)", [title, message, category]);
+    res.json({ success: true });
+});
+
+app.post('/api/admin/leadership-review', checkAdmin, async (req, res) => {
+    const { id, status } = req.body;
+    await pool.query("UPDATE leadership_apps SET status=$1 WHERE id=$2", [status, id]);
     res.json({ success: true });
 });
 
@@ -373,9 +385,9 @@ app.post('/api/support/create', isAuthenticated, async (req, res) => {
     res.json({ success: true });
 });
 
-// 404 HANDLER (Must be the last route)
+// 404 HANDLER
 app.get('*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public/404.html'));
+    res.status(404).sendFile(path.join(__dirname, 'public/index.html')); // Fallback to index
 });
 
 app.listen(PORT, () => {
