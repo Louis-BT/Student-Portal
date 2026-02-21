@@ -5,254 +5,313 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Command Center | National Portal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
     <style>
-        /* --- ADMIN SPECIFIC OVERRIDES --- */
-        body { display: flex; height: 100vh; overflow: hidden; }
+        /* --- 1. CORE LAYOUT --- */
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
+        .wrapper { display: flex; width: 100%; height: 100%; }
 
-        /* SIDEBAR (Darker for Admin Distinction) */
-        .sidebar { background: #1e293b; }
-        .sidebar-header { border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.05); color: #fff; border-left: 3px solid var(--accent-color); }
+        /* --- 2. COMMAND CENTER SIDEBAR (Strict Dark Mode) --- */
+        .sidebar { width: 280px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; color: white; }
+        .sidebar-header { padding: 25px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; font-size: 1.2rem; letter-spacing: -0.5px; }
+        
+        .nav-links { list-style: none; padding: 20px 0; margin: 0; flex: 1; overflow-y: auto; }
+        .nav-links li { margin-bottom: 5px; padding: 0 15px; }
+        .nav-links a { display: flex; align-items: center; gap: 15px; color: #94a3b8; text-decoration: none; padding: 14px 18px; border-radius: 8px; transition: all 0.2s ease; font-weight: 600; font-size: 0.95rem; border-left: 3px solid transparent; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.05); color: #f8fafc; border-left: 3px solid #3b82f6; }
+        .nav-links a.active i { color: #3b82f6; }
+        
+        .sidebar-footer { padding: 20px 25px; border-top: 1px solid rgba(255,255,255,0.05); }
 
-        /* MAIN LAYOUT */
-        .main-content { flex: 1; padding: 0; background: var(--bg-color); display: flex; flex-direction: column; }
-        .scroll-area { padding: 30px; overflow-y: auto; flex: 1; }
+        /* --- 3. MAIN CONTENT & HEADER --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
+        .scroll-area { flex: 1; padding: 40px; overflow-y: auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--text-color); }
+        
+        .admin-badge { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 6px; }
+        .server-status { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        .pulse-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-        /* HEADER */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .admin-badge {
-            background: rgba(37, 99, 235, 0.1); color: var(--primary-color);
-            padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
-            border: 1px solid rgba(37, 99, 235, 0.2); display: flex; align-items: center; gap: 6px;
-        }
+        /* --- 4. KPI DASHBOARD --- */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .kpi-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); transition: transform 0.2s; }
+        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--card-accent, #3b82f6); }
+        
+        .kpi-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+        .kpi-val { font-size: 2.8rem; font-weight: 800; color: var(--text-color); margin: 0; font-family: 'Fira Code', monospace; line-height: 1; }
+        .kpi-icon { position: absolute; right: 25px; top: 25px; font-size: 2.5rem; color: var(--border-color); opacity: 0.5; }
 
-        /* KPI CARDS */
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card {
-            background: var(--card-bg); padding: 25px; border-radius: 12px;
-            box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);
-            position: relative; overflow: hidden; display: flex; flex-direction: column;
-        }
-        .kpi-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary-color); }
-        .kpi-val { font-size: 2.2rem; font-weight: 800; margin: 10px 0; color: var(--text-color); }
-        .kpi-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* SECTIONS */
+        /* --- 5. ENTERPRISE PANELS & TABLES --- */
         .admin-section { display: none; animation: fadeIn 0.3s ease-out; }
         .admin-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .section-box {
-            background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);
-            padding: 25px; margin-bottom: 30px; box-shadow: var(--shadow-sm);
-        }
-        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-color); display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+        .section-box { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .section-title { font-size: 1.3rem; font-weight: 800; color: var(--text-color); display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
 
-        /* TABLES */
-        .admin-table th { background: #334155; color: white; }
-        .admin-table tr:hover td { background: rgba(0,0,0,0.02); }
+        .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .admin-table th { padding: 15px 20px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; border-bottom: 2px solid var(--border-color); background: var(--input-bg); }
+        .admin-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-color); vertical-align: middle; }
+        .admin-table tr:hover td { background: rgba(37, 99, 235, 0.02); }
+
+        /* Buttons & Badges */
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem; }
+        .btn-primary { background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
         
-        /* STATUS PILLS */
-        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-        .status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
-        .status-approved { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
-        .status-rejected { background: #fef2f2; color: #b91c1c; border: 1px solid #fee2e2; }
+        .action-btn { padding: 8px 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-approve { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .btn-approve:hover { background: #10b981; color: #fff; }
+        .btn-reject { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-reject:hover { background: #ef4444; color: #fff; }
 
-        /* BROADCAST FORM */
-        .broadcast-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); }
+        .status-approved { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
+        
+        /* Danger Zone Button */
+        .btn-danger-zone { background: repeating-linear-gradient(45deg, #7f1d1d, #7f1d1d 10px, #991b1b 10px, #991b1b 20px); color: white; border: 2px solid #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        .btn-danger-zone:hover { opacity: 0.9; transform: scale(1.02); }
+
+        /* Search Input */
+        .table-search { padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); outline: none; width: 250px; font-size: 0.9rem; }
+        .table-search:focus { border-color: var(--primary-color); }
+
+        /* --- 6. BROADCAST ENGINE --- */
+        .broadcast-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .b-input, .b-select, .b-textarea { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; outline: none; transition: 0.2s; box-sizing: border-box; }
+        .b-input:focus, .b-select:focus, .b-textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
         @media (max-width: 900px) { .broadcast-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-shield-alt"></i> Admin Panel
-        </div>
-        <ul class="nav-links">
-            <li><a href="#" class="active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard</a></li>
-            <li><a href="#" onclick="switchTab('users', this)"><i class="fas fa-users-cog"></i> User Management</a></li>
-            <li><a href="#" onclick="switchTab('leadership', this)"><i class="fas fa-user-tie"></i> Leadership Vetting</a></li>
-            <li><a href="#" onclick="switchTab('broadcast', this)"><i class="fas fa-bullhorn"></i> Broadcasts</a></li>
-            <li><a href="#" onclick="switchTab('library', this)"><i class="fas fa-book"></i> Library Control</a></li>
-            <li><a href="#" onclick="switchTab('reports', this)"><i class="fas fa-ticket-alt"></i> Support Tickets</a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <a href="index.html" style="color: #ef4444; font-weight: 600;"><i class="fas fa-sign-out-alt"></i> Secure Logout</a>
-        </div>
-    </nav>
-
-    <main class="main-content">
-        <div class="scroll-area">
-            
-            <header class="header">
-                <div>
-                    <h1 style="margin:0; font-size:1.8rem;">System Command Center</h1>
-                    <p style="color: var(--text-muted); margin: 5px 0 0;">Overview & Controls</p>
-                </div>
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <div class="admin-badge"><i class="fas fa-lock"></i> Root Access</div>
-                    <div class="theme-wrapper">
-                        <select onchange="setTheme(this.value)" class="theme-select">
-                            <option value="system">💻 System</option>
-                            <option value="light">☀️ Light</option>
-                            <option value="dark">🌙 Dark</option>
-                        </select>
-                    </div>
-                </div>
-            </header>
-
-            <div id="dashboard" class="admin-section active">
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <span class="kpi-label">Total Users</span>
-                        <div class="kpi-val" id="kpi-users">0</div>
-                        <div style="font-size: 0.8rem; color: #10b981;">▲ Active Accounts</div>
-                    </div>
-                    <div class="kpi-card" style="border-color: #f59e0b;">
-                        <span class="kpi-label">Pending Leaders</span>
-                        <div class="kpi-val" id="kpi-leaders">0</div>
-                        <div style="font-size: 0.8rem; color: #d97706;">Needs Review</div>
-                    </div>
-                    <div class="kpi-card" style="border-color: #ef4444;">
-                        <span class="kpi-label">Support Tickets</span>
-                        <div class="kpi-val" id="kpi-reports">0</div>
-                        <div style="font-size: 0.8rem; color: #ef4444;">Open Issues</div>
-                    </div>
-                    <div class="kpi-card" style="border-color: #3b82f6;">
-                        <span class="kpi-label">Library Resources</span>
-                        <div class="kpi-val" id="kpi-files">0</div>
-                        <div style="font-size: 0.8rem; color: #3b82f6;">Files Hosted</div>
-                    </div>
-                </div>
-
-                <div class="section-box">
-                    <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-primary" onclick="switchTab('broadcast', document.querySelectorAll('.nav-links a')[3])">New Announcement</button>
-                        <button class="btn btn-outline" onclick="switchTab('users', document.querySelectorAll('.nav-links a')[1])">Manage Students</button>
-                    </div>
-                </div>
+    <div class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-satellite-dish" style="color: #3b82f6;"></i> Command Center
             </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="switchTab('users', this)"><i class="fas fa-users-cog"></i> Global User Matrix</a></li>
+                <li><a href="#" onclick="switchTab('leadership', this)"><i class="fas fa-user-tie"></i> Vanguard Vetting</a></li>
+                <li><a href="#" onclick="switchTab('broadcast', this)"><i class="fas fa-bullhorn"></i> Broadcast Engine</a></li>
+                <li><a href="#" onclick="switchTab('library', this)"><i class="fas fa-book"></i> Library Quarantine</a></li>
+                <li><a href="#" onclick="switchTab('reports', this)"><i class="fas fa-ticket-alt"></i> Support Tickets</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="dashboard.html" style="color: #10b981; text-decoration: none; display: flex; align-items: center; gap: 10px; font-weight: 600;"><i class="fas fa-sign-out-alt"></i> Exit to Portal</a>
+            </div>
+        </aside>
 
-            <div id="users" class="admin-section">
-                <div class="section-box">
-                    <div class="section-title">
-                        <span><i class="fas fa-users"></i> Student Database</span>
-                        <div style="margin-left: auto; display: flex; gap: 10px;">
-                            <button class="btn btn-danger btn-sm" onclick="systemReset()" style="background: #7f1d1d; border: 1px solid #991b1b;">
-                                <i class="fas fa-radiation-alt"></i> WIPE ALL STUDENTS
-                            </button>
-                            <button class="btn btn-primary btn-sm" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
+        <main class="main-content">
+            <div class="scroll-area">
+                
+                <header class="header">
+                    <div>
+                        <h1>National Administrator Console</h1>
+                        <div class="server-status" style="margin-top: 8px;">
+                            <div class="pulse-dot"></div> System Online • Encrypted Connection Established
                         </div>
                     </div>
-                    <div style="overflow-x: auto;">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-    <th>Date</th>
-    <th>File Name</th>
-    <th>Category</th>
-    <th>Status</th>
-    <th style="text-align: right;">Action</th>
-</tr>
-                            </thead>
-                            <tbody id="user-table-body">
-                                <tr><td colspan="6" class="text-center">Loading data...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="leadership" class="admin-section">
-                <div class="section-box">
-                    <div class="section-title">
-                        <span><i class="fas fa-user-tie"></i> Vetting Queue</span>
-                        <span class="status-pill status-pending" id="pending-count-badge" style="margin-left:auto;">0 Pending</span>
-                    </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Candidate</th><th>Position</th><th>Status</th><th style="text-align: right;">Decision</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leadership-table-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div id="broadcast" class="admin-section">
-                <div class="section-box">
-                    <div class="section-title"><i class="fas fa-bullhorn"></i> Broadcast Center</div>
-                    <div class="broadcast-grid">
-                        <div>
-                            <input type="text" id="newsTitle" placeholder="Headline (e.g. Exam Schedule)" style="margin-bottom: 15px; width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;">
-                            
-                            <select id="newsCategory" style="margin-bottom: 15px; width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;">
-                                <option value="General">General News</option>
-                                <option value="Urgent">🚨 Urgent Alert</option>
-                                <option value="Academic">Academic Update</option>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div class="admin-badge"><i class="fas fa-fingerprint"></i> Root Access</div>
+                        <div class="theme-wrapper">
+                            <select onchange="setTheme(this.value)" style="padding: 8px 12px; border-radius: 8px; background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); cursor: pointer; font-weight: 600;">
+                                <option value="system">💻 System</option>
+                                <option value="light">☀️ Light Mode</option>
+                                <option value="dark">🌙 Dark Mode</option>
                             </select>
-                            
-                            <textarea id="newsMessage" rows="5" placeholder="Message content..." style="margin-bottom: 15px; width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;"></textarea>
-                            
-                            <button class="btn btn-primary" onclick="publishNews()"><i class="fas fa-paper-plane"></i> Publish</button>
                         </div>
-                        <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <h4 style="margin-top: 0; color: var(--text-muted);">History</h4>
-                            <div id="news-history-list" style="max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                </header>
+
+                <div id="panel-dashboard" class="admin-section active">
+                    <div class="kpi-grid">
+                        <div class="kpi-card" style="--card-accent: #3b82f6;">
+                            <i class="fas fa-users kpi-icon"></i>
+                            <span class="kpi-label">Registered Students</span>
+                            <div class="kpi-val" id="kpi-users">0</div>
+                            <div style="font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-top: 5px;">Verified Accounts</div>
+                        </div>
+                        <div class="kpi-card" style="--card-accent: #f59e0b;">
+                            <i class="fas fa-file-upload kpi-icon"></i>
+                            <span class="kpi-label">Library Quarantine</span>
+                            <div class="kpi-val" id="kpi-files">0</div>
+                            <div style="font-size: 0.85rem; color: #f59e0b; font-weight: 600; margin-top: 5px;">Pending Scans</div>
+                        </div>
+                        <div class="kpi-card" style="--card-accent: #8b5cf6;">
+                            <i class="fas fa-crown kpi-icon"></i>
+                            <span class="kpi-label">Vanguard Apps</span>
+                            <div class="kpi-val" id="kpi-leaders">0</div>
+                            <div style="font-size: 0.85rem; color: #8b5cf6; font-weight: 600; margin-top: 5px;">Awaiting Review</div>
+                        </div>
+                        <div class="kpi-card" style="--card-accent: #ef4444;">
+                            <i class="fas fa-ticket-alt kpi-icon"></i>
+                            <span class="kpi-label">Support Tickets</span>
+                            <div class="kpi-val" id="kpi-reports">0</div>
+                            <div style="font-size: 0.85rem; color: #ef4444; font-weight: 600; margin-top: 5px;">Action Required</div>
+                        </div>
+                    </div>
+
+                    <div class="section-box">
+                        <div class="section-title"><i class="fas fa-bolt" style="color: #eab308;"></i> Quick Executive Actions</div>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="btn btn-primary" onclick="switchTab('broadcast', document.querySelectorAll('.nav-links a')[3])"><i class="fas fa-bullhorn"></i> New Broadcast</button>
+                            <button class="btn" style="background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);" onclick="switchTab('users', document.querySelectorAll('.nav-links a')[1])"><i class="fas fa-search"></i> Find Student</button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="library" class="admin-section">
-                <div class="section-box">
-                    <div class="section-title">
-                        <span><i class="fas fa-book"></i> Content Moderation</span>
-                        <button class="btn btn-outline btn-sm" style="margin-left: auto;" onclick="loadResources()">Scan Files</button>
+                <div id="panel-users" class="admin-section">
+                    <div class="section-box">
+                        <div class="section-title">
+                            <span style="flex: 1;"><i class="fas fa-users-cog" style="color: #3b82f6;"></i> Global User Matrix</span>
+                            
+                            <input type="text" id="userSearchBox" class="table-search" placeholder="Search ID or Name..." onkeyup="filterUserTable()">
+                            
+                            <div style="margin-left: 15px; display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
+                                <button class="btn btn-danger-zone" onclick="systemReset()"><i class="fas fa-radiation-alt"></i> WIPE ALL STUDENTS</button>
+                            </div>
+                        </div>
+                        
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table" id="userTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>Institution</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body">
+                                    <tr><td colspan="5" style="text-align:center;">Fetching secure database...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th><th>File Name</th><th>Uploader</th><th>University</th><th style="text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resource-table-body"></tbody>
-                    </table>
                 </div>
-            </div>
 
-            <div id="reports" class="admin-section">
-                <div class="section-box">
-                    <div class="section-title"><i class="fas fa-ticket-alt"></i> Support Tickets</div>
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>User</th><th>Issue Description</th><th>Date</th><th style="text-align: right;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reports-table-body"></tbody>
-                    </table>
+                <div id="panel-leadership" class="admin-section">
+                    <div class="section-box">
+                        <div class="section-title">
+                            <span><i class="fas fa-crown" style="color: #8b5cf6;"></i> Vanguard Applications</span>
+                            <span class="status-pill status-pending" id="pending-count-badge" style="margin-left:auto;">0 Pending</span>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate Info</th>
+                                        <th>Target Position</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Executive Decision</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leadership-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-        </div>
-    </main>
+                <div id="panel-broadcast" class="admin-section">
+                    <div class="section-box">
+                        <div class="section-title"><i class="fas fa-broadcast-tower" style="color: #ef4444;"></i> Global Broadcast Engine</div>
+                        <div class="broadcast-grid">
+                            <form class="broadcast-form" onsubmit="event.preventDefault(); sendBroadcast();">
+                                <div class="input-group">
+                                    <label>Broadcast Headline</label>
+                                    <input type="text" id="b-title" class="b-input" placeholder="e.g. Mandatory SRC Townhall Meeting" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Priority Classification</label>
+                                    <select id="b-category" class="b-select">
+                                        <option value="General">General News (Blue)</option>
+                                        <option value="Urgent">🚨 Urgent Alert (Red)</option>
+                                        <option value="Academic">Academic Update (Green)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>Official Message Body</label>
+                                    <textarea id="b-msg" class="b-textarea" rows="6" placeholder="Type the official announcement. This will be pushed to the Dashboard and pinned to the General Chat Hub..." required></textarea>
+                                </div>
+                                <button type="submit" id="b-submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;"><i class="fas fa-satellite-dish"></i> Transmit to National Network</button>
+                            </form>
+
+                            <div style="background: var(--input-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <h4 style="margin-top: 0; color: var(--text-color); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Transmission History</h4>
+                                <div id="news-history-list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-library" class="admin-section">
+                    <div class="section-box">
+                        <div class="section-title">
+                            <span><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting</span>
+                            <button class="btn btn-primary btn-sm" style="margin-left: auto;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date Submitted</th>
+                                        <th>Document Title</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Moderation Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resource-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="panel-reports" class="admin-section">
+                    <div class="section-box">
+                        <div class="section-title"><i class="fas fa-ticket-alt" style="color: #ef4444;"></i> IT Support & Reports</div>
+                        <div style="overflow-x: auto;">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>User Account</th>
+                                        <th>Issue Description</th>
+                                        <th>Log Date</th>
+                                        <th style="text-align: right;">Status / Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
 
     <script>
         // --- AUTH CHECK ---
         document.addEventListener('DOMContentLoaded', () => {
             const role = localStorage.getItem('portal-user-role');
             if (role !== 'ADMIN') {
-                alert("Security Alert: Access Denied. Admin privileges required.");
+                alert("SECURITY ALERT: Root Access Denied.");
                 window.location.href = 'login.html';
                 return;
             }
@@ -271,80 +330,95 @@
         // --- TAB SWITCHER ---
         function switchTab(tabId, element) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById(`panel-${tabId}`).classList.add('active');
             
             document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
             if(element) element.classList.add('active');
+
+            if(tabId === 'users') loadUsers();
+            if(tabId === 'library') loadResources();
         }
 
-        // --- API INTEGRATION MODULES ---
-
-        // 1. USERS MODULE
+        // --- 1. USERS MODULE ---
         async function loadUsers() {
+            const tbody = document.getElementById('user-table-body');
             try {
                 const res = await fetch('/api/admin/users'); 
                 const users = await res.json(); 
-                if(!users || users.length === 0) throw new Error("No data");
-                renderUsers(users);
-                document.getElementById('kpi-users').innerText = users.length;
+                
+                tbody.innerHTML = '';
+                let studentCount = 0;
+
+                users.forEach(u => {
+                    if(u.role === 'ADMIN') return;
+                    studentCount++;
+                    
+                    const idTag = u.id ? `102${u.id}09` : 'PENDING';
+                    
+                    tbody.innerHTML += `
+                        <tr class="user-row">
+                            <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#${idTag}</td>
+                            <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">${u.name}</strong><br><small style="color: var(--text-muted);">${u.email || 'No email linked'}</small></td>
+                            <td class="u-inst">${u.institution || 'National DB'}</td>
+                            <td><span class="status-pill status-approved">Verified User</span></td>
+                            <td style="text-align: right;">
+                                <button class="action-btn btn-reject" title="Terminate Account" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i> Drop User</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('kpi-users').innerText = studentCount;
+
             } catch(e) {
-                console.warn("Using fallback user data");
-                document.getElementById('user-table-body').innerHTML = `
-                    <tr><td colspan="6" class="text-center">No users found in database yet.</td></tr>
-                `;
-                document.getElementById('kpi-users').innerText = "0";
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Database connection failed.</td></tr>`;
             }
         }
 
-        function renderUsers(users) {
-            const tbody = document.getElementById('user-table-body');
-            tbody.innerHTML = '';
-            users.forEach(u => {
-                if(u.role === 'ADMIN') return;
-                tbody.innerHTML += `
-                    <tr>
-                        <td><code>#${u.id}</code></td>
-                        <td><strong>${u.name}</strong></td>
-                        <td>${u.email}</td>
-                        <td>${u.institution || '-'}</td>
-                        <td>${u.gpa || '0.00'}</td>
-                        <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
+        // Premium Frontend Filtering
+        function filterUserTable() {
+            const input = document.getElementById('userSearchBox').value.toLowerCase();
+            const rows = document.querySelectorAll('.user-row');
+            
+            rows.forEach(row => {
+                const name = row.querySelector('.u-name').innerText.toLowerCase();
+                const inst = row.querySelector('.u-inst').innerText.toLowerCase();
+                if (name.includes(input) || inst.includes(input)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
             });
         }
 
         async function deleteUser(id) {
-            if(!confirm("Permanently delete this user?")) return;
+            if(!confirm("⚠️ WARNING: Permanently delete this user from the National Database?")) return;
             await fetch(`/api/admin/delete-user/${id}`, { method: 'DELETE' });
             loadUsers();
         }
 
-        // --- DANGER ZONE LOGIC: WIPE ALL STUDENTS ---
+        // DANGER ZONE
         async function systemReset() {
-            if(!confirm("⚠️ CRITICAL WARNING ⚠️\n\nThis will DELETE ALL STUDENT ACCOUNTS, leadership applications, and tickets.\n\nThis action cannot be undone. Are you sure?")) return;
+            if(!confirm("⚠️ CRITICAL WARNING ⚠️\n\nThis will DELETE ALL STUDENT ACCOUNTS and reset the database.\n\nThis action cannot be undone. Proceed?")) return;
             
-            const verify = prompt("To confirm, type 'DELETE' in the box below:");
-            if(verify !== 'DELETE') return alert("Action Cancelled.");
+            const verify = prompt("To confirm destruction, type 'DELETE' below:");
+            if(verify !== 'DELETE') return alert("Action Aborted.");
 
             try {
                 const res = await fetch('/api/admin/reset-system', { method: 'DELETE' });
                 const data = await res.json();
                 
                 if(data.success) {
-                    alert("✅ System Reset Complete. All student data has been wiped.");
+                    alert("✅ System Reset Complete. Database wiped.");
                     loadUsers(); 
                     document.getElementById('kpi-users').innerText = "0"; 
-                    document.getElementById('kpi-leaders').innerText = "0";
                 } else {
                     alert("Error: " + data.error);
                 }
-            } catch (e) {
-                alert("Server Error: Could not reset system.");
-            }
+            } catch (e) { alert("Server Error: Could not execute reset protocol."); }
         }
 
-        // 2. LEADERSHIP MODULE
+        // --- 2. LEADERSHIP MODULE ---
         async function loadLeadership() {
             try {
                 const res = await fetch('/api/admin/leadership-apps');
@@ -358,7 +432,7 @@
                 tbody.innerHTML = '';
                 
                 if(apps.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center" style="color:var(--text-muted);">No applications pending.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No vanguard applications in queue.</td></tr>`;
                     return;
                 }
 
@@ -366,22 +440,22 @@
                     let actions = '';
                     if(app.status === 'PENDING') {
                         actions = `
-                            <button class="btn btn-success btn-sm" onclick="reviewApp(${app.id}, ${app.user_id}, 'APPROVED')"><i class="fas fa-check"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="reviewApp(${app.id}, ${app.user_id}, 'REJECTED')"><i class="fas fa-times"></i></button>
+                            <button class="action-btn btn-approve" onclick="reviewApp(${app.id}, ${app.user_id}, 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
+                            <button class="action-btn btn-reject" onclick="reviewApp(${app.id}, ${app.user_id}, 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
                         `;
                     } else {
-                        actions = `<span style="color:var(--text-muted); font-size:0.8rem;">Reviewed</span>`;
+                        actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
                     }
 
                     tbody.innerHTML += `
                         <tr>
                             <td>
-                                <strong>${app.name}</strong><br>
+                                <strong style="color: var(--text-color); font-size: 1.05rem;">${app.name}</strong><br>
                                 <small style="color:var(--text-muted);">${app.institution}</small>
                             </td>
                             <td>
-                                <span style="color:var(--primary-color); font-weight:600;">${app.position}</span><br>
-                                <small>"${app.vision.substring(0, 30)}..."</small>
+                                <span style="color:var(--primary-color); font-weight:700;">${app.position}</span><br>
+                                <small style="font-style: italic;">"${app.vision.substring(0, 45)}..."</small>
                             </td>
                             <td><span class="status-pill status-${app.status.toLowerCase()}">${app.status}</span></td>
                             <td style="text-align:right;">${actions}</td>
@@ -400,24 +474,47 @@
             loadLeadership();
         }
 
-        // 3. BROADCAST MODULE
-        async function publishNews() {
-            const title = document.getElementById('newsTitle').value;
-            const category = document.getElementById('newsCategory').value;
-            const message = document.getElementById('newsMessage').value;
-            
-            if(!title || !message) return alert("Please fill all fields.");
+        // --- 3. DUAL-BROADCAST ENGINE ---
+        async function sendBroadcast() {
+            const btn = document.getElementById('b-submit');
+            const title = document.getElementById('b-title').value;
+            const category = document.getElementById('b-category').value;
+            const msg = document.getElementById('b-msg').value;
 
-            await fetch('/api/news', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ title, message, category })
-            });
-            
-            alert("Broadcast Published Successfully.");
-            document.getElementById('newsTitle').value = '';
-            document.getElementById('newsMessage').value = '';
-            loadNews();
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Transmitting...';
+            btn.disabled = true;
+
+            try {
+                // 1. Send to Dashboard News Feed
+                await fetch('/api/news', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, message: msg, category })
+                });
+
+                // 2. Send to Global Chat Hub
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_name: 'System Admin', message: `📢 [${category.toUpperCase()}] ${title}: ${msg}` })
+                });
+
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Transmitted to Network';
+                btn.style.background = '#10b981';
+
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Transmit to National Network';
+                    btn.style.background = 'var(--primary-color)';
+                    btn.disabled = false;
+                    document.querySelector('.broadcast-form').reset();
+                    loadNews();
+                }, 2500);
+
+            } catch(e) {
+                alert("Transmission failed. Database connection lost.");
+                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Transmit to National Network';
+                btn.disabled = false;
+            }
         }
 
         async function loadNews() {
@@ -425,88 +522,96 @@
             const news = await res.json();
             const list = document.getElementById('news-history-list');
             list.innerHTML = '';
+            
             news.forEach(n => {
                 list.innerHTML += `
-                    <div style="padding:10px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+                    <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-weight:bold;">${n.title}</div>
-                            <div style="font-size:0.8rem; color:var(--text-muted);">${new Date(n.date).toLocaleDateString()}</div>
+                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">${n.title}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${new Date(n.date).toLocaleDateString()} • ${n.category || 'General'}</div>
                         </div>
-                        <button class="btn-sm btn-danger" onclick="deleteNews(${n.id})"><i class="fas fa-trash"></i></button>
+                        <button class="action-btn btn-reject" onclick="deleteNews(${n.id})"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
             });
         }
 
         async function deleteNews(id) {
-            if(confirm("Delete this broadcast?")) {
+            if(confirm("Delete this broadcast from the network?")) {
                 await fetch(`/api/news/${id}`, { method: 'DELETE' });
                 loadNews();
             }
         }
 
-        // 4. LIBRARY MODULE
-        // REPLACE your existing loadResources function with this
-async function loadResources() { 
-    try {
-        // Fetch all resources (including pending ones)
-        const res = await fetch('/api/admin/pending-resources');
-        const data = await res.json();
-        
-        // Update the KPI on the dashboard
-        const pendingCount = data.filter(r => r.status === 'PENDING').length;
-        document.getElementById('kpi-files').innerText = data.length;
+        // --- 4. LIBRARY MODERATION ---
+        async function loadResources() { 
+            try {
+                const res = await fetch('/api/admin/pending-resources');
+                const data = await res.json();
+                
+                const pendingCount = data.filter(r => r.status === 'PENDING').length;
+                document.getElementById('kpi-files').innerText = pendingCount;
 
-        const tbody = document.getElementById('resource-table-body');
-        tbody.innerHTML = '';
-        
-        if(data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center">No files in the queue.</td></tr>`;
-            return;
+                const tbody = document.getElementById('resource-table-body');
+                tbody.innerHTML = '';
+                
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    let actions = '';
+                    if(item.status === 'PENDING') {
+                        actions = `
+                            <button class="action-btn btn-approve" onclick="reviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
+                            <button class="action-btn btn-reject" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
+                        `;
+                    } else {
+                        actions = `<button class="action-btn btn-reject" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-trash"></i> Delete Record</button>`;
+                    }
+
+                    // Assign icon based on category
+                    let icon = 'fa-file-alt'; let color = '#3b82f6';
+                    if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
+                    if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                                    <div>
+                                        <strong style="color: var(--text-color);">${item.title}</strong><br>
+                                        <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted);">${item.category}</span></td>
+                            <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
+                            <td style="text-align:right;">${actions}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { console.error(e); }
         }
 
-        data.forEach(item => {
-            let actions = '';
-            // If it's pending, show Approve/Reject. Otherwise just Delete.
-            if(item.status === 'PENDING') {
-                actions = `
-                    <button class="btn btn-success btn-sm" onclick="reviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i></button>
-                `;
-            } else {
-                actions = `<button class="btn btn-danger btn-sm" onclick="deleteResource(${item.id})"><i class="fas fa-trash"></i></button>`;
-            }
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>${new Date(item.date).toLocaleDateString()}</td>
-                    <td><strong>${item.title}</strong><br><small>${item.uploaded_by || 'Staff'}</small></td>
-                    <td><span class="status-pill" style="background:#f1f5f9; color:#475569;">${item.category}</span></td>
-                    <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
-                    <td style="text-align:right;">${actions}</td>
-                </tr>
-            `;
-        });
-    } catch(e) {
-        console.error("Library load error:", e);
-    }
-}
-
-// ADD this new function below loadResources
-async function reviewResource(id, status) {
-    try {
-        const res = await fetch('/api/admin/resource-review', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id, status })
-        });
-        if(res.ok) {
-            loadResources(); // Refresh the list
-            initDashboard(); // Update KPI counts
+        async function reviewResource(id, status) {
+            try {
+                const res = await fetch('/api/admin/resource-review', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id, status })
+                });
+                if(res.ok) {
+                    loadResources(); 
+                    initDashboard(); 
+                }
+            } catch(e) { alert("Server error updating document status."); }
         }
-    } catch(e) { alert("Error updating resource status."); }
-}
-        // 5. REPORTS MODULE
+
+        // --- 5. SUPPORT TICKETS ---
         async function loadReports() { 
             try {
                 const res = await fetch('/api/admin/reports');
@@ -517,17 +622,17 @@ async function reviewResource(id, status) {
                 tbody.innerHTML = '';
 
                 if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="text-center">No active tickets.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active support tickets.</td></tr>`;
                     return;
                 }
 
                 data.forEach(r => {
                     tbody.innerHTML += `
                         <tr>
-                            <td><strong>${r.user_name}</strong></td>
-                            <td>${r.message}</td>
-                            <td>${new Date(r.date).toLocaleDateString()}</td>
-                            <td style="text-align:right;"><button class="btn btn-success btn-sm" onclick="resolveTicket(${r.id})">Resolve</button></td>
+                            <td><strong style="color: var(--text-color);">${r.user_name}</strong></td>
+                            <td style="color: var(--text-muted);">${r.message}</td>
+                            <td style="font-size: 0.85rem;">${new Date(r.date).toLocaleDateString()}</td>
+                            <td style="text-align:right;"><button class="action-btn btn-approve" onclick="resolveTicket(${r.id})"><i class="fas fa-check-double"></i> Mark Resolved</button></td>
                         </tr>
                     `;
                 });
@@ -535,12 +640,12 @@ async function reviewResource(id, status) {
         }
 
         async function resolveTicket(id) {
-            if(confirm("Mark this issue as resolved and close ticket?")) {
+            if(confirm("Mark this system ticket as resolved?")) {
                 await fetch(`/api/admin/reports/${id}`, { method: 'DELETE' });
                 loadReports();
+                initDashboard();
             }
         }
-
     </script>
 </body>
 </html>

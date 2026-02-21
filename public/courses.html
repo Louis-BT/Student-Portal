@@ -15,12 +15,19 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
 
+        /* --- SIDEBAR NAVIGATION (Premium Hovers Included) --- */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
-        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links a { 
+            display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; 
+            padding: 12px 15px; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: 3px solid transparent; font-weight: 500;
+        }
+        .nav-links a:hover, .nav-links a.active { 
+            background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); 
+            border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); 
+        }
 
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-color); position: relative; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -32,42 +39,59 @@
             display: flex; flex-direction: column;
         }
 
+        /* 🔥 FIX: Added relative positioning to anchor the dropdown perfectly */
+        .input-group { position: relative; width: 100%; }
+
         input[type="text"], input[type="number"] {
             width: 100%; padding: 12px 15px; border: 1px solid var(--border-color);
             border-radius: 8px; background: var(--input-bg); color: var(--text-color);
-            font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
+            font-family: inherit; font-size: 0.9rem; box-sizing: border-box; transition: 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary-color); }
+        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .manual-entry-grid { display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 10px; margin-bottom: 10px; }
 
+        /* 🔥 FIX: Dropdown locked directly under the search bar */
         .suggestions-list {
-            position: absolute; top: 100%; left: 0; right: 0;
+            position: absolute; top: calc(100% + 5px); left: 0; right: 0;
             background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); display: none; margin-top: 5px;
+            border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none;
         }
-        .suggestion-item { padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+        .suggestion-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; transition: 0.1s; }
+        .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: var(--primary-color); color: white; }
+        .suggestion-item:hover small { color: rgba(255,255,255,0.8); }
 
         .course-item {
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px; border-bottom: 1px solid var(--border-color);
             background: var(--bg-color); border-radius: 6px; margin-bottom: 8px;
+            transition: all 0.2s ease;
         }
+        .course-item:hover { transform: translateX(5px); border-color: var(--primary-color); }
         .course-meta span { display: block; }
         .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.85rem; }
-        .course-credits { font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 2px 6px; border-radius: 4px; margin-top: 4px; width: fit-content; }
+        .course-credits { font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 4px 8px; border-radius: 4px; margin-top: 6px; width: fit-content; font-weight: 600; }
 
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-primary { background: var(--primary-color); color: white; width: 100%; justify-content: center; }
-        .btn-delete { background: #fee2e2; color: #ef4444; padding: 6px; border-radius: 4px; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-primary { background: var(--primary-color); color: white; width: 100%; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3); }
+        .btn-delete { background: #fee2e2; color: #ef4444; padding: 8px 12px; border-radius: 6px; }
+        .btn-delete:hover { background: #fecaca; transform: scale(1.05); }
         .btn-print { background: #1e293b; color: white; }
+        .btn-print:hover { background: #0f172a; }
 
         .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
+        
+        /* Layout for the Timetable controls */
+        .timetable-controls { display: flex; gap: 15px; align-items: center; }
+        .view-toggle { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+        
         .timetable { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .timetable th { background: #0f172a; color: white; padding: 12px; text-align: center; font-size: 0.9rem; }
-        .timetable td { padding: 12px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; }
-        .cell-filled { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; border-radius: 4px; }
+        .timetable td { padding: 12px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; transition: 0.2s; }
+        .timetable td:hover { background: rgba(0,0,0,0.02); }
+        .cell-filled { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; border-radius: 4px; border: 1px solid rgba(37, 99, 235, 0.2) !important; }
 
         /* --- OFFICIAL DOCUMENT STYLES (Print Only) --- */
         .official-header { display: none; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 15px; }
@@ -90,17 +114,18 @@
             @page { margin: 1.5cm; }
             body { background: white !important; color: black !important; display: block; height: auto; overflow: visible; font-size: 11pt; }
             .wrapper, .main-content { display: block; padding: 0; overflow: visible; width: 100%; height: auto; }
-            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, .btn, .btn-delete, .suggestions-list, h2 i { display: none !important; }
+            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, .btn, .view-toggle, .btn-delete, .suggestions-list, h2 i, .action-card h2, .timetable-controls { display: none !important; }
             .official-header { display: block !important; }
             .print-signature { display: flex !important; }
-            .action-card, .timetable-section { display: none; border: none; box-shadow: none; padding: 0; }
+            .action-card, .timetable-section { display: none; border: none; box-shadow: none; padding: 0; margin: 0; }
 
             body.print-reg .action-card.course-card { display: block !important; width: 100%; }
-            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; background: transparent !important; }
+            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; background: transparent !important; padding: 8px 0; }
             
             body.print-time .timetable-section { display: block !important; width: 100%; }
             body.print-time .timetable th { background: #eee !important; color: black !important; border: 1px solid #000; }
             body.print-time .timetable td { border: 1px solid #000; }
+            body.print-time .cell-filled { background: #f8f9fa !important; color: #000 !important; border: 1px solid #000 !important; }
         }
     </style>
 </head>
@@ -134,7 +159,7 @@
                 <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
@@ -145,7 +170,7 @@
                     <p style="color: var(--text-muted); margin-top: 5px;">Enrolment & Scheduling</p>
                 </div>
                 <div class="theme-wrapper">
-                    <select onchange="setTheme(this.value)" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <select onchange="setTheme(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; transition: 0.2s;">
                         <option value="system">💻 System</option>
                         <option value="light">☀️ Light</option>
                         <option value="dark">🌙 Dark</option>
@@ -155,40 +180,47 @@
 
             <div class="page-grid">
                 <div class="action-card">
-                    <h2><i class="fas fa-search"></i> Find Courses</h2>
+                    <h2 style="margin-top:0;"><i class="fas fa-search"></i> Find Courses</h2>
                     <div class="input-group">
                         <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Search Database</label>
                         <input type="text" id="courseSearch" placeholder="E.g. Calculus or MATH 121..." autocomplete="off">
                         <div id="suggestions" class="suggestions-list"></div>
                     </div>
 
-                    <div style="margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 20px;">
                         <label style="font-size:0.8rem; font-weight:600; margin-bottom:5px; display:block;">Manual Entry (If not found)</label>
                         <div class="manual-entry-grid">
                             <input type="text" id="manualCode" placeholder="Code">
                             <input type="text" id="manualName" placeholder="Course Title">
                             <input type="number" id="manualCredit" placeholder="Cr" value="3">
                         </div>
-                        <button class="btn btn-primary" onclick="addManualCourse()">+ Add to List</button>
+                        <button class="btn btn-primary" onclick="addManualCourse()"><i class="fas fa-plus"></i> Add to List</button>
                     </div>
                 </div>
 
                 <div class="action-card course-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
                         <h2 style="margin:0;"><i class="fas fa-list-ul"></i> Registered List</h2>
-                        <span id="total-credits" style="font-size: 0.8rem; background: #e0f2fe; color: #0284c7; padding: 4px 8px; border-radius: 10px; font-weight: 700;">0 Credits</span>
+                        <span id="total-credits" style="font-size: 0.85rem; background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #bae6fd;">0 Credits</span>
                     </div>
                     <div class="course-list-container" id="registered-list"></div>
-                    <button class="btn btn-print" onclick="printDocument('registration')"><i class="fas fa-print"></i> Print Slip</button>
+                    <button class="btn btn-print" style="margin-top:15px;" onclick="printDocument('registration')"><i class="fas fa-print"></i> Print Registration Slip</button>
                 </div>
             </div>
 
-            
             <div class="timetable-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
                     <h2 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Weekly Schedule</h2>
-                    <button class="btn btn-print" onclick="printDocument('timetable')"><i class="fas fa-print"></i> Print Timetable</button>
+                    
+                    <div class="timetable-controls">
+                        <select id="schedule-view-toggle" class="view-toggle" onchange="generateTimetable()">
+                            <option value="standard">Standard View (8AM - 5PM)</option>
+                            <option value="extended">Tight View (Dawn - Midnight)</option>
+                        </select>
+                        <button class="btn btn-print" onclick="printDocument('timetable')"><i class="fas fa-print"></i> Print</button>
+                    </div>
                 </div>
+                
                 <table class="timetable">
                     <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
                     <tbody id="timetable-body"></tbody>
@@ -233,13 +265,11 @@
             } catch(e) { console.error("Profile sync failed"); }
         }
 
-        // --- CORE LOGIC WITH SERVER SYNC ---
         async function syncWithServer() {
             localStorage.setItem('portal-courses', JSON.stringify(myCourses));
             renderList();
             generateTimetable();
 
-            // Sync to PostgreSQL DB (Ensures GPA calc sees the same data)
             try {
                 const currentGPA = localStorage.getItem('portal-gpa') || 0.00;
                 await fetch('/api/user/save-gpa', {
@@ -268,7 +298,7 @@
                 matches.forEach(c => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item';
-                    div.innerHTML = `<span>${c.name}</span> <small>${c.code}</small>`;
+                    div.innerHTML = `<span><strong style="color:var(--primary-color);">${c.code}</strong> - ${c.name}</span> <small>${c.credits} Cr</small>`;
                     div.onclick = () => {
                         addCourse(c.name, c.code, c.credits);
                         searchInput.value = '';
@@ -304,7 +334,7 @@
         function renderList() {
             const list = document.getElementById('registered-list');
             const totalDisplay = document.getElementById('total-credits');
-            list.innerHTML = myCourses.length === 0 ? '<p style="text-align:center; padding:20px;">No courses.</p>' : '';
+            list.innerHTML = myCourses.length === 0 ? '<p style="text-align:center; padding:20px; color:var(--text-muted);">No courses registered yet. Use the search bar to begin.</p>' : '';
             let totalCr = 0;
             myCourses.forEach((c, index) => {
                 totalCr += c.credits;
@@ -315,29 +345,51 @@
                             <span>${c.name}</span>
                             <span class="course-credits">${c.credits} Credits</span>
                         </div>
-                        <button class="btn-delete" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
+                        <button class="btn-delete" title="Remove Course" onclick="removeCourse(${index})"><i class="fas fa-trash"></i></button>
                     </div>`;
             });
             totalDisplay.innerText = `${totalCr} Total Credits`;
         }
 
+        // 🔥 FIX: Dynamic Timetable generation based on user toggle selection
         function generateTimetable() {
             const tbody = document.getElementById('timetable-body');
             tbody.innerHTML = '';
-            const slots = ["08:00 - 10:00", "10:00 - 12:00", "12:00 - 13:00 (Break)", "13:00 - 15:00", "15:00 - 17:00"];
+            
+            // Check which view the user has selected
+            const viewType = document.getElementById('schedule-view-toggle').value;
+            
+            let slots = [];
+            if (viewType === 'extended') {
+                // Tight View (Dawn to Midnight)
+                slots = [
+                    "06:00 - 08:00 (Dawn)", "08:00 - 10:00", "10:00 - 12:00", 
+                    "12:00 - 13:00 (Break)", "13:00 - 15:00", "15:00 - 17:00", 
+                    "17:00 - 19:00", "19:00 - 21:00", "21:00 - 23:00", "23:00 - 01:00 (Midnight)"
+                ];
+            } else {
+                // Standard View
+                slots = ["08:00 - 10:00", "10:00 - 12:00", "12:00 - 13:00 (Break)", "13:00 - 15:00", "15:00 - 17:00"];
+            }
             
             slots.forEach((time, idx) => {
                 if(time.includes("Break")) {
-                    tbody.innerHTML += `<tr><td style="background:#f1f5f9;">${time}</td><td colspan="5" style="text-align:center; background:#f1f5f9; color:#64748b;">--- RECESS ---</td></tr>`;
+                    tbody.innerHTML += `<tr><td style="background:var(--input-bg);"><strong>${time}</strong></td><td colspan="5" style="text-align:center; background:var(--input-bg); color:var(--text-muted); font-weight:600; letter-spacing:2px;">--- LUNCH BREAK ---</td></tr>`;
                     return;
                 }
-                let row = `<tr><td><strong>${time}</strong></td>`;
+                
+                let row = `<tr><td style="white-space:nowrap;"><strong>${time}</strong></td>`;
                 for(let i=0; i<5; i++) {
-                    const courseIdx = (idx + i) % myCourses.length;
-                    if(myCourses.length > 0 && Math.random() > 0.4) {
+                    const courseIdx = (idx + i) % Math.max(1, myCourses.length);
+                    // Scatter courses visually depending on the size of the timetable
+                    const threshold = viewType === 'extended' ? 0.7 : 0.4; 
+                    
+                    if(myCourses.length > 0 && Math.random() > threshold) {
                         const c = myCourses[courseIdx] || myCourses[0];
                         row += `<td class="cell-filled">${c.code}<br><small>Venue: LT-${10+i}</small></td>`;
-                    } else { row += `<td>-</td>`; }
+                    } else { 
+                        row += `<td style="color:var(--text-muted); opacity:0.3;">-</td>`; 
+                    }
                 }
                 tbody.appendChild(Object.assign(document.createElement('tr'), {innerHTML: row + `</tr>`}));
             });
@@ -345,6 +397,10 @@
 
         function printDocument(type) {
             document.body.className = type === 'registration' ? 'print-reg' : 'print-time';
+            
+            // Set dynamic title for print
+            document.getElementById('p-doc-title').innerText = type === 'registration' ? 'Course Registration Form' : 'Official Class Timetable';
+            
             window.print();
             setTimeout(() => document.body.className = '', 1000);
         }

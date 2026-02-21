@@ -111,47 +111,58 @@
         }
         .logo i { font-size: 1.4rem; }
 
-        /* --- HERO SECTION --- */
+        /* --- HERO SECTION (Upgraded with Premium Slider) --- */
         .hero {
             text-align: center;
-            padding: 6rem 1rem;
-            background: var(--hero-gradient);
-            border-bottom: 1px solid var(--border-color);
+            padding: 8rem 1rem;
             position: relative;
             overflow: hidden;
+            /* Replaced solid background with a dark overlay to make text pop over images */
+            background: rgba(15, 23, 42, 0.6); 
         }
-        
-        /* Decorative Blob */
-        .hero::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(37,99,235,0.05) 0%, transparent 60%);
-            z-index: 0; pointer-events: none;
+
+        /* Dynamic Background Images */
+        .hero-slider-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(3px) brightness(0.6); /* Blurred background as requested */
+            z-index: -1;
+            opacity: 0;
+            transform: scale(1);
+            transition: opacity 1s ease-in-out, transform 5s linear;
+        }
+        /* The active class triggers the zoom */
+        .hero-slider-bg.active {
+            opacity: 1;
+            transform: scale(1.15); 
         }
 
         .hero-content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
 
+        /* Force text white over images */
         .hero h1 {
             font-size: clamp(2.5rem, 5vw, 4.5rem);
             line-height: 1.1;
             margin-bottom: 1.5rem;
             letter-spacing: -0.03em;
-            color: var(--text-color);
-            background: linear-gradient(to right, var(--text-color), var(--primary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #ffffff; 
+            text-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
 
         .hero p {
             font-size: 1.2rem;
-            color: var(--text-muted);
+            color: #e2e8f0;
             margin-bottom: 2.5rem;
             line-height: 1.6;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
 
         .btn-hero {
             padding: 14px 35px;
@@ -169,11 +180,36 @@
         .btn-primary-hero:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5); }
         
         .btn-outline-hero {
-            background: transparent;
-            color: var(--text-color);
-            border: 2px solid var(--border-color);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            backdrop-filter: blur(5px);
         }
-        .btn-outline-hero:hover { border-color: var(--text-color); background: var(--bg-color); }
+        .btn-outline-hero:hover { border-color: white; background: rgba(255,255,255,0.2); transform: translateY(-3px); }
+
+        /* Progress Lines */
+        .slider-progress {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            z-index: 2;
+            margin-top: 40px;
+        }
+        .progress-line {
+            width: 50px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--accent-color);
+            border-radius: 2px;
+        }
+        /* JavaScript will apply inline transition to fill */
 
         /* --- FEATURES GRID --- */
         .features {
@@ -228,13 +264,13 @@
         [data-theme="dark"] .uni-logo { filter: grayscale(100%) brightness(2) opacity(0.3); }
         [data-theme="dark"] .uni-logo:hover { filter: grayscale(0%) brightness(1) opacity(1); }
 
-        /* --- FOOTER --- */
+        /* --- FOOTER (Upgraded with new Links) --- */
         .footer {
             background: #0f172a; color: white;
             padding: 5rem 5% 2rem; font-size: 0.95rem;
         }
         .footer-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 4rem; max-width: 1200px; margin: 0 auto;
         }
         .footer h3 { color: #38bdf8; margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; }
@@ -258,12 +294,28 @@
         select.theme-select { background: transparent; border: none; color: var(--text-color); cursor: pointer; outline: none; font-size: 0.9rem; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; border-radius: 50%; padding: 0; background: none; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--border-color); }
+
+        /* --- PWA NOTIFYING TAB --- */
+        .pwa-banner {
+            position: fixed; bottom: -150px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 600px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            border: 1px solid #334155; border-radius: 16px;
+            padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 9999;
+            transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .pwa-banner.show { bottom: 30px; }
+        .pwa-icon { width: 50px; height: 50px; background: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; flex-shrink: 0; }
+        .pwa-content h4 { margin: 0 0 5px; color: white; font-size: 1.05rem; }
+        .pwa-content p { margin: 0; font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; }
+        .pwa-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
+        .pwa-close:hover { color: #ef4444; }
+
     </style>
 
     <link rel="apple-touch-icon" href="/icon.png">
-
     <link rel="icon" type="image/png" href="/icon.png">
-
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
@@ -271,9 +323,9 @@
     <div id="news-ticker" class="news-ticker">
         <div class="ticker-wrap">
             <div id="ticker-text" class="ticker-content">
-                Welcome to the National Tertiary Student Portal. Registration for the 2025/2026 Academic Year is now open! &nbsp; | &nbsp; 
-                Urgent: Deadline for course registration is extended to March 31st. &nbsp; | &nbsp; 
-                Library Update: New Past Questions uploaded for Engineering & Humanities.
+                Welcome to the National Tertiary Student Portal. Registration for the 2026 Academic Year is now open! &nbsp; | &nbsp; 
+                Urgent: Deadline for Course Registration & Leadership Vetting is approaching. &nbsp; | &nbsp; 
+                New Scholarships Updated: Visit the Opportunities Hub to check your eligibility.
             </div>
         </div>
     </div>
@@ -301,14 +353,23 @@
     </nav>
 
     <section class="hero">
+        <div class="hero-slider-bg" id="slide-0" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000&auto=format&fit=crop');"></div>
+        <div class="hero-slider-bg" id="slide-1" style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2000&auto=format&fit=crop');"></div>
+        <div class="hero-slider-bg" id="slide-2" style="background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2000&auto=format&fit=crop');"></div>
+        <div class="hero-slider-bg" id="slide-3" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2000&auto=format&fit=crop');"></div>
+        <div class="hero-slider-bg" id="slide-4" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2000&auto=format&fit=crop');"></div>
+
         <div class="hero-content">
             <h1 class="animate-enter delay-1">Your Academic Life,<br>Unified & Simplified.</h1>
-            <p class="animate-enter delay-2">The central digital hub for all tertiary students in Ghana. Manage your GPA, register courses, access the National Library, and connect with scholars nationwide.</p>
+            <p class="animate-enter delay-2">The central digital hub for all tertiary students in Ghana. Manage your GPA, register courses, access the National Library, track scholarships, and connect with scholars nationwide.</p>
             
             <div class="btn-group animate-enter delay-3">
                 <a href="signup.html" class="btn-hero btn-primary-hero">Create Free Account</a>
                 <a href="login.html" class="btn-hero btn-outline-hero">Student Login</a>
             </div>
+
+            <div class="slider-progress animate-enter delay-3" id="progress-container">
+                </div>
         </div>
     </section>
 
@@ -360,11 +421,13 @@
             </div>
             
             <div class="footer-col">
-                <h3>Quick Access</h3>
-                <a href="login.html"><i class="fas fa-angle-right"></i> Student Login</a>
-                <a href="signup.html"><i class="fas fa-angle-right"></i> Create Account</a>
-                <a href="admin.html"><i class="fas fa-angle-right"></i> Administrator Login</a>
-                <a href="#features"><i class="fas fa-angle-right"></i> Features</a>
+                <h3>Ecosystem & Access</h3>
+                <a href="login.html"><i class="fas fa-angle-right"></i> Student Dashboard</a>
+                <a href="library.html"><i class="fas fa-angle-right"></i> National Library</a>
+                <a href="opportunities.html"><i class="fas fa-angle-right"></i> Scholarships Hub</a>
+                <a href="opportunities.html"><i class="fas fa-angle-right"></i> Career, Internships & NSS</a>
+                <a href="opportunities.html"><i class="fas fa-angle-right"></i> Study Abroad Guidance</a>
+                <a href="opportunities.html"><i class="fas fa-angle-right"></i> WASSCE Admissions Checker</a>
             </div>
 
             <div class="footer-col">
@@ -391,6 +454,15 @@
         </div>
     </footer>
 
+    <div id="pwaBanner" class="pwa-banner">
+        <div class="pwa-icon"><i class="fas fa-mobile-alt"></i></div>
+        <div class="pwa-content">
+            <h4>Install the NTS App</h4>
+            <p id="pwa-instruction">Analyzing device...</p>
+        </div>
+        <button class="pwa-close" onclick="closePWA()"><i class="fas fa-times"></i></button>
+    </div>
+
     <script src="theme.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
@@ -398,13 +470,11 @@
             const savedTheme = localStorage.getItem("portal-theme") || "system";
             const selector = document.getElementById("theme-selector");
             if (selector) selector.value = savedTheme;
-            
-            // Trigger Custom Color input visibility if needed
             if (savedTheme === 'custom') {
                 document.getElementById('custom-theme-picker').style.display = 'inline-block';
             }
 
-            // 2. Intelligent News Fetcher (With Fallback)
+            // 2. Intelligent News Fetcher
             fetch('/api/news')
                 .then(res => {
                     if (!res.ok) throw new Error("Server Offline");
@@ -412,17 +482,90 @@
                 })
                 .then(data => {
                     if (data && data.length > 0) {
-                        // Construct ticker string from API data
                         const newsItems = data.map(n => `${n.title}: ${n.message}`).join(" &nbsp; | &nbsp; ");
                         document.getElementById('ticker-text').innerHTML = newsItems;
                     }
                 })
                 .catch(err => {
                     console.log("Using default ticker (Server unreachable)");
-                    // Keeps the default static text in HTML if fetch fails
+                });
+
+            // 3. Setup Hero Slider Progress Bars
+            const totalSlides = 5;
+            const progressContainer = document.getElementById('progress-container');
+            for(let i=0; i<totalSlides; i++) {
+                progressContainer.innerHTML += `<div class="progress-line"><div class="progress-fill" id="fill-${i}"></div></div>`;
+            }
+
+            // 4. Hero Slider Logic (5 seconds zoom)
+            let currentSlide = 0;
+            function changeSlide() {
+                // Reset all progress bars instantly
+                for(let i=0; i<totalSlides; i++) {
+                    const fill = document.getElementById(`fill-${i}`);
+                    fill.style.transition = 'none';
+                    fill.style.width = '0%';
+                }
+
+                // Remove active class from all backgrounds
+                for(let i=0; i<totalSlides; i++) {
+                    document.getElementById(`slide-${i}`).classList.remove('active');
+                }
+
+                // Activate current background (triggers CSS zoom & fade)
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+                // Animate the current progress bar over exactly 5 seconds
+                setTimeout(() => {
+                    const activeFill = document.getElementById(`fill-${currentSlide}`);
+                    activeFill.style.transition = 'width 5s linear';
+                    activeFill.style.width = '100%';
+                }, 50);
+
+                currentSlide = (currentSlide + 1) % totalSlides;
+            }
+
+            changeSlide(); // Start immediately
+            setInterval(changeSlide, 5000); // Loop every 5 seconds
+
+            // 5. Intelligent PWA Banner Logic
+            setTimeout(() => {
+                const banner = document.getElementById('pwaBanner');
+                const instruction = document.getElementById('pwa-instruction');
+                const userAgent = navigator.userAgent.toLowerCase();
+
+                // Device specific instructions as requested
+                if (/iphone|ipad|ipod/.test(userAgent)) {
+                    instruction.innerHTML = `Tap the share button (<i class="fas fa-share-square"></i>) at the bottom middle of your browser, scroll down and tap <strong>"Add to Home Screen"</strong>, then Add.`;
+                } else if (/android/.test(userAgent)) {
+                    instruction.innerHTML = `Tap the <strong>3 dots (⋮)</strong> in your browser menu and select <strong>"Install App"</strong> for a native experience.`;
+                } else {
+                    instruction.innerHTML = `Click the install icon (<i class="fas fa-desktop"></i>) in your browser's address bar to download the desktop application.`;
+                }
+                
+                banner.classList.add('show');
+            }, 3000); // Show after 3 seconds
+        });
+
+        function closePWA() {
+            document.getElementById('pwaBanner').classList.remove('show');
+        }
+    </script>
+
+<script>
+    // Register Service Worker for PWA Offline Support
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered successfully with scope: ', registration.scope);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
                 });
         });
-    </script>
+    }
+</script>
 
 </body>
 </html>

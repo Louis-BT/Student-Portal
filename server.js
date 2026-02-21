@@ -306,6 +306,16 @@ app.get('/api/leadership/status', isAuthenticated, async (req, res) => {
     res.json(result.rows[0] || { status: 'NONE' });
 });
 
+// ADDITIVE: Allow students to withdraw their pending leadership applications
+app.delete('/api/leadership/withdraw', isAuthenticated, async (req, res) => {
+    try {
+        await pool.query("DELETE FROM leadership_apps WHERE user_id=$1", [req.session.userId]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: "Withdrawal Failed" });
+    }
+});
+
 // --- LIBRARY & RESOURCES ---
 app.get('/api/library/resources', async (req, res) => {
     const result = await pool.query("SELECT * FROM resources WHERE status='APPROVED' ORDER BY date DESC");
@@ -334,14 +344,17 @@ app.get('/api/chat', async (req, res) => {
 });
 
 app.post('/api/chat', isAuthenticated, async (req, res) => {
-    const { message } = req.body;
+    // ADDITIVE: Updated slightly to accept 'user_name' if the Admin is broadcasting a message to the chat
+    const { message, user_name } = req.body;
     const userRes = await pool.query("SELECT name, role FROM users WHERE id=$1", [req.session.userId]);
     const user = userRes.rows[0];
+    
+    const finalName = (user.role === 'ADMIN' && user_name) ? user_name : user.name;
 
     try {
         await pool.query(
             "INSERT INTO messages (user_id, user_name, user_role, message) VALUES ($1, $2, $3, $4)",
-            [req.session.userId, user.name, user.role, message]
+            [req.session.userId, finalName, user.role, message]
         );
         res.json({ success: true });
     } catch (e) { 
@@ -445,6 +458,26 @@ app.get('/api/admin/seed-library', checkAdmin, async (req, res) => {
     }
 });
 
+// ADDITIVE: Added missing GET route to allow Admin Matrix to pull pending library resources
+app.get('/api/admin/pending-resources', checkAdmin, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM resources ORDER BY date DESC");
+        res.json(result.rows);
+    } catch (e) { 
+        res.status(500).json({ error: "Fetch Error" }); 
+    }
+});
+
+// ADDITIVE: Added missing GET route to allow Admin Matrix to pull leadership applications
+app.get('/api/admin/leadership-apps', checkAdmin, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM leadership_apps ORDER BY date DESC");
+        res.json(result.rows);
+    } catch (e) { 
+        res.status(500).json({ error: "Fetch Error" }); 
+    }
+});
+
 // --- SUPPORT TICKETS & NOTIFICATIONS ---
 app.get('/api/news', async (req, res) => {
     try {
@@ -452,6 +485,27 @@ app.get('/api/news', async (req, res) => {
         res.json(result.rows);
     } catch (e) {
         res.status(500).json({ error: "Failed to load news" });
+    }
+});
+
+// ADDITIVE: Route required by new Admin UI to publish news globally
+app.post('/api/news', checkAdmin, async (req, res) => {
+    const { title, message, category } = req.body;
+    try {
+        await pool.query("INSERT INTO news (title, message, category) VALUES ($1, $2, $3)", [title, message, category]);
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: "Publish Failed" }); 
+    }
+});
+
+// ADDITIVE: Route required by new Admin UI to delete news broadcasts
+app.delete('/api/news/:id', checkAdmin, async (req, res) => {
+    try {
+        await pool.query("DELETE FROM news WHERE id=$1", [req.params.id]);
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: "Delete Failed" }); 
     }
 });
 
@@ -463,21 +517,42 @@ app.post('/api/support/create', isAuthenticated, async (req, res) => {
     res.json({ success: true });
 });
 
+// ADDITIVE: Route required by Admin UI to view Support Tickets
+app.get('/api/admin/reports', checkAdmin, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM support_tickets ORDER BY date DESC");
+        res.json(result.rows);
+    } catch (e) { 
+        res.status(500).json({ error: "Fetch Error" }); 
+    }
+});
+
+// ADDITIVE: Route required by Admin UI to resolve Support Tickets
+app.delete('/api/admin/reports/:id', checkAdmin, async (req, res) => {
+    try {
+        await pool.query("DELETE FROM support_tickets WHERE id = $1", [req.params.id]);
+        res.json({ success: true });
+    } catch (e) { 
+        res.status(500).json({ error: "Delete Error" }); 
+    }
+});
+
 // ==============================================================================
 // 6. GLOBAL ERROR & FALLBACK HANDLING
 // ==============================================================================
 
 // 404 HANDLER (MUST BE AT THE VERY BOTTOM OF ALL ROUTES)
+// ADDITIVE: Modified your existing fallback to route directly to your new premium 404.html page
 app.get('*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public/index.html'));
+    res.status(404).sendFile(path.join(__dirname, 'public/404.html'));
 });
 
 // SERVER INITIALIZATION
 app.listen(PORT, () => {
     console.log(`\n=================================================`);
-    console.log(`🚀 National Student Portal Server Live`);
-    console.log(`📡 Port: ${PORT}`);
-    console.log(`🌍 Environment: ${process.env.NODE_ENV || 'Development'}`);
-    console.log(`⏱️  Started at: ${new Date().toLocaleString()}`);
+    console.log(`National Student Portal Server Live`);
+    console.log(`Port: ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'Development'}`);
+    console.log(`Started at: ${new Date().toLocaleString()}`);
     console.log(`=================================================\n`);
 });

@@ -6,99 +6,89 @@
     <title>Leadership Vanguard | National Portal</title>
     
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
     <style>
-        /* --- LAYOUT --- */
+        /* --- 1. CORE LAYOUT & SIDEBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
 
-        /* SIDEBAR */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
-        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all 0.3s ease; border-left: 3px solid transparent; font-weight: 500; }
+        .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); }
 
-        /* MAIN CONTENT */
         .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); position: relative; display: flex; flex-direction: column; }
         
-        /* HEADER (Top Bar) */
-        .top-header {
-            padding: 20px 40px; display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-color); position: sticky; top: 0; z-index: 10;
-        }
+        /* --- 2. HEADER & NOTIFICATIONS --- */
+        .top-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-color); }
+        .header-title h2 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        
+        .header-tools { display: flex; align-items: center; gap: 20px; }
+        .notify-bell { position: relative; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; padding: 8px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
+        .notify-bell:hover { color: var(--primary-color); background: var(--input-bg); }
+        .bell-dot { position: absolute; top: 8px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 0 2px var(--card-bg); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
-        /* --- VANGUARD HERO SECTION --- */
-        .vanguard-hero {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%);
-            color: white; padding: 60px 40px; text-align: center;
-            border-bottom: 4px solid #fbbf24; position: relative; overflow: hidden;
-        }
-        .vanguard-hero::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
-        }
-        .vanguard-title { font-family: 'Playfair Display', serif; font-size: 3rem; margin: 0; letter-spacing: 1px; }
-        .gold-text { color: #fbbf24; text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3); }
-        .hero-sub { font-size: 1.1rem; color: #cbd5e1; max-width: 700px; margin: 15px auto 0; line-height: 1.6; }
+        /* --- 3. VANGUARD HERO SECTION --- */
+        .vanguard-hero { background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%); color: white; padding: 60px 40px; text-align: center; border-bottom: 4px solid #fbbf24; position: relative; overflow: hidden; box-shadow: inset 0 -10px 30px rgba(0,0,0,0.5); }
+        .vanguard-hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.15) 0%, transparent 70%); }
+        .vanguard-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0; letter-spacing: 1px; position: relative; z-index: 2; }
+        .gold-text { color: #fbbf24; text-shadow: 0 2px 15px rgba(251, 191, 36, 0.4); }
+        .hero-sub { font-size: 1.15rem; color: #cbd5e1; max-width: 750px; margin: 20px auto 0; line-height: 1.6; position: relative; z-index: 2; font-family: 'Playfair Display', serif; font-style: italic; }
 
-        /* --- GRID CONTENT --- */
-        .content-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 40px;
-            max-width: 1200px; margin: 40px auto; padding: 0 40px; width: 100%; box-sizing: border-box;
-        }
+        /* --- 4. MAIN GRID & CARDS --- */
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; max-width: 1200px; margin: 40px auto; padding: 0 40px; width: 100%; box-sizing: border-box; }
 
-        /* CARD STYLES */
-        .premium-card {
-            background: var(--card-bg); border: 1px solid var(--border-color);
-            border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            position: relative; overflow: hidden;
-        }
-        .premium-card h3 { margin-top: 0; color: var(--text-color); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .premium-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+        .premium-card h3 { margin-top: 0; color: var(--text-color); font-size: 1.3rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
 
-        /* FORM ELEMENTS */
-        .form-group { margin-bottom: 20px; }
-        .form-label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); }
-        .form-control {
-            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);
-            background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.95rem;
-            box-sizing: border-box; transition: 0.2s;
-        }
+        /* --- 5. APPLICATION FORM UI --- */
+        .form-group { margin-bottom: 25px; }
+        .form-label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-control { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; box-sizing: border-box; transition: 0.2s; }
         .form-control:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
+        
+        .textarea-wrapper { position: relative; }
+        .char-counter { position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--input-bg); padding: 2px 8px; border-radius: 10px; }
 
-        .btn-gold {
-            width: 100%; padding: 14px; background: linear-gradient(to right, #fbbf24, #f59e0b);
-            color: #0f172a; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2); }
+        .btn-gold { width: 100%; padding: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #0f172a; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3); }
 
-        /* LEADER LIST */
-        .leader-item {
-            display: flex; align-items: center; gap: 15px; padding: 15px;
-            background: var(--bg-color); border: 1px solid var(--border-color);
-            border-radius: 8px; margin-bottom: 15px; transition: 0.2s;
-        }
-        .leader-item:hover { border-color: #fbbf24; transform: translateX(5px); }
-        .leader-avatar {
-            width: 50px; height: 50px; border-radius: 50%; background: #0f172a; color: #fbbf24;
-            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;
-        }
+        /* --- 6. PROGRESS TRACKER (VISA STYLE) --- */
+        .status-card { display: none; padding: 20px 0; }
+        .tracker-container { margin: 40px 0; position: relative; }
+        .tracker-line { position: absolute; top: 20px; left: 10%; width: 80%; height: 4px; background: var(--border-color); z-index: 1; border-radius: 2px; }
+        .tracker-progress { position: absolute; top: 20px; left: 10%; width: 50%; height: 4px; background: #fbbf24; z-index: 2; border-radius: 2px; transition: 1s ease-in-out; }
+        
+        .tracker-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; }
+        .step { display: flex; flex-direction: column; align-items: center; width: 33%; }
+        .step-icon { width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--text-muted); font-weight: bold; transition: 0.3s; }
+        .step.active .step-icon { border-color: #fbbf24; background: #fbbf24; color: #0f172a; box-shadow: 0 0 15px rgba(251,191,36,0.4); }
+        .step.completed .step-icon { border-color: #10b981; background: #10b981; color: white; }
+        
+        .step-label { margin-top: 15px; font-weight: 700; font-size: 0.9rem; color: var(--text-muted); text-align: center; }
+        .step.active .step-label { color: var(--text-color); }
 
-        /* STATUS STATES */
-        .status-card { text-align: center; padding: 40px 20px; display: none; }
-        .status-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
-        .btn-withdraw { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 20px; font-size: 0.9rem; }
+        .application-receipt { background: var(--input-bg); border: 1px dashed var(--border-color); padding: 25px; border-radius: 12px; margin-top: 30px; text-align: left; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+        .btn-withdraw { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-top: 25px; font-weight: 600; width: 100%; transition: 0.2s; }
         .btn-withdraw:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* --- 7. INDUCTED LEADERS DIRECTORY --- */
+        .leader-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; transition: 0.2s; }
+        .leader-item:hover { border-color: #fbbf24; transform: translateX(5px); background: var(--card-bg); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .leader-avatar { width: 55px; height: 55px; border-radius: 50%; background: #0f172a; color: #fbbf24; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; border: 2px solid rgba(251,191,36,0.2); }
 
         @media (max-width: 900px) { 
             .content-grid { grid-template-columns: 1fr; padding: 0 20px; } 
             .sidebar { display: none; }
-            .vanguard-title { font-size: 2rem; }
+            .vanguard-title { font-size: 2.5rem; }
+            .tracker-label { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -106,9 +96,7 @@
 
     <div class="wrapper">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <i class="fas fa-graduation-cap"></i> Student Portal
-            </div>
+            <div class="sidebar-header"><i class="fas fa-university"></i> Student Portal</div>
             <ul class="nav-links">
                 <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
@@ -117,20 +105,28 @@
                 <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
         <main class="main-content">
             
             <header class="top-header">
-                <div></div> <div class="theme-wrapper">
-                    <select onchange="setTheme(this.value)" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color);">
-                        <option value="system">💻 System</option>
-                        <option value="light">☀️ Light</option>
-                        <option value="dark">🌙 Dark</option>
-                        <option value="custom">🎨 Custom</option>
-                    </select>
+                <div class="header-title">
+                    <h2 style="color: var(--text-color);">Leadership Command</h2>
+                </div>
+                <div class="header-tools">
+                    <div class="notify-bell" title="Vanguard Alerts" onclick="alert('No new alerts.')">
+                        <i class="fas fa-bell"></i>
+                        <span class="bell-dot"></span>
+                    </div>
+                    <div class="theme-wrapper">
+                        <select onchange="setTheme(this.value)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 500;">
+                            <option value="system">💻 System</option>
+                            <option value="light">☀️ Light</option>
+                            <option value="dark">🌙 Dark</option>
+                        </select>
+                    </div>
                 </div>
             </header>
 
@@ -138,7 +134,7 @@
                 <h1 class="vanguard-title">The <span class="gold-text">Vanguard</span> Circle</h1>
                 <p class="hero-sub">
                     "Uneasy lies the head that wears a crown." <br>
-                    Join the exclusive network of Student Representative Council aspirants, Course Representatives, and visionary changemakers.
+                    Submit your manifesto, undergo rigorous administrative vetting, and join the exclusive network of tertiary changemakers.
                 </p>
             </div>
 
@@ -147,145 +143,269 @@
                 <div class="premium-card">
                     
                     <div id="application-form">
-                        <h3><i class="fas fa-file-signature" style="color: #fbbf24;"></i> Vetting Application</h3>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Submit your manifesto for review by the Electoral Commission.</p>
+                        <h3><i class="fas fa-file-signature" style="color: #fbbf24;"></i> Official Vetting Application</h3>
+                        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px;">All submissions are permanently logged and reviewed directly by the National Administration Console.</p>
                         
                         <form onsubmit="event.preventDefault(); submitApp();">
                             <div class="form-group">
-                                <label class="form-label">Target Position</label>
-                                <input type="text" class="form-control" placeholder="e.g. SRC President, General Secretary" required>
+                                <label class="form-label">Target Leadership Position</label>
+                                <input type="text" id="target-pos" class="form-control" placeholder="e.g. SRC President, WOCOM, Class Representative" required>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label">Leadership Experience</label>
-                                <select class="form-control">
-                                    <option>Novice (0-1 Years)</option>
-                                    <option>Intermediate (1-2 Years)</option>
-                                    <option>Veteran (3+ Years)</option>
+                                <label class="form-label">Prior Leadership Experience</label>
+                                <select id="experience-level" class="form-control">
+                                    <option value="Novice">Novice (0-1 Years)</option>
+                                    <option value="Intermediate">Intermediate (1-2 Years)</option>
+                                    <option value="Veteran">Veteran (3+ Years)</option>
                                 </select>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Manifesto / Vision Statement</label>
-                                <textarea class="form-control" rows="5" placeholder="Outline your vision for the student body..." required></textarea>
+                                <label class="form-label">Manifesto & Vision Statement</label>
+                                <div class="textarea-wrapper">
+                                    <textarea id="manifesto-text" class="form-control" rows="8" placeholder="Clearly outline your operational vision, proposed policies, and mandate for the student body..." onkeyup="countChars(this)" required></textarea>
+                                    <span class="char-counter"><span id="char-count">0</span> / 1500</span>
+                                </div>
                             </div>
 
-                            <button type="submit" class="btn-gold">Submit for Vetting</button>
+                            <button type="submit" id="submit-btn" class="btn-gold"><i class="fas fa-paper-plane"></i> Submit to Admin Queue</button>
                         </form>
                     </div>
 
-                    <div id="state-pending" class="status-card">
-                        <i class="fas fa-hourglass-half status-icon" style="color: #f59e0b;"></i>
-                        <h2 style="margin: 0; color: #d97706;">Under Review</h2>
-                        <p style="color: var(--text-muted); margin-top: 10px;">Your manifesto is currently being vetted by the administration. This process typically takes 24-48 hours.</p>
-                        <div style="background: var(--input-bg); padding: 15px; margin-top: 20px; border-radius: 8px; font-size: 0.9rem;">
-                            <strong>Application ID:</strong> <span style="font-family: monospace;">VG-2026-X99</span>
-                        </div>
-                        <button onclick="withdrawApp()" class="btn-withdraw">Withdraw Application</button>
-                    </div>
-
-                    <div id="state-approved" class="status-card">
-                        <i class="fas fa-check-circle status-icon" style="color: #10b981;"></i>
-                        <h2 style="margin: 0; color: #059669;">Induction Confirmed</h2>
-                        <p style="color: var(--text-muted); margin-top: 10px;">Congratulations. You have been verified as a student leader.</p>
+                    <div id="application-tracker" class="status-card">
+                        <h3 style="margin-top: 0; justify-content: center; border: none; font-size: 1.6rem;" id="tracker-headline">Application Under Review</h3>
                         
-                        <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K?mode=gi_t" target="_blank" 
-                           style="display: block; background: #10b981; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 25px; transition: 0.2s;">
-                            <i class="fab fa-whatsapp"></i> Access The Vanguard Hub
-                        </a>
+                        <div class="tracker-container">
+                            <div class="tracker-line"></div>
+                            <div class="tracker-progress" id="tracker-progress-bar"></div>
+                            
+                            <div class="tracker-steps">
+                                <div class="step completed" id="step-1">
+                                    <div class="step-icon"><i class="fas fa-file-export"></i></div>
+                                    <div class="step-label">Submitted</div>
+                                </div>
+                                <div class="step active" id="step-2">
+                                    <div class="step-icon"><i class="fas fa-search"></i></div>
+                                    <div class="step-label">Admin Vetting</div>
+                                </div>
+                                <div class="step" id="step-3">
+                                    <div class="step-icon"><i class="fas fa-crown"></i></div>
+                                    <div class="step-label">Final Decision</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="application-receipt">
+                            <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
+                                <strong style="color: var(--text-color); font-size: 1.1rem;">Application Receipt</strong>
+                            </div>
+                            <div class="receipt-row">
+                                <span style="color: var(--text-muted);">Tracking ID:</span>
+                                <strong style="font-family: monospace; color: var(--primary-color);">VG-2026-<span id="receipt-id">PENDING</span></strong>
+                            </div>
+                            <div class="receipt-row">
+                                <span style="color: var(--text-muted);">Position:</span>
+                                <strong id="receipt-pos" style="color: var(--text-color);">...</strong>
+                            </div>
+                            <div class="receipt-row">
+                                <span style="color: var(--text-muted);">Date Submitted:</span>
+                                <strong id="receipt-date" style="color: var(--text-color);">...</strong>
+                            </div>
+                        </div>
+
+                        <div id="pending-actions">
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 25px;">Your dossier is currently locked in the Administrative Console. Vetting typically takes 24-48 hours.</p>
+                            <button onclick="withdrawApp()" class="btn-withdraw"><i class="fas fa-times-circle"></i> Retract Application</button>
+                        </div>
+
+                        <div id="approved-actions" style="display: none;">
+                            <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K?mode=gi_t" target="_blank" style="display: block; background: #10b981; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 25px; transition: 0.2s;">
+                                <i class="fab fa-whatsapp" style="font-size: 1.2rem; margin-right: 8px;"></i> Access The Vanguard Hub
+                            </a>
+                        </div>
                     </div>
 
                 </div>
 
                 <div>
-                    <h3 style="color: var(--text-color); margin-top: 0; margin-bottom: 20px;">🏅 Inducted Leaders</h3>
-                    
-                    <div class="leader-item">
-                        <div class="leader-avatar">FO</div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--text-color);">Frank Owusu</div>
-                            <div style="font-size: 0.8rem; color: #fbbf24;">SRC President (KNUST)</div>
+                    <div class="premium-card" style="padding: 25px; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;"><i class="fas fa-users" style="color: var(--primary-color);"></i> Active Vanguard</h3>
+                        
+                        <div class="leader-item">
+                            <div class="leader-avatar">FO</div>
+                            <div>
+                                <div style="font-weight: 800; color: var(--text-color);">Frank Owusu</div>
+                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">SRC President (KNUST)</div>
+                            </div>
+                        </div>
+
+                        <div class="leader-item">
+                            <div class="leader-avatar">RC</div>
+                            <div>
+                                <div style="font-weight: 800; color: var(--text-color);">Richester Colthy</div>
+                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">WOCOM (VVU)</div>
+                            </div>
+                        </div>
+
+                        <div class="leader-item">
+                            <div class="leader-avatar">MA</div>
+                            <div>
+                                <div style="font-weight: 800; color: var(--text-color);">Mariam Ali Titiaka</div>
+                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">WAIMM Pres. (UMaT)</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="leader-item">
-                        <div class="leader-avatar">RC</div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--text-color);">Richester Colthy</div>
-                            <div style="font-size: 0.8rem; color: #fbbf24;">WOCOM (VVU)</div>
-                        </div>
-                    </div>
-
-                    <div class="leader-item">
-                        <div class="leader-avatar">MA</div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--text-color);">Mariam Ali Titiaka</div>
-                            <div style="font-size: 0.8rem; color: #fbbf24;">WAIMM Pres. (UMaT)</div>
-                        </div>
-                    </div>
-
-                    <div class="premium-card" style="margin-top: 30px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: none;">
-                        <h4 style="margin-top: 0; color: #fbbf24;">Resource Center</h4>
-                        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 15px;">Download the official constitution and leadership guides.</p>
-                        <button style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
-                            <i class="fas fa-download"></i> Downloads
+                    <div class="premium-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: none; padding: 25px;">
+                        <h4 style="margin-top: 0; color: #fbbf24; font-size: 1.1rem;"><i class="fas fa-book-reader"></i> Executive Resources</h4>
+                        <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5;">Download the official national constitution and operational leadership frameworks.</p>
+                        <button style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                            <i class="fas fa-download"></i> Access Library
                         </button>
                     </div>
                 </div>
 
             </div>
-
-            <footer style="margin-top: auto; padding: 25px; text-align: center; border-top: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.9rem;">
-                &copy; 2026 National Student Portal. Leadership Vanguard.
-            </footer>
-
         </main>
     </div>
 
     <script>
-        // --- LOGIC ENGINE ---
-        document.addEventListener('DOMContentLoaded', () => {
-            checkStatus();
-        });
-
-        function checkStatus() {
-            const status = localStorage.getItem('portal-leadership-status');
-            const form = document.getElementById('application-form');
-            const pending = document.getElementById('state-pending');
-            const approved = document.getElementById('state-approved');
-
-            // Reset all
-            form.style.display = 'none';
-            pending.style.display = 'none';
-            approved.style.display = 'none';
-
-            if (status === 'PENDING') {
-                pending.style.display = 'block';
-            } else if (status === 'APPROVED') {
-                approved.style.display = 'block';
-            } else {
-                form.style.display = 'block';
+        // --- 1. CHARACTER COUNTER ---
+        function countChars(obj) {
+            document.getElementById('char-count').innerHTML = obj.value.length;
+            if(obj.value.length > 1500) {
+                obj.value = obj.value.substring(0, 1500);
+                document.getElementById('char-count').innerHTML = 1500;
             }
         }
 
-        function submitApp() {
-            const btn = document.querySelector('.btn-gold');
-            const originalText = btn.innerText;
-            
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Submitting...';
-            btn.style.opacity = '0.7';
+        // --- 2. INITIALIZATION & SERVER SYNC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchApplicationStatus();
+        });
 
-            setTimeout(() => {
-                localStorage.setItem('portal-leadership-status', 'PENDING');
-                checkStatus(); // Switch view
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 1500);
+        async function fetchApplicationStatus() {
+            try {
+                // Try fetching real status from DB first
+                const res = await fetch('/api/leadership/status');
+                if(!res.ok) throw new Error("Offline");
+                
+                const data = await res.json();
+                renderState(data.status, data.position, data.date);
+            } catch (error) {
+                // Fallback to local storage if API is unlinked
+                const localStatus = localStorage.getItem('portal-leadership-status');
+                const localPos = localStorage.getItem('portal-leadership-pos') || 'Pending Allocation';
+                const localDate = localStorage.getItem('portal-leadership-date') || new Date().toLocaleDateString();
+                renderState(localStatus, localPos, localDate);
+            }
         }
 
-        function withdrawApp() {
-            if(confirm("Are you sure you want to withdraw? This will cancel your vetting process.")) {
+        // --- 3. UI STATE MANAGEMENT ---
+        function renderState(status, position, dateStr) {
+            const form = document.getElementById('application-form');
+            const tracker = document.getElementById('application-tracker');
+            
+            const step2 = document.getElementById('step-2');
+            const step3 = document.getElementById('step-3');
+            const progressBar = document.getElementById('tracker-progress-bar');
+            
+            const pendingActions = document.getElementById('pending-actions');
+            const approvedActions = document.getElementById('approved-actions');
+
+            // Set Receipt Data
+            if(position) document.getElementById('receipt-pos').innerText = position;
+            if(dateStr) document.getElementById('receipt-date').innerText = new Date(dateStr).toLocaleDateString();
+
+            if (status === 'PENDING') {
+                form.style.display = 'none';
+                tracker.style.display = 'block';
+                
+                document.getElementById('tracker-headline').innerText = "Vetting In Progress";
+                document.getElementById('tracker-headline').style.color = "#d97706";
+                document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 90000) + 10000;
+                
+                progressBar.style.width = '50%';
+                step2.className = 'step active';
+                step3.className = 'step';
+                
+                pendingActions.style.display = 'block';
+                approvedActions.style.display = 'none';
+
+            } else if (status === 'APPROVED') {
+                form.style.display = 'none';
+                tracker.style.display = 'block';
+                
+                document.getElementById('tracker-headline').innerText = "Induction Confirmed";
+                document.getElementById('tracker-headline').style.color = "#10b981";
+                document.getElementById('receipt-id').innerText = "VERIFIED";
+                
+                progressBar.style.width = '100%';
+                progressBar.style.background = '#10b981';
+                
+                step2.className = 'step completed';
+                step3.className = 'step active';
+                document.querySelector('#step-3 .step-icon').innerHTML = '<i class="fas fa-check"></i>';
+                
+                pendingActions.style.display = 'none';
+                approvedActions.style.display = 'block';
+
+            } else {
+                form.style.display = 'block';
+                tracker.style.display = 'none';
+            }
+        }
+
+        // --- 4. SUBMIT LOGIC ---
+        async function submitApp() {
+            const btn = document.getElementById('submit-btn');
+            const pos = document.getElementById('target-pos').value;
+            const exp = document.getElementById('experience-level').value;
+            const vis = document.getElementById('manifesto-text').value;
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Encrypting & Transmitting...';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            const payload = { position: pos, experience: exp, vision: vis };
+
+            try {
+                // Send to DB
+                const res = await fetch('/api/leadership/apply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(!res.ok) throw new Error("API Offline");
+                
+                setTimeout(() => { fetchApplicationStatus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
+
+            } catch(e) {
+                // Local Fallback if server disconnected
+                setTimeout(() => {
+                    localStorage.setItem('portal-leadership-status', 'PENDING');
+                    localStorage.setItem('portal-leadership-pos', pos);
+                    localStorage.setItem('portal-leadership-date', new Date().toISOString());
+                    fetchApplicationStatus(); 
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 1500);
+            }
+        }
+
+        // --- 5. WITHDRAW LOGIC ---
+        async function withdrawApp() {
+            if(!confirm("⚠️ Are you sure you want to retract your manifesto? This action will permanently remove your dossier from the Admin Vetting Queue.")) return;
+            
+            try {
+                // Tell DB to delete
+                await fetch('/api/leadership/withdraw', { method: 'DELETE' });
                 localStorage.removeItem('portal-leadership-status');
-                checkStatus(); // Switch back to form
+                fetchApplicationStatus(); 
+            } catch(e) {
+                localStorage.removeItem('portal-leadership-status');
+                fetchApplicationStatus();
             }
         }
     </script>
