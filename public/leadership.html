@@ -274,9 +274,9 @@
         // --- 1. CHARACTER COUNTER ---
         function countChars(obj) {
             document.getElementById('char-count').innerHTML = obj.value.length;
-            if(obj.value.length > 1500) {
-                obj.value = obj.value.substring(0, 1500);
-                document.getElementById('char-count').innerHTML = 1500;
+            if(obj.value.length > 5000) {
+                obj.value = obj.value.substring(0, 5000);
+                document.getElementById('char-count').innerHTML = 5000;
             }
         }
 
