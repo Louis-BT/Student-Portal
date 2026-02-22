@@ -62,11 +62,18 @@
         .msg-sender { font-size: 0.75rem; font-weight: 700; color: var(--primary-color); margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
         .msg-sender.admin-badge::after { content: 'Admin'; background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        .msg-bubble { padding: 14px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .msg-bubble { padding: 14px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.02); position: relative; }
         .msg-wrapper.in .msg-bubble { background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-top-left-radius: 4px; }
         .msg-wrapper.out .msg-bubble { background: var(--primary-color); color: white; border-top-right-radius: 4px; }
         
-        .msg-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+        /* Message Meta (Time & Read Receipts) */
+        .msg-meta { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
+        .msg-wrapper.out .msg-meta { justify-content: flex-end; }
+        .read-receipt { font-size: 0.8rem; color: #94a3b8; transition: color 0.5s ease; }
+        .read-receipt.read { color: #3b82f6; } /* Blue ticks */
+
+        /* Edited Tag */
+        .edited-tag { font-size: 0.65rem; opacity: 0.7; font-style: italic; margin-left: 5px; }
 
         /* Premium Message Blocks */
         .code-block { background: #0f172a; color: #e2e8f0; font-family: 'Fira Code', monospace; padding: 15px; border-radius: 8px; margin-top: 8px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #334155; }
@@ -76,11 +83,14 @@
         .reaction-badge { background: var(--input-bg); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-color); transition: 0.2s; font-weight: 600; }
         .reaction-badge:hover, .reaction-badge.active { background: rgba(37,99,235,0.1); border-color: var(--primary-color); color: var(--primary-color); }
 
-        .audio-msg { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+        /* Premium Audio Player */
+        .audio-msg { display: flex; align-items: center; gap: 12px; min-width: 240px; }
         .play-btn { width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .play-btn:hover { background: rgba(255,255,255,0.4); }
-        .audio-wave { flex: 1; height: 5px; background: rgba(255,255,255,0.3); border-radius: 3px; position: relative; }
-        .audio-wave::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 40%; background: white; border-radius: 3px; }
+        .audio-wave { flex: 1; height: 30px; display: flex; align-items: center; gap: 2px; }
+        .wave-bar { width: 3px; background: rgba(255,255,255,0.4); border-radius: 2px; transition: height 0.1s ease; }
+        .wave-bar.active { background: white; animation: bounce 0.5s infinite alternate; }
+        @keyframes bounce { 0% { height: 5px; } 100% { height: 25px; } }
 
         /* Hover Tools (Reply/Edit) */
         .msg-hover-tools { position: absolute; top: -15px; right: 10px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.08); opacity: 0; transform: translateY(5px); transition: all 0.2s ease; z-index: 10; padding: 2px; }
@@ -98,6 +108,7 @@
         .input-wrapper { flex: 1; position: relative; display: flex; align-items: center; }
         .chat-input { width: 100%; padding: 15px 50px 15px 20px; border-radius: 25px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; outline: none; transition: 0.2s; font-family: inherit; }
         .chat-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .chat-input.edit-mode { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
         
         .voice-btn { position: absolute; right: 15px; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
         .voice-btn:hover { color: #dc2626; }
@@ -106,6 +117,8 @@
         
         .send-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--primary-color); color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); flex-shrink: 0; }
         .send-btn:hover { transform: scale(1.05); background: #1d4ed8; }
+        .send-btn.edit-mode { background: #f59e0b; box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
+        .send-btn.edit-mode:hover { background: #d97706; }
 
         /* Popover Menus (Attachments & Emojis) */
         .popover-menu { position: absolute; bottom: 85px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; z-index: 100; animation: slideUp 0.2s ease-out; }
@@ -262,7 +275,7 @@
                 </div>
                 
                 <button class="input-tool-btn" onclick="toggleMenu('emojiMenu')" title="Insert Emoji/Sticker"><i class="far fa-smile"></i></button>
-                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                <button class="send-btn" id="sendBtn" onclick="handleSendAction()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </main>
     </div>
@@ -271,17 +284,20 @@
         // --- 1. GLOBAL STATE & DB SYNC ---
         let activeChatId = 'general';
         const currentUser = localStorage.getItem('portal-user-name') || 'Student';
+        
+        // Editing State Tracking
+        let isEditing = false;
+        let editMsgId = null; // Used for local storage finding
+        let editMsgElement = null; // The DOM element being edited
 
         document.addEventListener('DOMContentLoaded', async () => {
             await fetchRealUsers();
             loadMessages('general');
             
-            // Auto-refresh to simulate WebSockets
             setInterval(() => {
                 if (activeChatId === 'general') loadMessages('general', true);
             }, 3000);
 
-            // Click outside to close popovers
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.chat-input-area')) {
                     document.getElementById('attachMenu').classList.remove('active');
@@ -336,6 +352,7 @@
 
         function openChat(id, name, avatarData, color) {
             activeChatId = id;
+            resetEditState(); // Cancel any active edits when switching chats
             
             document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`chat-${id}`).classList.add('active');
@@ -382,7 +399,7 @@
                     messages.forEach(msg => {
                         const type = msg.user_name === currentUser ? 'out' : 'in';
                         const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        appendMessageUI(msg.user_name, msg.message, type, time, msg.user_name.includes('Admin'));
+                        appendMessageUI(msg.user_name, msg.message, type, time, msg.user_name.includes('Admin'), msg.id || Date.now(), true);
                     });
                     
                     if(!isSilentRefresh) scrollToBottom();
@@ -393,9 +410,14 @@
             } else {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
                 container.innerHTML = '<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">END-TO-END ENCRYPTED</span></div>';
-                history.forEach(msg => appendMessageUI(msg.sender, msg.text, msg.type, msg.time, false));
+                history.forEach(msg => appendMessageUI(msg.sender, msg.text, msg.type, msg.time, false, msg.id, msg.isRead, msg.isEdited));
                 scrollToBottom();
             }
+        }
+
+        function handleSendAction() {
+            if (isEditing) saveEditedMessage();
+            else sendMessage();
         }
 
         async function sendMessage() {
@@ -404,6 +426,7 @@
             if (!text || !activeChatId) return;
 
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const tempId = Date.now();
 
             if (activeChatId === 'general') {
                 try {
@@ -417,20 +440,106 @@
                 } catch (e) { alert("Server connection error."); }
             } else {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
-                history.push({ sender: currentUser, text: text, type: 'out', time: time });
+                // Push new message object. isRead is false initially.
+                history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });
                 localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
                 
-                appendMessageUI(currentUser, text, 'out', time, false);
+                // Append to UI immediately (will have single grey tick)
+                const newMsgEl = appendMessageUI(currentUser, text, 'out', time, false, tempId, false, false);
                 input.value = '';
                 scrollToBottom();
+
+                // Simulate "Read Receipt" turning blue after 2 seconds
+                setTimeout(() => {
+                    const h = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
+                    const msgToUpdate = h.find(m => m.id === tempId);
+                    if(msgToUpdate) {
+                        msgToUpdate.isRead = true;
+                        localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(h));
+                        
+                        // Update UI Tick to Blue
+                        if(newMsgEl) {
+                            const tick = newMsgEl.querySelector('.read-receipt');
+                            if(tick) {
+                                tick.classList.add('read');
+                                tick.innerHTML = '<i class="fas fa-check-double"></i>';
+                            }
+                        }
+                    }
+                }, 2000);
             }
         }
 
-        // --- 5. PREMIUM MESSAGE RENDERER ---
-        function appendMessageUI(senderName, text, type, time, isAdmin = false) {
+        // --- 5. EDIT PROTOCOL ---
+        function initiateEdit(id, text, element) {
+            isEditing = true;
+            editMsgId = id;
+            editMsgElement = element;
+
+            const input = document.getElementById('msg-input');
+            const btn = document.getElementById('sendBtn');
+            const micBtn = document.getElementById('micBtn');
+
+            input.value = text;
+            input.classList.add('edit-mode');
+            input.focus();
+            
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('edit-mode');
+            micBtn.style.display = 'none'; // Hide mic during edit
+        }
+
+        function saveEditedMessage() {
+            const input = document.getElementById('msg-input');
+            const newText = input.value.trim();
+            
+            if (!newText) { resetEditState(); return; } // If empty, cancel edit
+
+            if (activeChatId !== 'general') {
+                const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
+                const msgIndex = history.findIndex(m => m.id === editMsgId);
+                
+                if (msgIndex !== -1) {
+                    history[msgIndex].text = newText;
+                    history[msgIndex].isEdited = true;
+                    localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
+                    
+                    // Update UI Bubble directly without full reload
+                    const bubble = editMsgElement.querySelector('.msg-bubble');
+                    // We clear it out and re-insert the text and the (edited) tag
+                    bubble.innerHTML = newText + '<span class="edited-tag">(edited)</span>';
+                }
+            } else {
+                alert("Editing messages in the National General Room requires Admin clearance.");
+            }
+
+            resetEditState();
+        }
+
+        function resetEditState() {
+            isEditing = false;
+            editMsgId = null;
+            editMsgElement = null;
+
+            const input = document.getElementById('msg-input');
+            const btn = document.getElementById('sendBtn');
+            const micBtn = document.getElementById('micBtn');
+
+            input.value = '';
+            input.classList.remove('edit-mode');
+            
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            btn.classList.remove('edit-mode');
+            micBtn.style.display = 'block';
+        }
+
+
+        // --- 6. PREMIUM MESSAGE RENDERER ---
+        function appendMessageUI(senderName, text, type, time, isAdmin = false, msgId = null, isRead = false, isEdited = false) {
             const container = document.getElementById('msg-container');
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg-wrapper ${type}`;
+            msgDiv.dataset.id = msgId; // Store ID for editing finding
             
             // Handle Code Formatting
             let bubbleContent = text;
@@ -444,19 +553,33 @@
                 `;
             }
 
+            // Append Edited Tag if true
+            if (isEdited) {
+                bubbleContent += '<span class="edited-tag">(edited)</span>';
+            }
+
             const adminBadge = isAdmin ? 'admin-badge' : '';
             const senderLabel = type === 'in' ? `<div class="msg-sender ${adminBadge}">${senderName}</div>` : '';
             
-            // Hover Tools
+            // Setup Read Receipts (Double Ticks) for OUT messages
+            let tickHTML = '';
+            if (type === 'out') {
+                if (isRead) {
+                    tickHTML = '<span class="read-receipt read"><i class="fas fa-check-double"></i></span>'; // Blue
+                } else {
+                    tickHTML = '<span class="read-receipt"><i class="fas fa-check"></i></span>'; // Grey Single Tick
+                }
+            }
+
+            // Hover Tools (Includes new Edit button logic)
             const hoverTools = `
                 <div class="msg-hover-tools">
                     <div class="tool-btn" title="React"><i class="far fa-smile"></i></div>
                     <div class="tool-btn" title="Reply in Thread"><i class="fas fa-reply"></i></div>
-                    ${type === 'out' ? `<div class="tool-btn" title="Edit"><i class="fas fa-pen"></i></div>` : ''}
+                    ${type === 'out' && !text.startsWith('/code ') ? `<div class="tool-btn" title="Edit" onclick="initiateEdit(${msgId}, '${text.replace(/'/g, "\\'")}', this.closest('.msg-wrapper'))"><i class="fas fa-pen"></i></div>` : ''}
                 </div>
             `;
 
-            // Default Reactions for simulation
             let reactionsHTML = '';
             if(type === 'in' && !isAdmin && Math.random() > 0.6) {
                 reactionsHTML = `
@@ -470,15 +593,21 @@
                 ${senderLabel}
                 <div class="msg-bubble">${bubbleContent}</div>
                 ${reactionsHTML}
-                <div class="msg-time">${time}</div>
+                <div class="msg-meta">
+                    <span class="time">${time}</span>
+                    ${tickHTML}
+                </div>
                 ${hoverTools}
             `;
             container.appendChild(msgDiv);
+            return msgDiv; // Return element so we can update ticks later
         }
 
-        // --- 6. VOICE NOTE SIMULATION ---
+        // --- 7. PREMIUM VOICE NOTE SIMULATION ---
         let isRecording = false;
         function toggleRecording() {
+            if (isEditing) return; // Disable audio recording while editing
+
             const micBtn = document.getElementById('micBtn');
             const input = document.getElementById('msg-input');
             
@@ -499,18 +628,77 @@
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'msg-wrapper out';
                 msgDiv.innerHTML = `
-                    <div class="msg-bubble" style="background: var(--primary-color);">
+                    <div class="msg-bubble" style="background: var(--primary-color); padding: 10px 15px;">
                         <div class="audio-msg">
-                            <div class="play-btn"><i class="fas fa-play" style="color:var(--primary-color); font-size:0.8rem;"></i></div>
-                            <div class="audio-wave"></div>
-                            <span style="font-size:0.75rem; font-weight:bold; color:white;">0:03</span>
+                            <div class="play-btn" onclick="playAudioNote(this)"><i class="fas fa-play" style="color:white; font-size:0.8rem; margin-left: 2px;"></i></div>
+                            <div class="audio-wave">
+                                ${Array(15).fill(0).map(() => '<div class="wave-bar"></div>').join('')}
+                            </div>
+                            <span class="audio-timer" style="font-size:0.75rem; font-weight:bold; color:white; min-width: 25px;">0:03</span>
                         </div>
                     </div>
-                    <div class="msg-time">${timeStr}</div>
+                    <div class="msg-meta">
+                        <span class="time">${timeStr}</span>
+                        <span class="read-receipt"><i class="fas fa-check"></i></span>
+                    </div>
                 `;
                 container.appendChild(msgDiv);
                 scrollToBottom();
+
+                // Make the tick turn blue after 2 seconds
+                setTimeout(() => {
+                    const tick = msgDiv.querySelector('.read-receipt');
+                    if(tick) {
+                        tick.classList.add('read');
+                        tick.innerHTML = '<i class="fas fa-check-double"></i>';
+                    }
+                }, 2000);
             }
+        }
+
+        // Play audio logic with animations
+        function playAudioNote(btn) {
+            const icon = btn.querySelector('i');
+            const waveBars = btn.nextElementSibling.querySelectorAll('.wave-bar');
+            const timer = btn.nextElementSibling.nextElementSibling;
+
+            if (icon.classList.contains('fa-play')) {
+                // Play State
+                icon.classList.remove('fa-play');
+                icon.classList.add('fa-pause');
+                icon.style.marginLeft = '0px';
+                
+                // Animate waves
+                waveBars.forEach((bar, i) => {
+                    bar.classList.add('active');
+                    bar.style.animationDelay = `${i * 0.1}s`;
+                });
+
+                // Simulate countdown
+                let timeLeft = 3;
+                btn.dataset.interval = setInterval(() => {
+                    timeLeft--;
+                    timer.innerText = `0:0${timeLeft}`;
+                    if(timeLeft <= 0) {
+                        clearInterval(btn.dataset.interval);
+                        resetAudioNote(btn, waveBars, timer);
+                    }
+                }, 1000);
+
+            } else {
+                // Pause State
+                clearInterval(btn.dataset.interval);
+                resetAudioNote(btn, waveBars, timer);
+            }
+        }
+
+        function resetAudioNote(btn, waveBars, timer) {
+            const icon = btn.querySelector('i');
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+            icon.style.marginLeft = '2px';
+            waveBars.forEach(bar => bar.classList.remove('active'));
+            timer.innerText = "0:03";
         }
 
         function scrollToBottom() {
@@ -519,7 +707,7 @@
         }
 
         function handleKeyPress(e) {
-            if (e.key === 'Enter') sendMessage();
+            if (e.key === 'Enter') handleSendAction();
         }
     </script>
 </body>

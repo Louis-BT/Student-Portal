@@ -47,11 +47,16 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 3. DYNAMIC SYNC ENGINE UI --- */
-        .live-sync-banner { display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px 25px; border-radius: 12px; margin-bottom: 30px; }
+        /* --- 3. DYNAMIC SYNC ENGINE UI & SEARCH BAR --- */
+        .live-sync-banner { display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; }
         .sync-status { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #10b981; font-size: 0.9rem; letter-spacing: 0.5px; text-transform: uppercase; }
         .sync-dot { width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; animation: pulse 1.5s infinite; }
         .sync-time { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+
+        .search-container { position: relative; margin-bottom: 30px; }
+        .search-container i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.1rem; }
+        .search-input { width: 100%; padding: 18px 20px 18px 50px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; box-sizing: border-box; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .search-input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
         /* --- 4. PREMIUM GRID & CARDS --- */
         .opp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 40px; }
@@ -68,7 +73,7 @@
         .opp-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; flex-grow: 1; }
         .opp-meta { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 5px; }
         
-        .btn-action { padding: 14px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-action { padding: 14px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; text-decoration: none; }
         .btn-action:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37,99,235,0.3); }
 
         /* --- 5. MULTI-CHOICE WASSCE PREDICTOR --- */
@@ -76,7 +81,6 @@
         .wassce-header { text-align: center; margin-bottom: 40px; }
         .wassce-header h2 { margin: 0 0 10px; font-size: 2.2rem; color: var(--text-color); font-family: 'Playfair Display', serif; }
         
-        /* 3-Institution Grid */
         .uni-choices-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 35px; padding: 25px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color); }
         .choice-label { display: block; font-weight: 800; color: var(--primary-color); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
         
@@ -84,7 +88,6 @@
         select { padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-family: inherit; font-size: 0.95rem; width: 100%; outline: none; transition: 0.2s; font-weight: 600; cursor: pointer; }
         select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
-        /* WASSCE AI Results UI */
         .result-box { margin-top: 40px; display: none; animation: fadeIn 0.5s ease; }
         .ai-processing { text-align: center; padding: 40px; font-size: 1.2rem; color: var(--primary-color); font-weight: 700; display: none; }
         
@@ -99,6 +102,30 @@
         .c-name { font-size: 1.05rem; color: var(--text-color); font-weight: 700; margin-bottom: 4px; }
         .c-req { font-size: 0.85rem; color: var(--text-muted); }
         .c-badge { background: rgba(16,185,129,0.1); color: #10b981; padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 800; border: 1px solid rgba(16,185,129,0.2); }
+
+        /* --- 6. UNIVERSAL MODALS --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+        .close-modal { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 2rem; cursor: pointer; transition: 0.2s; z-index: 10; }
+        .close-modal:hover { color: #ef4444; }
+
+        /* Document Reader Modal Specifics */
+        .viewer-content { width: 90%; height: 95%; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position: relative; }
+        .viewer-header { padding: 15px 25px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; }
+        .smart-text-reader { flex: 1; padding: 60px 10%; overflow-y: auto; background: #faf9f6; color: #333; font-family: 'Playfair Display', serif; font-size: 1.15rem; line-height: 1.9; }
+        .smart-text-reader h1 { font-size: 2.5rem; border-bottom: 2px solid #ddd; padding-bottom: 20px; color: #111; text-align: center; }
+        .smart-text-reader h2 { font-family: 'Inter', sans-serif; font-size: 0.9rem; text-align: center; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+
+        /* Video Player Modal Specifics */
+        .video-content { width: 800px; max-width: 95%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8); position: relative; }
+        .video-placeholder { width: 100%; aspect-ratio: 16/9; background: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1000&auto=format&fit=crop') center/cover; display: flex; align-items: center; justify-content: center; position: relative; }
+        .video-placeholder::after { content: ''; position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .play-button-large { position: relative; z-index: 2; width: 80px; height: 80px; background: rgba(239,68,68,0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; cursor: pointer; transition: 0.2s; box-shadow: 0 0 30px rgba(239,68,68,0.6); border: none; }
+        .play-button-large:hover { transform: scale(1.1); background: #dc2626; }
+
+        /* MoMo Checkout Specifics */
+        .momo-input { width: 100%; padding: 15px; font-size: 1.2rem; text-align: center; letter-spacing: 2px; font-weight: 800; border: 2px solid #e2e8f0; border-radius: 8px; margin: 20px 0; outline: none; transition: 0.3s; background: var(--input-bg); color: var(--text-color); box-sizing: border-box;}
+        .momo-input:focus { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
 
         /* Mobile Adjustments */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
@@ -117,6 +144,60 @@
 <body>
 
     <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <div id="paymentModal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <div style="background: rgba(245, 158, 11, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #f59e0b; font-size: 2.5rem;">
+                <i class="fas fa-mobile-alt"></i>
+            </div>
+            <h2 style="margin: 0 0 10px; color: var(--text-color);">Secure E-Voucher Checkout</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px;">Enter your Mobile Money number to authorize a payment of <strong>GHS 250.00</strong> for the official university application forms.</p>
+            
+            <div style="text-align: left; margin-bottom: 5px; font-weight: 700; color: var(--text-color); font-size: 0.85rem; text-transform: uppercase;">Mobile Network Operator</div>
+            <select style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-weight: 600; outline: none; margin-bottom: 10px;">
+                <option>MTN Mobile Money</option>
+                <option>Telecel Cash</option>
+                <option>AT Money</option>
+            </select>
+
+            <input type="text" class="momo-input" placeholder="e.g. 024XXXXXXX" maxlength="10" id="momoNumber">
+            
+            <button class="btn-action" style="background: #10b981; font-size: 1.1rem; padding: 16px;" id="payBtn" onclick="processPayment()">
+                <i class="fas fa-lock"></i> Authorize Payment
+            </button>
+            <p style="margin-top: 20px; font-size: 0.8rem; color: var(--text-muted);"><i class="fas fa-shield-alt"></i> Secured by National Portal Gateway</p>
+        </div>
+    </div>
+
+    <div id="docModal" class="modal">
+        <div class="viewer-content">
+            <div class="viewer-header">
+                <div>
+                    <h3 id="docTitle" style="margin: 0; font-size: 1.2rem;">Loading Document...</h3>
+                    <span style="font-size: 0.85rem; color: #cbd5e1;">National Portal Secure Reader</span>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="btn-action" style="background: rgba(255,255,255,0.1); padding: 8px 15px; font-size: 0.85rem;"><i class="fas fa-download"></i> Download PDF</button>
+                    <span class="close-modal" style="position: static; color: white;" onclick="closeModals()">&times;</span>
+                </div>
+            </div>
+            <div id="smartReader" class="smart-text-reader"></div>
+        </div>
+    </div>
+
+    <div id="videoModal" class="modal">
+        <div class="video-content">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <div class="video-placeholder">
+                <button class="play-button-large"><i class="fas fa-play" style="margin-left: 5px;"></i></button>
+            </div>
+            <div style="padding: 20px; background: #0f172a; color: white;">
+                <h3 id="videoTitle" style="margin: 0 0 5px; font-size: 1.3rem;">Masterclass Loading...</h3>
+                <p id="videoDesc" style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Exclusive content for National Portal students.</p>
+            </div>
+        </div>
+    </div>
 
     <div class="wrapper">
         <aside class="sidebar">
@@ -162,14 +243,19 @@
                         <div class="sync-time" id="scholarship-sync-time">Synchronized Just Now</div>
                     </div>
                     
-                    <div class="opp-grid">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="search-input" id="search-scholars" placeholder="Search for scholarships, countries, or specific programs..." onkeyup="filterCards('search-scholars', 'scholarship-grid')">
+                    </div>
+
+                    <div class="opp-grid" id="scholarship-grid">
                         <div class="opp-card">
                             <span class="card-tag tag-intl">International</span>
                             <div class="opp-icon" style="color: #9333ea;"><i class="fas fa-globe-europe"></i></div>
                             <h3 class="opp-title">Chevening UK Scholarships</h3>
                             <div class="opp-meta"><i class="far fa-clock"></i> Deadline: Nov 2026 • <i class="fas fa-map-marker-alt"></i> United Kingdom</div>
                             <p class="opp-desc">Fully-funded master's degrees for future leaders. Covers full tuition, flights, and a monthly living allowance.</p>
-                            <button class="btn-action"><i class="fas fa-external-link-alt"></i> Apply Now</button>
+                            <a href="#" class="btn-action"><i class="fas fa-external-link-alt"></i> Apply Now</a>
                         </div>
                         <div class="opp-card">
                             <span class="card-tag tag-local">National</span>
@@ -177,7 +263,7 @@
                             <h3 class="opp-title">GETFund Local Scholarship</h3>
                             <div class="opp-meta"><i class="far fa-clock"></i> Rolling Admissions • <i class="fas fa-map-marker-alt"></i> Ghana</div>
                             <p class="opp-desc">Financial assistance for brilliant but needy Ghanaian students currently enrolled in accredited local public universities.</p>
-                            <button class="btn-action"><i class="fas fa-file-signature"></i> Open Application</button>
+                            <a href="#" class="btn-action"><i class="fas fa-file-signature"></i> Open Application</a>
                         </div>
                         <div class="opp-card">
                             <span class="card-tag tag-urgent">Closing Soon</span>
@@ -185,7 +271,23 @@
                             <h3 class="opp-title">MTN Ghana Bright Scholars</h3>
                             <div class="opp-meta"><i class="far fa-clock"></i> Closes in 3 Days • <i class="fas fa-briefcase"></i> Corporate</div>
                             <p class="opp-desc">Corporate scheme aimed at supporting tertiary students pursuing STEM and Business programs. Covers tuition and stipends.</p>
-                            <button class="btn-action" style="background: #ef4444;"><i class="fas fa-bolt"></i> Fast-Track Apply</button>
+                            <a href="#" class="btn-action" style="background: #ef4444;"><i class="fas fa-bolt"></i> Fast-Track Apply</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">International</span>
+                            <div class="opp-icon" style="color: #3b82f6;"><i class="fas fa-passport"></i></div>
+                            <h3 class="opp-title">MasterCard Foundation Scholars</h3>
+                            <div class="opp-meta"><i class="far fa-clock"></i> Opens Jan 2027 • <i class="fas fa-globe-americas"></i> Canada/US</div>
+                            <p class="opp-desc">Comprehensive support for economically disadvantaged youth. Covers tuition, accommodation, books, and leadership training.</p>
+                            <a href="#" class="btn-action"><i class="fas fa-info-circle"></i> View Requirements</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Institutional</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-university"></i></div>
+                            <h3 class="opp-title">SRC KBN Financial Aid</h3>
+                            <div class="opp-meta"><i class="far fa-clock"></i> Deadline: Oct 2026 • <i class="fas fa-map-marker-alt"></i> Internal</div>
+                            <p class="opp-desc">The Student Representative Council’s fund to support continuing students with partial fee payments for the academic year.</p>
+                            <a href="#" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-download"></i> Download Form</a>
                         </div>
                     </div>
                 </div>
@@ -196,22 +298,27 @@
                         <div class="sync-time" id="career-sync-time">Synchronized Just Now</div>
                     </div>
 
-                    <div class="opp-grid">
+                    <div class="search-container">
+                        <i class="fas fa-briefcase"></i>
+                        <input type="text" class="search-input" id="search-career" placeholder="Search for companies, roles, or NSS placements (e.g. 'Software', 'Tullow')..." onkeyup="filterCards('search-career', 'career-grid')">
+                    </div>
+
+                    <div class="opp-grid" id="career-grid">
                         <div class="opp-card">
                             <span class="card-tag tag-local">NSS Placement</span>
                             <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-landmark"></i></div>
                             <h3 class="opp-title">Ministry of Communications</h3>
                             <div class="opp-meta"><i class="fas fa-calendar-alt"></i> 2026/2027 Service Year</div>
                             <p class="opp-desc">Actively recruiting IT, Computer Science, and Data Engineering graduates for immediate National Service deployment.</p>
-                            <button class="btn-action" style="background: #0f172a;"><i class="fas fa-paper-plane"></i> Request NSS Pin Match</button>
+                            <a href="#" class="btn-action" style="background: #0f172a;"><i class="fas fa-paper-plane"></i> Request NSS Pin Match</a>
                         </div>
                         <div class="opp-card">
                             <span class="card-tag tag-intl">Paid Internship</span>
                             <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-oil-can"></i></div>
                             <h3 class="opp-title">Tullow Oil - Data Analyst Intern</h3>
                             <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Accra HQ (Hybrid)</div>
-                            <p class="opp-desc">Intensive 3-month paid summer internship for Level 300 students. Strong Excel and SQL knowledge required.</p>
-                            <button class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-file-upload"></i> Submit Resume</button>
+                            <p class="opp-desc">Intensive 3-month paid summer internship for Level 300 students. Strong Excel, PowerBI, and SQL knowledge required.</p>
+                            <a href="#" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-file-upload"></i> Submit Resume</a>
                         </div>
                         <div class="opp-card">
                             <span class="card-tag tag-local">Full-Time</span>
@@ -219,7 +326,23 @@
                             <h3 class="opp-title">Hubtel - Junior Frontend Dev</h3>
                             <div class="opp-meta"><i class="fas fa-briefcase"></i> Entry Level • Remote</div>
                             <p class="opp-desc">Full-time position. Requires strong knowledge of React, HTML/CSS, and Git. Recent graduates highly encouraged.</p>
-                            <button class="btn-action"><i class="fab fa-linkedin"></i> Easy Apply</button>
+                            <a href="#" class="btn-action"><i class="fab fa-linkedin"></i> Easy Apply</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">NSS Placement</span>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-hospital-user"></i></div>
+                            <h3 class="opp-title">Ghana Health Service (GHS)</h3>
+                            <div class="opp-meta"><i class="fas fa-calendar-alt"></i> 2026/2027 Service Year</div>
+                            <p class="opp-desc">Placements available for Nursing, Pharmacy, and Health Administration graduates across regional and district hospitals.</p>
+                            <a href="#" class="btn-action" style="background: #10b981;"><i class="fas fa-paper-plane"></i> Request NSS Pin Match</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Internship</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fab fa-google"></i></div>
+                            <h3 class="opp-title">Google Africa - STEP Intern</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Accra / Lagos (Remote)</div>
+                            <p class="opp-desc">12-week internship for first and second-year undergraduate students with a passion for computer science.</p>
+                            <a href="#" class="btn-action"><i class="fas fa-external-link-alt"></i> View on Google Careers</a>
                         </div>
                     </div>
                 </div>
@@ -238,7 +361,11 @@
                                     <option value="KNUST">Kwame Nkrumah Univ. of Sci & Tech (KNUST)</option>
                                     <option value="UG Legon">University of Ghana (UG Legon)</option>
                                     <option value="UCC">University of Cape Coast (UCC)</option>
+                                    <option value="UDS">University for Development Studies (UDS)</option>
                                     <option value="UMaT">University of Mines and Tech (UMaT)</option>
+                                    <option value="UPSA">Univ. of Professional Studies (UPSA)</option>
+                                    <option value="GCTU">Ghana Communication Tech Univ (GCTU)</option>
+                                    <option value="ATU">Accra Technical University (ATU)</option>
                                 </select>
                             </div>
                             <div>
@@ -246,17 +373,25 @@
                                 <select id="uni-2" class="uni-select">
                                     <option value="UG Legon">University of Ghana (UG Legon)</option>
                                     <option value="KNUST">Kwame Nkrumah Univ. of Sci & Tech (KNUST)</option>
+                                    <option value="UCC">University of Cape Coast (UCC)</option>
                                     <option value="UDS">University for Development Studies (UDS)</option>
+                                    <option value="UMaT">University of Mines and Tech (UMaT)</option>
                                     <option value="UPSA">Univ. of Professional Studies (UPSA)</option>
+                                    <option value="KsTU">Kumasi Technical University (KsTU)</option>
+                                    <option value="UEW">University of Education, Winneba (UEW)</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="choice-label" style="color: #10b981;"><i class="fas fa-medal"></i> 3rd Choice Institution</label>
                                 <select id="uni-3" class="uni-select">
-                                    <option value="GCTU">Ghana Communication Tech Univ (GCTU)</option>
                                     <option value="UCC">University of Cape Coast (UCC)</option>
+                                    <option value="UG Legon">University of Ghana (UG Legon)</option>
+                                    <option value="KNUST">Kwame Nkrumah Univ. of Sci & Tech (KNUST)</option>
+                                    <option value="UHAS">University of Health and Allied Sciences (UHAS)</option>
+                                    <option value="UENR">University of Energy and Natural Resources (UENR)</option>
                                     <option value="ATU">Accra Technical University (ATU)</option>
                                     <option value="AAMUSTED">AAMUSTED</option>
+                                    <option value="TTU">Takoradi Technical University (TTU)</option>
                                 </select>
                             </div>
                         </div>
@@ -271,9 +406,9 @@
                             </div>
                             <div>
                                 <h4 style="margin-top: 0; color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px;">Top 3 Electives</h4>
-                                <div class="form-row"><select><option>Physics</option><option>Economics</option><option>Elective Math</option><option>Geography</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
-                                <div class="form-row"><select><option>Chemistry</option><option>Business Mgt</option><option>French</option><option>History</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
-                                <div class="form-row"><select><option>Elective Math</option><option>Accounting</option><option>Literature</option><option>Biology</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
+                                <div class="form-row"><select><option>Physics</option><option>Economics</option><option>Elective Math</option><option>Geography</option><option>General Agric</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
+                                <div class="form-row"><select><option>Chemistry</option><option>Business Mgt</option><option>French</option><option>History</option><option>Government</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
+                                <div class="form-row"><select><option>Elective Math</option><option>Accounting</option><option>Literature</option><option>Biology</option><option>CRS</option></select><select><option>A1</option><option>B2</option><option>B3</option><option>C4</option><option>C5</option></select></div>
                             </div>
                         </div>
                         
@@ -286,38 +421,86 @@
 
                         <div id="wassce-result" class="result-box">
                             <h2 style="text-align: center; margin: 0 0 30px; color: #10b981;"><i class="fas fa-check-circle"></i> Eligibility Matrix Generated</h2>
+                            
                             <div id="dynamic-results-container"></div>
                             
-                            <div style="margin-top: 40px; padding: 25px; background: var(--input-bg); border-radius: 12px; border: 2px dashed var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="margin-top: 40px; padding: 25px; background: var(--input-bg); border-radius: 12px; border: 2px dashed var(--primary-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
                                 <div>
                                     <strong style="color: var(--text-color); font-size: 1.2rem; display: block; margin-bottom: 5px;">Proceed to Formal Application</strong>
                                     <span style="color: var(--text-muted);">Purchase official University E-Vouchers securely via Mobile Money.</span>
                                 </div>
-                                <button class="btn-action" style="width: auto;"><i class="fas fa-mobile-alt"></i> Buy E-Voucher (*447*160#)</button>
+                                <button class="btn-action" style="width: auto; padding: 15px 30px; font-size: 1.1rem;" onclick="openPaymentModal()"><i class="fas fa-mobile-alt"></i> Buy E-Voucher Now</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-abroad" class="tab-content">
-                    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 40px; color: white; display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <div>
-                            <h2 style="font-size: 2.2rem; margin: 0 0 10px; font-family: 'Playfair Display', serif;">Global Education Pathways</h2>
-                            <p style="font-size: 1.1rem; color: #cbd5e1; max-width: 600px; line-height: 1.6; margin: 0;">Access expert guidance on securing fully-funded admissions, navigating visa protocols, and securing application fee waivers across North America and Europe.</p>
-                        </div>
+                    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 40px; color: white; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <h2 style="font-size: 2.2rem; margin: 0 0 10px; font-family: 'Playfair Display', serif;">Global Education Pathways</h2>
+                        <p style="font-size: 1.1rem; color: #cbd5e1; max-width: 600px; line-height: 1.6; margin: 0;">Access expert guidance on securing fully-funded admissions, navigating visa protocols, and securing application fee waivers across North America and Europe.</p>
                     </div>
+
+                    <h3 style="margin-bottom: 20px; font-size: 1.3rem; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-folder-open" style="color: var(--primary-color);"></i> The Application Document Vault</h3>
+                    
+                    <ul style="list-style: none; padding: 0; margin: 0 0 40px;">
+                        <li style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; background: var(--card-bg); transition: 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-file-pdf"></i></div>
+                                <div>
+                                    <strong style="color: var(--text-color); font-size: 1.1rem;">Mastering the Statement of Purpose (SOP)</strong>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">A definitive guide with 5 successful samples from Ivy League admits.</div>
+                                </div>
+                            </div>
+                            <button class="btn-action" style="background: transparent; border: 2px solid var(--border-color); color: var(--text-color); width: auto;" onclick="openDoc('Mastering the Statement of Purpose')">Read Guide</button>
+                        </li>
+                        <li style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; background: var(--card-bg); transition: 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: rgba(16,185,129,0.1); color: #10b981; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-file-excel"></i></div>
+                                <div>
+                                    <strong style="color: var(--text-color); font-size: 1.1rem;">The 2026 Application Fee Waiver Masterlist</strong>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Comprehensive database of 150+ US/Canada schools offering waivers to Ghanaians.</div>
+                                </div>
+                            </div>
+                            <button class="btn-action" style="background: transparent; border: 2px solid var(--border-color); color: var(--text-color); width: auto;" onclick="openDoc('Application Fee Waiver Masterlist')">Read Guide</button>
+                        </li>
+                        <li style="display: flex; align-items: center; justify-content: space-between; padding: 15px; border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; background: var(--card-bg); transition: 0.2s;" onmouseover="this.style.transform='translateX(5px)'" onmouseout="this.style.transform='translateX(0)'">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: rgba(245,158,11,0.1); color: #f59e0b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;"><i class="fas fa-passport"></i></div>
+                                <div>
+                                    <strong style="color: var(--text-color); font-size: 1.1rem;">F-1 & Tier 4 Visa Interview Protocol</strong>
+                                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Common pitfalls, required financial documents, and interview transcripts.</div>
+                                </div>
+                            </div>
+                            <button class="btn-action" style="background: transparent; border: 2px solid var(--border-color); color: var(--text-color); width: auto;" onclick="openDoc('Visa Interview Protocol')">Read Guide</button>
+                        </li>
+                    </ul>
+
+                    <h3 style="margin-bottom: 20px; font-size: 1.3rem; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;"><i class="fas fa-video" style="color: #ef4444;"></i> Expert Masterclasses</h3>
                     <div class="opp-grid">
-                        <div class="opp-card" style="text-align: center;">
-                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" style="width:100%; height:200px; object-fit:cover; border-radius:12px; margin-bottom:15px;" alt="Fred Effect">
-                            <h3 style="margin: 0 0 5px; color: var(--text-color);">The Fred Effect</h3>
-                            <p style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; margin: 0 0 15px; text-transform: uppercase;">US Admissions Strategist</p>
-                            <button class="btn-action" style="background: #ef4444;"><i class="fab fa-youtube"></i> Watch Masterclass</button>
+                        <div class="opp-card" style="text-align: center; padding: 0;">
+                            <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" style="width:100%; height:200px; object-fit:cover; border-bottom:1px solid var(--border-color);" alt="Fred Effect">
+                            <div style="padding: 20px;">
+                                <h3 style="margin: 0 0 5px; color: var(--text-color);">The Fred Effect</h3>
+                                <p style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; margin: 0 0 15px; text-transform: uppercase;">US Admissions Strategist</p>
+                                <button class="btn-action" style="background: #ef4444;" onclick="openVideo('The Fred Effect: Securing Graduate Assistantships', 'Strategic advice on funding your US Master\\'s degree.')"><i class="fab fa-youtube"></i> Watch Masterclass</button>
+                            </div>
                         </div>
-                        <div class="opp-card" style="text-align: center;">
-                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" style="width:100%; height:200px; object-fit:cover; border-radius:12px; margin-bottom:15px;" alt="Charles Sam">
-                            <h3 style="margin: 0 0 5px; color: var(--text-color);">Charles Sam</h3>
-                            <p style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; margin: 0 0 15px; text-transform: uppercase;">European Scholarship Expert</p>
-                            <button class="btn-action" style="background: #ef4444;"><i class="fab fa-youtube"></i> Watch Masterclass</button>
+                        <div class="opp-card" style="text-align: center; padding: 0;">
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" style="width:100%; height:200px; object-fit:cover; border-bottom:1px solid var(--border-color);" alt="Charles Sam">
+                            <div style="padding: 20px;">
+                                <h3 style="margin: 0 0 5px; color: var(--text-color);">Charles Sam</h3>
+                                <p style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; margin: 0 0 15px; text-transform: uppercase;">European Scholarship Expert</p>
+                                <button class="btn-action" style="background: #ef4444;" onclick="openVideo('Charles Sam: Erasmus Mundus Blueprint', 'A deep dive into European fully-funded scholarships.')"><i class="fab fa-youtube"></i> Watch Masterclass</button>
+                            </div>
+                        </div>
+                        <div class="opp-card" style="text-align: center; padding: 0;">
+                            <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop" style="width:100%; height:200px; object-fit:cover; border-bottom:1px solid var(--border-color);" alt="Docu">
+                            <div style="padding: 20px;">
+                                <h3 style="margin: 0 0 5px; color: var(--text-color);">The Cold Climate Shift</h3>
+                                <p style="color: var(--primary-color); font-weight: 700; font-size: 0.85rem; margin: 0 0 15px; text-transform: uppercase;">Student Documentary</p>
+                                <button class="btn-action" style="background: #ef4444;" onclick="openVideo('The Cold Climate Shift', 'A documentary on cultural adaptation and academic rigor abroad.')"><i class="fas fa-film"></i> Watch Documentary</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -327,13 +510,11 @@
     </div>
 
     <script>
-        // --- 1. MOBILE MENU ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        // --- 2. TABS ---
         function switchTab(tabId, el) {
             document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -341,54 +522,159 @@
             document.getElementById(`tab-${tabId}`).classList.add('active');
         }
 
-        // --- 3. LIVE SYNC SIMULATOR ---
         setInterval(() => {
             const now = new Date();
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             document.getElementById('scholarship-sync-time').innerText = "Last checked: " + timeStr;
             document.getElementById('career-sync-time').innerText = "Last checked: " + timeStr;
-        }, 15000); // Updates every 15 seconds to look highly active
+        }, 15000); 
 
-        // --- 4. WASSCE AI ENGINE (Multi-University Generation) ---
-        // A database of plausible courses to map to universities
+        function filterCards(inputId, gridId) {
+            let input = document.getElementById(inputId).value.toLowerCase();
+            let grid = document.getElementById(gridId);
+            let cards = grid.getElementsByClassName('opp-card');
+            
+            for(let i = 0; i < cards.length; i++) {
+                let textContent = cards[i].innerText.toLowerCase();
+                if(textContent.includes(input)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
+
+        // --- MODAL LOGIC ---
+        function openPaymentModal() { document.getElementById('paymentModal').style.display = 'flex'; }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        function processPayment() {
+            const btn = document.getElementById('payBtn');
+            const num = document.getElementById('momoNumber').value;
+            
+            if(num.length < 10) { alert("Please enter a valid 10-digit mobile money number."); return; }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Pushing USSD Prompt...';
+            btn.style.opacity = '0.8';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Prompt Sent';
+                btn.style.background = '#2563eb';
+                alert("A payment prompt for GHS 250.00 has been sent to " + num + ". Please check your phone to authorize.");
+                
+                setTimeout(() => {
+                    closeModals();
+                    btn.innerHTML = '<i class="fas fa-lock"></i> Authorize Payment';
+                    btn.style.background = '#10b981';
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }, 2000);
+            }, 2500);
+        }
+
+        function openDoc(topic) {
+            const modal = document.getElementById('docModal');
+            const smartReader = document.getElementById('smartReader');
+            const titleEl = document.getElementById('docTitle');
+            titleEl.innerText = topic;
+            
+            let content = "";
+            if(topic.includes('Statement of Purpose')) {
+                content = `<p>The Statement of Purpose (SOP) is arguably the most critical component of your graduate school application. It is your opportunity to speak directly to the admissions committee and articulate why you are the perfect fit for their program.</p><p>A winning SOP is not merely a repetition of your resume. It must weave a compelling narrative connecting your past academic experiences, your current research interests, and your future career goals. In this document, we analyze five successful essays that secured funding at top-tier institutions.</p>`;
+            } else if (topic.includes('Fee Waiver')) {
+                content = `<p>Applying to universities abroad can be prohibitively expensive for international students, with application fees ranging from $50 to $150 per school. However, many institutions actively grant application fee waivers to students from developing nations.</p><p>This masterlist contains direct email templates to Graduate Coordinators, specific dates for virtual open houses (which often provide attendees with a waiver code), and a database of universities that automatically waive fees for Ghanaian applicants.</p>`;
+            } else {
+                content = `<p>Securing your admission and funding is only half the battle; passing the consular interview is the final, crucial step. Consular officers are trained to determine one primary thing: non-immigrant intent.</p><p>You must prove strong ties to your home country. This guide outlines the exact financial documentation required, how to answer the dreaded "What will you do after you graduate?" question, and strategies for remaining calm under pressure.</p>`;
+            }
+
+            smartReader.innerHTML = `
+                <h2>National Portal Academic Resources</h2>
+                <h1>${topic}</h1>
+                ${content}
+                <div style="text-align: center; margin-top: 50px; color: var(--primary-color);"><i class="fas fa-ellipsis-h" style="font-size: 2rem;"></i></div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function openVideo(title, desc) {
+            const modal = document.getElementById('videoModal');
+            document.getElementById('videoTitle').innerText = title;
+            document.getElementById('videoDesc').innerText = desc;
+            modal.style.display = 'flex';
+        }
+
+        // --- WASSCE AI ENGINE ---
         const courseDB = {
             "KNUST": [
                 { name: "BSc. Computer Science", req: "Aggregate 12 or better", badge: "Highly Competitive" },
                 { name: "BSc. Mechanical Engineering", req: "Aggregate 10", badge: "Excellent Fit" },
-                { name: "BSc. Business Administration", req: "Aggregate 14", badge: "Eligible" }
+                { name: "BSc. Business Administration", req: "Aggregate 14", badge: "Eligible" },
+                { name: "BA. Communication Studies", req: "Aggregate 16", badge: "Eligible" },
+                { name: "BSc. Architecture", req: "Aggregate 11", badge: "Highly Competitive" }
             ],
             "UG Legon": [
                 { name: "BSc. Information Technology", req: "Aggregate 14", badge: "Highly Competitive" },
                 { name: "BA. Economics & Statistics", req: "Aggregate 15", badge: "Eligible" },
-                { name: "BSc. Administration (Accounting)", req: "Aggregate 12", badge: "Excellent Fit" }
+                { name: "BSc. Administration (Accounting)", req: "Aggregate 12", badge: "Excellent Fit" },
+                { name: "BA. Political Science", req: "Aggregate 16", badge: "Eligible" },
+                { name: "BSc. Earth Science", req: "Aggregate 18", badge: "Guaranteed Admission" }
             ],
             "UCC": [
                 { name: "BCom. Finance", req: "Aggregate 16", badge: "Eligible" },
                 { name: "BSc. Computer Science", req: "Aggregate 15", badge: "Highly Competitive" },
-                { name: "BSc. Nursing", req: "Aggregate 09", badge: "Borderline" }
+                { name: "BSc. Nursing", req: "Aggregate 09", badge: "Borderline" },
+                { name: "BEd. Social Sciences", req: "Aggregate 19", badge: "Guaranteed Admission" },
+                { name: "BSc. Optometry", req: "Aggregate 10", badge: "Highly Competitive" }
             ],
             "UDS": [
                 { name: "BSc. Computer Science", req: "Aggregate 18", badge: "Guaranteed Admission" },
-                { name: "BSc. Development Planning", req: "Aggregate 20", badge: "Guaranteed Admission" }
+                { name: "BSc. Development Planning", req: "Aggregate 20", badge: "Guaranteed Admission" },
+                { name: "BSc. Nursing", req: "Aggregate 14", badge: "Eligible" },
+                { name: "BA. Integrated Community Development", req: "Aggregate 22", badge: "Guaranteed Admission" },
+                { name: "Doctor of Medicine (MBChB)", req: "Aggregate 08", badge: "Highly Competitive" }
             ],
             "UMaT": [
                 { name: "BSc. Mining Engineering", req: "Aggregate 13", badge: "Highly Competitive" },
-                { name: "BSc. Computer Science & Engineering", req: "Aggregate 14", badge: "Excellent Fit" }
+                { name: "BSc. Computer Science & Engineering", req: "Aggregate 14", badge: "Excellent Fit" },
+                { name: "BSc. Petroleum Engineering", req: "Aggregate 12", badge: "Highly Competitive" },
+                { name: "BSc. Environmental & Safety Engineering", req: "Aggregate 18", badge: "Guaranteed Admission" },
+                { name: "BSc. Geomatic Engineering", req: "Aggregate 16", badge: "Eligible" }
             ],
             "UPSA": [
                 { name: "BSc. Accounting", req: "Aggregate 16", badge: "Eligible" },
-                { name: "BSc. Information Technology", req: "Aggregate 18", badge: "Guaranteed Admission" }
+                { name: "BSc. Information Technology", req: "Aggregate 18", badge: "Guaranteed Admission" },
+                { name: "BBA. Business Administration", req: "Aggregate 17", badge: "Eligible" },
+                { name: "BA. Public Relations Mgt.", req: "Aggregate 19", badge: "Guaranteed Admission" },
+                { name: "BSc. Actuarial Science", req: "Aggregate 14", badge: "Highly Competitive" }
             ],
             "GCTU": [
                 { name: "BSc. Telecommunications Engineering", req: "Aggregate 19", badge: "Guaranteed Admission" },
-                { name: "BSc. Computer Engineering", req: "Aggregate 17", badge: "Eligible" }
+                { name: "BSc. Computer Engineering", req: "Aggregate 17", badge: "Eligible" },
+                { name: "BSc. Information Systems", req: "Aggregate 20", badge: "Guaranteed Admission" },
+                { name: "BSc. Cyber Security", req: "Aggregate 15", badge: "Excellent Fit" },
+                { name: "BSc. Data Science", req: "Aggregate 16", badge: "Eligible" }
             ],
             "ATU": [
                 { name: "BTech. Computer Science", req: "Aggregate 24", badge: "Guaranteed Admission" },
-                { name: "HND Cyber Security", req: "Aggregate 26", badge: "Guaranteed Admission" }
+                { name: "HND Cyber Security", req: "Aggregate 26", badge: "Guaranteed Admission" },
+                { name: "BTech. Electrical Engineering", req: "Aggregate 22", badge: "Guaranteed Admission" },
+                { name: "HND Mechanical Engineering", req: "Aggregate 25", badge: "Guaranteed Admission" },
+                { name: "HND Accountancy", req: "Aggregate 24", badge: "Guaranteed Admission" }
             ],
-            "AAMUSTED": [
-                { name: "BSc. Information Technology Education", req: "Aggregate 20", badge: "Guaranteed Admission" }
+            "KsTU": [
+                { name: "BTech. Chemical Engineering", req: "Aggregate 22", badge: "Guaranteed Admission" },
+                { name: "HND Dispensing Technology", req: "Aggregate 18", badge: "Excellent Fit" },
+                { name: "BTech. Civil Engineering", req: "Aggregate 24", badge: "Guaranteed Admission" },
+                { name: "HND Marketing", req: "Aggregate 25", badge: "Guaranteed Admission" },
+                { name: "HND Statistics", req: "Aggregate 26", badge: "Guaranteed Admission" }
+            ],
+            "UEW": [
+                { name: "BEd. Basic Education", req: "Aggregate 22", badge: "Guaranteed Admission" },
+                { name: "BSc. Information Technology Education", req: "Aggregate 20", badge: "Guaranteed Admission" },
+                { name: "BA. English Language Education", req: "Aggregate 18", badge: "Eligible" },
+                { name: "BSc. Mathematics Education", req: "Aggregate 19", badge: "Guaranteed Admission" },
+                { name: "BBA. Accounting Education", req: "Aggregate 17", badge: "Eligible" }
             ]
         };
 
@@ -398,25 +684,22 @@
             const loadingBox = document.getElementById('ai-loading');
             const container = document.getElementById('dynamic-results-container');
             
-            // Get selected universities
             const u1 = document.getElementById('uni-1').value;
             const u2 = document.getElementById('uni-2').value;
             const u3 = document.getElementById('uni-3').value;
 
-            // UI State change
             btn.style.display = 'none';
             resultBox.style.display = 'none';
             loadingBox.style.display = 'block';
 
-            // Simulate AI Processing time
             setTimeout(() => {
                 loadingBox.style.display = 'none';
                 
-                // Build dynamic HTML
                 let htmlOutput = "";
                 [u1, u2, u3].forEach((uni, index) => {
-                    const courses = courseDB[uni] || courseDB["KNUST"]; // Fallback if key missing
+                    const courses = courseDB[uni] || courseDB["KNUST"]; 
                     let listItems = "";
+                    
                     courses.forEach(c => {
                         let color = c.badge.includes('Guaranteed') ? '#10b981' : (c.badge.includes('Borderline') ? '#f59e0b' : '#3b82f6');
                         listItems += `
@@ -430,8 +713,7 @@
                         `;
                     });
 
-                    // Assign gold/silver/bronze medals based on choice order
-                    const medalColors = ['#fbbf24', '#94a3b8', '#b45309'];
+                    const medalColors = ['#fbbf24', '#94a3b8', '#b45309']; 
                     
                     htmlOutput += `
                         <div class="uni-result-group">
@@ -451,12 +733,11 @@
                 resultBox.style.display = 'block';
                 resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                // Reset Button
                 btn.innerHTML = '<i class="fas fa-sync"></i> Recalculate New Grades';
                 btn.style.display = 'block';
                 btn.style.marginTop = '30px';
 
-            }, 2500); // 2.5 seconds fake processing time
+            }, 2500); 
         }
     </script>
 </body>

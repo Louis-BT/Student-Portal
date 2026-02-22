@@ -17,9 +17,9 @@
     <style>
         /* --- 1. CORE LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; }
+        .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
 
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 1000; }
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
@@ -115,14 +115,31 @@
         .modal-content { background: var(--card-bg); padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
         .img-container { max-height: 400px; overflow: hidden; margin-bottom: 25px; border-radius: 8px; background: var(--input-bg); }
 
-        @media (max-width: 900px) { .sidebar { display: none; } .profile-header-card { flex-direction: column; text-align: center; } .action-bar { flex-direction: column; gap: 20px; } }
+        /* Mobile Adjustments */
+        .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+
+        @media (max-width: 900px) { 
+            .profile-header-card { flex-direction: column; text-align: center; } 
+            .action-bar { flex-direction: column; gap: 20px; } 
+            
+            .mobile-menu-btn { display: block; }
+            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            .sidebar-overlay.mobile-open { display: block; }
+        }
     </style>
 </head>
 <body>
 
+    <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
     <div class="wrapper">
         <aside class="sidebar">
-            <div class="sidebar-header"><i class="fas fa-user-circle"></i> Student Portal</div>
+            <div class="sidebar-header">
+                <i class="fas fa-university"></i> Student Portal
+                <i class="fas fa-times mobile-menu-btn" style="margin-left: auto; color: white;" onclick="toggleMobileSidebar()"></i>
+            </div>
             <ul class="nav-links">
                 <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="profile.html" class="active"><i class="fas fa-user"></i> My Profile</a></li>
@@ -130,6 +147,7 @@
                 <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
                 <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
+                <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
                 <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
@@ -137,9 +155,12 @@
 
         <main class="main-content">
             <header class="header-top">
-                <div class="header-title">
-                    <h2>Account Settings</h2>
-                    <p>Manage your academic identity and security preferences.</p>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
+                    <div class="header-title">
+                        <h2>Account Settings</h2>
+                        <p>Manage your academic identity and security preferences.</p>
+                    </div>
                 </div>
                 <div class="header-tools">
                     <div class="notify-bell" title="Notifications" onclick="alert('No new global broadcasts.')">
@@ -156,7 +177,7 @@
                 </div>
             </header>
 
-            <div class="profile-container" id="printable-area">
+            <div class="profile-container">
                 
                 <div class="profile-header-card">
                     <div class="avatar-wrapper">
@@ -200,7 +221,7 @@
                                 <div id="school-suggestions" class="suggestions-list"></div>
                             </div>
                             <div class="form-group">
-                                <label>Faculty / College</label>
+                                <label>Faculty / College / School</label>
                                 <input type="text" id="faculty" placeholder="e.g. College of Science">
                             </div>
                             <div class="form-group">
@@ -321,7 +342,58 @@
         </div>
     </div>
 
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: black; background: white; width: 800px; position: absolute; left: -9999px;">
+        
+        <div style="text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 24px; text-transform: uppercase;">National Tertiary Student Portal</h1>
+            <h2 style="margin: 5px 0 0; font-size: 18px; color: #444;">Official Student Bio-Data Record</h2>
+            <p style="margin: 5px 0 0; font-size: 12px; font-family: Arial, sans-serif;">Generated on: <span id="print-date"></span></p>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: Arial, sans-serif; font-size: 14px;">
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; width: 30%; background: #f5f5f5;">Full Legal Name</td>
+                <td style="padding: 10px; border: 1px solid #ccc;" id="print-name"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background: #f5f5f5;">Institution</td>
+                <td style="padding: 10px; border: 1px solid #ccc;" id="print-inst"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background: #f5f5f5;">Program & Department</td>
+                <td style="padding: 10px; border: 1px solid #ccc;" id="print-prog"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background: #f5f5f5;">Academic Level</td>
+                <td style="padding: 10px; border: 1px solid #ccc;" id="print-level"></td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #ccc; font-weight: bold; background: #f5f5f5;">Career Aspirations</td>
+                <td style="padding: 10px; border: 1px solid #ccc;" id="print-career"></td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 80px; display: flex; justify-content: space-between; text-align: center; font-family: Arial, sans-serif;">
+            <div style="width: 200px;">
+                <div style="border-bottom: 1px solid #000; height: 40px; margin-bottom: 5px;"></div>
+                <strong>Student Signature</strong>
+            </div>
+            <div style="width: 200px;">
+                <div style="border-bottom: 1px solid #000; height: 40px; margin-bottom: 5px;">
+                    <span style="font-size: 24px; font-family: 'Times New Roman', serif; font-style: italic; opacity: 0.7;">NTS-AUTH</span>
+                </div>
+                <strong>NTS Registrar Authorization</strong>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // --- MOBILE MENU LOGIC ---
+        function toggleMobileSidebar() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+        }
+
         // --- 1. DATA: GHANA UNIVERSITIES, COLLEGES OF EDUCATION, AND COLLEGES OF HEALTH ---
         const ghanaInstitutions = [
             "University of Ghana, Legon (UG)", "Kwame Nkrumah University of Science and Technology (KNUST)", "SDA College of Education (SEDACOE), Koforidua-Asokore", "Kintampo College of Health and Well-being",
@@ -362,8 +434,10 @@
                 if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
                 if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
                 
+                // Fetch Career Aspirations if it exists in DB
+                if(data.career) document.getElementById("career").value = data.career;
+                
             } catch (e) {
-                // Fallback to local storage if API fails
                 document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
                 document.getElementById("name").value = localStorage.getItem("portal-user-name") || "";
             }
@@ -421,7 +495,8 @@
                 level: document.getElementById("level").value,
                 financial: document.getElementById("financial").value,
                 entry: document.getElementById("entry-year").value,
-                completion: document.getElementById("grad-year").value
+                completion: document.getElementById("grad-year").value,
+                career: document.getElementById("career").value // Save Career Aspiration
             };
 
             try {
@@ -480,23 +555,34 @@
             closeCropper();
         }
 
-        // --- 7. PDF EXPORT ---
+        // --- 7. 🔥 PREMIUM PDF EXPORT ENGINE ---
         function downloadPDF() {
-            // Hide elements we don't want printed
-            document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+            const btn = document.querySelector('button[onclick="downloadPDF()"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+            // Populate the hidden formal template
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('print-name').innerText = document.getElementById('name').value || "N/A";
+            document.getElementById('print-inst').innerText = document.getElementById('schoolSearch').value || "N/A";
+            document.getElementById('print-prog').innerText = (document.getElementById('program').value || "N/A") + " - " + (document.getElementById('department').value || "N/A");
+            document.getElementById('print-level').innerText = "Level " + document.getElementById('level').value;
+            document.getElementById('print-career').innerText = document.getElementById('career').value || "N/A";
+
+            // Temporarily show template to render it
+            const element = document.getElementById('official-print-template');
+            element.style.display = 'block';
             
-            const element = document.getElementById('printable-area');
             const opt = {
                 margin: 15,
-                filename: 'National_Academic_Profile.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
+                filename: 'Official_NTS_BioData.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 3, useCORS: true }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore elements after PDF generates
-                document.querySelectorAll('.no-print').forEach(el => el.style.display = '');
+                element.style.display = 'none'; // Hide it back
+                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Bio-Data';
             });
         }
     </script>

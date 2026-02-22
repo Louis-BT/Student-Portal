@@ -192,6 +192,12 @@
                         <span class="id-label">Level</span>
                         <span class="id-val" id="stu-level">--</span>
                     </div>
+                    
+                    <div class="id-item">
+                        <span class="id-label">Career Aspiration</span>
+                        <span class="id-val" id="stu-career" style="color: #f59e0b;">--</span>
+                    </div>
+
                     <div class="id-item" style="border: none;">
                         <span class="id-label">Current CGPA</span>
                         <span class="id-val" id="stu-gpa" style="color:var(--primary-color);">0.00</span>
@@ -276,7 +282,7 @@
                 <div class="dashboard-grid">
                     <div class="card admin-stat">
                         <h3>Total Students</h3>
-                        <p class="card-stat" style="margin: 10px 0;">1,420</p>
+                        <p class="card-stat" style="margin: 10px 0;">1359</p>
                         <span style="color: #10b981;">▲ Active</span>
                     </div>
                     <div class="card admin-stat" style="border-left-color: #f59e0b;">
@@ -387,6 +393,9 @@
                 document.getElementById('stu-school').innerText = data.institution || 'Not Set';
                 document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
                 document.getElementById('stu-program').innerText = data.program || 'General';
+                
+                // 🔥 NEW: Set Career Aspiration dynamically if fetched
+                document.getElementById('stu-career').innerText = data.career || 'Not Set';
                 
                 gpaValue = data.gpa || 0.00;
                 document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);

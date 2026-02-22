@@ -16,7 +16,7 @@
         .wrapper { display: flex; width: 100%; height: 100%; }
 
         /* --- 2. COMMAND CENTER SIDEBAR (Strict Dark Mode) --- */
-        .sidebar { width: 280px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; color: white; }
+        .sidebar { width: 280px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; color: white; transition: 0.3s; z-index: 1000;}
         .sidebar-header { padding: 25px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; font-size: 1.2rem; letter-spacing: -0.5px; }
         
         .nav-links { list-style: none; padding: 20px 0; margin: 0; flex: 1; overflow-y: auto; }
@@ -92,15 +92,53 @@
         .b-input, .b-select, .b-textarea { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; outline: none; transition: 0.2s; box-sizing: border-box; }
         .b-input:focus, .b-select:focus, .b-textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        @media (max-width: 900px) { .broadcast-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
+        /* --- 7. PREMIUM ACTION MODAL --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-icon { font-size: 3rem; margin-bottom: 15px; }
+        .modal-title { margin: 0 0 10px; color: var(--text-color); font-weight: 800; font-size: 1.5rem; }
+        .modal-desc { color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; font-size: 0.95rem; }
+
+        /* Danger Input for Wipe */
+        #dangerInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 2px dashed #ef4444; background: var(--input-bg); color: var(--text-color); text-align: center; font-weight: 800; font-family: monospace; display: none; }
+
+        /* Mobile adjustments */
+        .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+
+        @media (max-width: 900px) { 
+            .broadcast-grid { grid-template-columns: 1fr; } 
+            .mobile-menu-btn { display: block; }
+            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            .sidebar-overlay.mobile-open { display: block; }
+        }
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <div id="actionModal" class="modal">
+        <div class="modal-content">
+            <div id="modalIcon" class="modal-icon"><i class="fas fa-exclamation-circle" style="color: #f59e0b;"></i></div>
+            <h2 id="modalTitle" class="modal-title">Confirm Action</h2>
+            <p id="modalDesc" class="modal-desc">Are you sure you want to execute this administrative command?</p>
+            
+            <input type="text" id="dangerInput" placeholder="Type 'DELETE' to confirm">
+
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-color);" onclick="closeModal()">Cancel</button>
+                <button id="modalConfirmBtn" class="btn" style="background: var(--primary-color); color: white;">Confirm Execute</button>
+            </div>
+        </div>
+    </div>
 
     <div class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-satellite-dish" style="color: #3b82f6;"></i> Command Center
+                <i class="fas fa-times mobile-menu-btn" style="margin-left: auto; color: white;" onclick="toggleMobileSidebar()"></i>
             </div>
             <ul class="nav-links">
                 <li><a href="#" class="active" onclick="switchTab('dashboard', this)"><i class="fas fa-chart-line"></i> Dashboard</a></li>
@@ -120,8 +158,11 @@
                 
                 <header class="header">
                     <div>
-                        <h1>National Administrator Console</h1>
-                        <div class="server-status" style="margin-top: 8px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                            <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
+                            <h1>National Administrator Console</h1>
+                        </div>
+                        <div class="server-status">
                             <div class="pulse-dot"></div> System Online • Encrypted Connection Established
                         </div>
                     </div>
@@ -167,7 +208,7 @@
 
                     <div class="section-box">
                         <div class="section-title"><i class="fas fa-bolt" style="color: #eab308;"></i> Quick Executive Actions</div>
-                        <div style="display: flex; gap: 15px;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <button class="btn btn-primary" onclick="switchTab('broadcast', document.querySelectorAll('.nav-links a')[3])"><i class="fas fa-bullhorn"></i> New Broadcast</button>
                             <button class="btn" style="background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);" onclick="switchTab('users', document.querySelectorAll('.nav-links a')[1])"><i class="fas fa-search"></i> Find Student</button>
                         </div>
@@ -176,14 +217,14 @@
 
                 <div id="panel-users" class="admin-section">
                     <div class="section-box">
-                        <div class="section-title">
+                        <div class="section-title" style="flex-wrap: wrap; gap: 15px;">
                             <span style="flex: 1;"><i class="fas fa-users-cog" style="color: #3b82f6;"></i> Global User Matrix</span>
                             
                             <input type="text" id="userSearchBox" class="table-search" placeholder="Search ID or Name..." onkeyup="filterUserTable()">
                             
-                            <div style="margin-left: 15px; display: flex; gap: 10px;">
+                            <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-primary" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
-                                <button class="btn btn-danger-zone" onclick="systemReset()"><i class="fas fa-radiation-alt"></i> WIPE ALL STUDENTS</button>
+                                <button class="btn btn-danger-zone" onclick="triggerWipeModal()"><i class="fas fa-radiation-alt"></i> WIPE DATABASE</button>
                             </div>
                         </div>
                         
@@ -264,7 +305,7 @@
                     <div class="section-box">
                         <div class="section-title">
                             <span><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting</span>
-                            <button class="btn btn-primary btn-sm" style="margin-left: auto;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
+                            <button class="btn btn-primary btn-sm" style="margin-left: auto; padding: 10px 15px;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="admin-table">
@@ -307,7 +348,12 @@
     </div>
 
     <script>
-        // --- AUTH CHECK ---
+        let currentActionUrl = null;
+        let currentActionMethod = 'POST';
+        let currentActionPayload = null;
+        let currentActionCallback = null;
+
+        // --- AUTH & INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const role = localStorage.getItem('portal-user-role');
             if (role !== 'ADMIN') {
@@ -318,7 +364,6 @@
             initDashboard();
         });
 
-        // --- CORE INITIALIZATION ---
         function initDashboard() {
             loadUsers();
             loadLeadership();
@@ -327,7 +372,12 @@
             loadReports();
         }
 
-        // --- TAB SWITCHER ---
+        // --- UI TOGGLES ---
+        function toggleMobileSidebar() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+        }
+
         function switchTab(tabId, element) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             document.getElementById(`panel-${tabId}`).classList.add('active');
@@ -339,7 +389,7 @@
             if(tabId === 'library') loadResources();
         }
 
-        // --- 1. USERS MODULE ---
+        // --- 1. GLOBAL USER MATRIX ---
         async function loadUsers() {
             const tbody = document.getElementById('user-table-body');
             try {
@@ -352,7 +402,6 @@
                 users.forEach(u => {
                     if(u.role === 'ADMIN') return;
                     studentCount++;
-                    
                     const idTag = u.id ? `102${u.id}09` : 'PENDING';
                     
                     tbody.innerHTML += `
@@ -362,12 +411,11 @@
                             <td class="u-inst">${u.institution || 'National DB'}</td>
                             <td><span class="status-pill status-approved">Verified User</span></td>
                             <td style="text-align: right;">
-                                <button class="action-btn btn-reject" title="Terminate Account" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i> Drop User</button>
+                                <button class="action-btn btn-reject" title="Terminate Account" onclick="triggerDeleteUser(${u.id})"><i class="fas fa-trash"></i> Drop User</button>
                             </td>
                         </tr>
                     `;
                 });
-
                 document.getElementById('kpi-users').innerText = studentCount;
 
             } catch(e) {
@@ -375,50 +423,17 @@
             }
         }
 
-        // Premium Frontend Filtering
         function filterUserTable() {
             const input = document.getElementById('userSearchBox').value.toLowerCase();
             const rows = document.querySelectorAll('.user-row');
-            
             rows.forEach(row => {
                 const name = row.querySelector('.u-name').innerText.toLowerCase();
                 const inst = row.querySelector('.u-inst').innerText.toLowerCase();
-                if (name.includes(input) || inst.includes(input)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
+                row.style.display = (name.includes(input) || inst.includes(input)) ? '' : 'none';
             });
         }
 
-        async function deleteUser(id) {
-            if(!confirm("⚠️ WARNING: Permanently delete this user from the National Database?")) return;
-            await fetch(`/api/admin/delete-user/${id}`, { method: 'DELETE' });
-            loadUsers();
-        }
-
-        // DANGER ZONE
-        async function systemReset() {
-            if(!confirm("⚠️ CRITICAL WARNING ⚠️\n\nThis will DELETE ALL STUDENT ACCOUNTS and reset the database.\n\nThis action cannot be undone. Proceed?")) return;
-            
-            const verify = prompt("To confirm destruction, type 'DELETE' below:");
-            if(verify !== 'DELETE') return alert("Action Aborted.");
-
-            try {
-                const res = await fetch('/api/admin/reset-system', { method: 'DELETE' });
-                const data = await res.json();
-                
-                if(data.success) {
-                    alert("✅ System Reset Complete. Database wiped.");
-                    loadUsers(); 
-                    document.getElementById('kpi-users').innerText = "0"; 
-                } else {
-                    alert("Error: " + data.error);
-                }
-            } catch (e) { alert("Server Error: Could not execute reset protocol."); }
-        }
-
-        // --- 2. LEADERSHIP MODULE ---
+        // --- 2. LEADERSHIP VANGUARD ---
         async function loadLeadership() {
             try {
                 const res = await fetch('/api/admin/leadership-apps');
@@ -440,8 +455,8 @@
                     let actions = '';
                     if(app.status === 'PENDING') {
                         actions = `
-                            <button class="action-btn btn-approve" onclick="reviewApp(${app.id}, ${app.user_id}, 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
-                            <button class="action-btn btn-reject" onclick="reviewApp(${app.id}, ${app.user_id}, 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
+                            <button class="action-btn btn-approve" onclick="triggerReviewApp(${app.id}, 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
+                            <button class="action-btn btn-reject" onclick="triggerReviewApp(${app.id}, 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
                         `;
                     } else {
                         actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
@@ -465,16 +480,60 @@
             } catch(e) {}
         }
 
-        async function reviewApp(id, userId, status) {
-            await fetch('/api/admin/leadership-review', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id, user_id: userId, status })
-            });
-            loadLeadership();
+        // --- 3. LIBRARY MODERATION ---
+        async function loadResources() { 
+            try {
+                const res = await fetch('/api/admin/pending-resources');
+                const data = await res.json();
+                
+                const pendingCount = data.filter(r => r.status === 'PENDING').length;
+                document.getElementById('kpi-files').innerText = pendingCount;
+
+                const tbody = document.getElementById('resource-table-body');
+                tbody.innerHTML = '';
+                
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(item => {
+                    let actions = '';
+                    if(item.status === 'PENDING') {
+                        actions = `
+                            <button class="action-btn btn-approve" onclick="triggerReviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
+                            <button class="action-btn btn-reject" onclick="triggerReviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
+                        `;
+                    } else {
+                        actions = `<button class="action-btn btn-reject" onclick="triggerReviewResource(${item.id}, 'REJECTED')"><i class="fas fa-trash"></i> Delete Record</button>`;
+                    }
+
+                    let icon = 'fa-file-alt'; let color = '#3b82f6';
+                    if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
+                    if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                                    <div>
+                                        <strong style="color: var(--text-color);">${item.title}</strong><br>
+                                        <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
+                            <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
+                            <td style="text-align:right;">${actions}</td>
+                        </tr>
+                    `;
+                });
+            } catch(e) { console.error(e); }
         }
 
-        // --- 3. DUAL-BROADCAST ENGINE ---
+        // --- 4. BROADCAST ENGINE ---
         async function sendBroadcast() {
             const btn = document.getElementById('b-submit');
             const title = document.getElementById('b-title').value;
@@ -485,21 +544,19 @@
             btn.disabled = true;
 
             try {
-                // 1. Send to Dashboard News Feed
                 await fetch('/api/news', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, message: msg, category })
                 });
 
-                // 2. Send to Global Chat Hub
                 await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_name: 'System Admin', message: `📢 [${category.toUpperCase()}] ${title}: ${msg}` })
                 });
 
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Transmitted to Network';
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Transmitted';
                 btn.style.background = '#10b981';
 
                 setTimeout(() => {
@@ -530,85 +587,10 @@
                             <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">${n.title}</div>
                             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${new Date(n.date).toLocaleDateString()} • ${n.category || 'General'}</div>
                         </div>
-                        <button class="action-btn btn-reject" onclick="deleteNews(${n.id})"><i class="fas fa-trash"></i></button>
+                        <button class="action-btn btn-reject" onclick="triggerDeleteNews(${n.id})"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
             });
-        }
-
-        async function deleteNews(id) {
-            if(confirm("Delete this broadcast from the network?")) {
-                await fetch(`/api/news/${id}`, { method: 'DELETE' });
-                loadNews();
-            }
-        }
-
-        // --- 4. LIBRARY MODERATION ---
-        async function loadResources() { 
-            try {
-                const res = await fetch('/api/admin/pending-resources');
-                const data = await res.json();
-                
-                const pendingCount = data.filter(r => r.status === 'PENDING').length;
-                document.getElementById('kpi-files').innerText = pendingCount;
-
-                const tbody = document.getElementById('resource-table-body');
-                tbody.innerHTML = '';
-                
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
-                    return;
-                }
-
-                data.forEach(item => {
-                    let actions = '';
-                    if(item.status === 'PENDING') {
-                        actions = `
-                            <button class="action-btn btn-approve" onclick="reviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
-                            <button class="action-btn btn-reject" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
-                        `;
-                    } else {
-                        actions = `<button class="action-btn btn-reject" onclick="reviewResource(${item.id}, 'REJECTED')"><i class="fas fa-trash"></i> Delete Record</button>`;
-                    }
-
-                    // Assign icon based on category
-                    let icon = 'fa-file-alt'; let color = '#3b82f6';
-                    if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
-                    if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
-                                    <div>
-                                        <strong style="color: var(--text-color);">${item.title}</strong><br>
-                                        <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted);">${item.category}</span></td>
-                            <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
-                            <td style="text-align:right;">${actions}</td>
-                        </tr>
-                    `;
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        async function reviewResource(id, status) {
-            try {
-                const res = await fetch('/api/admin/resource-review', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ id, status })
-                });
-                if(res.ok) {
-                    loadResources(); 
-                    initDashboard(); 
-                }
-            } catch(e) { alert("Server error updating document status."); }
         }
 
         // --- 5. SUPPORT TICKETS ---
@@ -632,20 +614,119 @@
                             <td><strong style="color: var(--text-color);">${r.user_name}</strong></td>
                             <td style="color: var(--text-muted);">${r.message}</td>
                             <td style="font-size: 0.85rem;">${new Date(r.date).toLocaleDateString()}</td>
-                            <td style="text-align:right;"><button class="action-btn btn-approve" onclick="resolveTicket(${r.id})"><i class="fas fa-check-double"></i> Mark Resolved</button></td>
+                            <td style="text-align:right;"><button class="action-btn btn-approve" onclick="triggerResolveTicket(${r.id})"><i class="fas fa-check-double"></i> Resolve</button></td>
                         </tr>
                     `;
                 });
             } catch(e) {}
         }
 
-        async function resolveTicket(id) {
-            if(confirm("Mark this system ticket as resolved?")) {
-                await fetch(`/api/admin/reports/${id}`, { method: 'DELETE' });
-                loadReports();
-                initDashboard();
+
+        // =========================================================================
+        // 🔥 THE PREMIUM UNIVERSAL ACTION MODAL ENGINE
+        // =========================================================================
+
+        function openModal(title, desc, iconHtml, btnText, btnColor, url, method, payload, callback) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalIcon').innerHTML = iconHtml;
+            
+            const btn = document.getElementById('modalConfirmBtn');
+            btn.innerText = btnText;
+            btn.style.background = btnColor;
+
+            // Danger input logic
+            const dangerInput = document.getElementById('dangerInput');
+            if(title.includes('WIPE')) {
+                dangerInput.style.display = 'block';
+                dangerInput.value = '';
+            } else {
+                dangerInput.style.display = 'none';
+            }
+
+            currentActionUrl = url;
+            currentActionMethod = method;
+            currentActionPayload = payload;
+            currentActionCallback = callback;
+
+            document.getElementById('actionModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('actionModal').style.display = 'none';
+        }
+
+        document.getElementById('modalConfirmBtn').addEventListener('click', async function() {
+            // Safety check for wipe
+            if (document.getElementById('dangerInput').style.display === 'block') {
+                if (document.getElementById('dangerInput').value !== 'DELETE') {
+                    alert("Verification failed. You must type 'DELETE' to proceed.");
+                    return;
+                }
+            }
+
+            const originalText = this.innerText;
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Executing...';
+            this.disabled = true;
+
+            try {
+                const options = { method: currentActionMethod };
+                if(currentActionPayload) {
+                    options.headers = { 'Content-Type': 'application/json' };
+                    options.body = JSON.stringify(currentActionPayload);
+                }
+
+                const res = await fetch(currentActionUrl, options);
+                
+                if(res.ok) {
+                    this.innerHTML = '<i class="fas fa-check"></i> Success';
+                    setTimeout(() => {
+                        closeModal();
+                        if(currentActionCallback) currentActionCallback();
+                        initDashboard(); // Update KPIs
+                        this.disabled = false;
+                    }, 1000);
+                } else { throw new Error(); }
+            } catch (e) {
+                alert('Database Execution Failed.');
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
+        });
+
+        // Modal Triggers
+        function triggerDeleteUser(id) {
+            openModal('Terminate Account', 'Are you sure you want to permanently delete this user from the National Database?', '<i class="fas fa-user-times" style="color: #ef4444;"></i>', 'Delete User', '#ef4444', `/api/admin/delete-user/${id}`, 'DELETE', null, loadUsers);
+        }
+
+        function triggerReviewApp(id, status) {
+            if(status === 'APPROVED') {
+                openModal('Authorize Verification', 'This will permanently approve the user into the Leadership Vanguard. Proceed?', '<i class="fas fa-medal" style="color: #10b981;"></i>', 'Authorize', '#10b981', '/api/admin/leadership-review', 'POST', {id, status}, loadLeadership);
+            } else {
+                openModal('Reject Dossier', 'This will permanently deny the leadership application. Proceed?', '<i class="fas fa-times-circle" style="color: #ef4444;"></i>', 'Deny Application', '#ef4444', '/api/admin/leadership-review', 'POST', {id, status}, loadLeadership);
             }
         }
+
+        function triggerReviewResource(id, status) {
+            if(status === 'APPROVED') {
+                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', '/api/admin/resource-review', 'POST', {id, status}, loadResources);
+            } else {
+                openModal('Purge Document', 'This document will be rejected and deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', '/api/admin/resource-review', 'POST', {id, status}, loadResources);
+            }
+        }
+
+        function triggerDeleteNews(id) {
+            openModal('Delete Broadcast', 'Remove this official announcement from the network history?', '<i class="fas fa-broadcast-tower" style="color: #ef4444;"></i>', 'Delete Broadcast', '#ef4444', `/api/news/${id}`, 'DELETE', null, loadNews);
+        }
+
+        function triggerResolveTicket(id) {
+            openModal('Resolve Ticket', 'Mark this IT support ticket as resolved and close the case?', '<i class="fas fa-check-double" style="color: #10b981;"></i>', 'Resolve', '#10b981', `/api/admin/reports/${id}`, 'DELETE', null, loadReports);
+        }
+
+        function triggerWipeModal() {
+            openModal('SYSTEM WIPE', 'CRITICAL WARNING: This will delete ALL student accounts and reset the database. This cannot be undone.', '<i class="fas fa-radiation-alt" style="color: #ef4444;"></i>', 'EXECUTE WIPE', '#ef4444', '/api/admin/reset-system', 'DELETE', null, loadUsers);
+        }
+
     </script>
 </body>
 </html>

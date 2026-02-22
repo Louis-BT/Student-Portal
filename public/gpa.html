@@ -13,25 +13,21 @@
     <style>
         /* --- LAYOUT & CORE --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; }
+        .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
 
         /* SIDEBAR (Consistent) */
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 1000; }
+        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem;}
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; }
-        .nav-links a:hover, .nav-links a.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; border-left: 3px solid transparent; font-weight: 500;}
+        .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); }
 
         /* MAIN SCROLLABLE AREA */
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-color); position: relative; }
         
         .gpa-layout {
             display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto;
-        }
-        @media (max-width: 1000px) { 
-            .gpa-layout { grid-template-columns: 1fr; } 
-            .sidebar { display: none; }
         }
 
         /* --- CALCULATOR CARD --- */
@@ -63,7 +59,7 @@
         input, select {
             width: 100%; padding: 10px; border: 1px solid var(--border-color);
             background: var(--card-bg); color: var(--text-color); border-radius: 6px;
-            font-family: inherit; font-size: 0.95rem; box-sizing: border-box;
+            font-family: inherit; font-size: 0.95rem; box-sizing: border-box; transition: 0.2s;
         }
         input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
@@ -86,7 +82,7 @@
             width: 100%; padding: 15px; background: var(--primary-color); color: white;
             border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700;
             cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-            transition: transform 0.2s;
+            transition: transform 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         .btn-calc:hover { transform: translateY(-2px); opacity: 0.95; }
 
@@ -107,25 +103,33 @@
 
         .class-badge {
             display: inline-block; padding: 6px 15px; border-radius: 20px;
-            font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
-            margin-bottom: 20px; background: var(--input-bg); color: var(--text-muted);
+            font-weight: 800; font-size: 0.9rem; text-transform: uppercase;
+            margin-bottom: 10px; background: var(--input-bg); color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* Dynamic Remarks */
+        .gpa-remarks {
+            margin: 0 0 20px 0; font-size: 0.95rem; font-weight: 600; color: var(--text-muted); 
+            line-height: 1.5; padding: 10px; border-radius: 8px; background: var(--input-bg);
+            border: 1px dashed var(--border-color);
         }
 
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 25px; }
         
         .btn-save {
             background: var(--text-color); color: var(--bg-color); border: none;
-            padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s;
+            transition: 0.2s; font-size: 1rem;
         }
         .btn-save:hover { opacity: 0.9; transform: translateY(-2px); }
 
         .btn-download {
             background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color);
-            padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s;
+            transition: 0.2s; font-size: 1rem;
         }
         .btn-download:hover { background: var(--primary-color); color: white; }
 
@@ -134,6 +138,21 @@
         .scale-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         .scale-table th { text-align: left; color: var(--text-muted); padding: 5px 0; }
         .scale-table td { padding: 5px 0; border-bottom: 1px solid var(--border-color); }
+
+        /* Mobile specific */
+        .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+
+        @media (max-width: 1000px) { 
+            .gpa-layout { grid-template-columns: 1fr; } 
+            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            .sidebar-overlay.mobile-open { display: block; }
+            .mobile-menu-btn { display: block; }
+            .course-header { display: none; } /* Hide headers on small screens */
+            .course-row { grid-template-columns: 1fr 1fr 1fr auto; }
+            .c-name { grid-column: 1 / -1; margin-bottom: 5px; } /* Course name takes full width on mobile */
+        }
 
         /* PRINT STYLES */
         @media print {
@@ -146,10 +165,13 @@
 </head>
 <body>
 
+    <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
     <div class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-calculator"></i> Student Portal
+                <i class="fas fa-university"></i> Student Portal
+                <i class="fas fa-times mobile-menu-btn" style="margin-left: auto; color: white;" onclick="toggleMobileSidebar()"></i>
             </div>
             <ul class="nav-links">
                 <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
@@ -159,16 +181,19 @@
                 <li><a href="gpa.html" class="active"><i class="fas fa-calculator"></i> GPA Calc</a></li>
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
         <main class="main-content">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <h1 style="margin:0;">Academic Calculator</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
+                    <h1 style="margin:0; font-size: 1.8rem; font-weight: 800;">Academic Calculator</h1>
+                </div>
                 <div class="theme-wrapper">
-                    <select onchange="setTheme(this.value)" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <select onchange="setTheme(this.value)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 600;">
                         <option value="system">💻 System</option>
                         <option value="light">☀️ Light</option>
                         <option value="dark">🌙 Dark</option>
@@ -203,7 +228,7 @@
                         </button>
 
                         <button type="submit" class="btn-calc">
-                            Calculate Result <i class="fas fa-arrow-right"></i>
+                            <i class="fas fa-microchip"></i> Execute Calculation 
                         </button>
                     </form>
                 </section>
@@ -217,31 +242,31 @@
 
                     <div id="classBadge" class="class-badge">Pending Calculation</div>
 
-                    <p id="gpaRemarks" style="margin: 10px 0; font-size: 0.9rem; font-weight: 500; color: var(--text-muted); font-style: italic; line-height: 1.4;"></p>
+                    <div id="gpaRemarks" class="gpa-remarks">Input your scores and hit calculate to see your academic standing.</div>
                   
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                        <div style="background: var(--bg-color); padding: 10px; border-radius: 8px;">
+                        <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
                             <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TOTAL CREDITS</div>
-                            <div id="totalCredits" style="font-size:1.2rem; font-weight:bold;">0</div>
+                            <div id="totalCredits" style="font-size:1.5rem; font-weight:bold; color: var(--text-color);">0</div>
                         </div>
-                        <div style="background: var(--bg-color); padding: 10px; border-radius: 8px;">
-                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">POINTS</div>
-                            <div id="totalPoints" style="font-size:1.2rem; font-weight:bold;">0</div>
+                        <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TOTAL POINTS</div>
+                            <div id="totalPoints" style="font-size:1.5rem; font-weight:bold; color: var(--text-color);">0</div>
                         </div>
                     </div>
 
                     <div class="action-buttons">
                         <button type="button" class="btn-save" onclick="saveToProfile()">
-                            <i class="fas fa-save"></i> Save to Profile
+                            <i class="fas fa-cloud-upload-alt"></i> Sync to National DB
                         </button>
                         
                         <button type="button" class="btn-download" onclick="window.print()">
-                            <i class="fas fa-file-download"></i> Download Transcript
+                            <i class="fas fa-file-pdf"></i> Export Transcript
                         </button>
                     </div>
 
                     <div class="scale-ref">
-                        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem;">Grading System Reference</h4>
+                        <h4 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--text-color);">Grading System Reference</h4>
                         <table class="scale-table">
                             <thead><tr><th>Score Range</th><th>Grade</th><th>Point</th></tr></thead>
                             <tbody id="scaleTableBody">
@@ -256,234 +281,274 @@
     </div>
 
     <script>
-        // --- 1. INITIALIZATION & DATA LOADING ---
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if user has courses from the Registration page
-    const savedCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
-    
-    const container = document.getElementById('course-rows');
-    container.innerHTML = ''; // Clear initial state
-
-    if (savedCourses.length > 0) {
-        // Auto-fill rows based on registered courses
-        savedCourses.forEach(c => addRow(c.name, c.credits));
-    } else {
-        // Add 5 default blank rows if no courses registered
-        for(let i=0; i<5; i++) addRow();
-    }
-    updateScaleReference();
-});
-
-// --- 2. ROW MANAGEMENT (Add/Remove) ---
-function addRow(name = '', credits = '') {
-    const container = document.getElementById('course-rows');
-    const row = document.createElement('div');
-    row.className = 'course-row';
-    row.innerHTML = `
-        <input type="text" placeholder="Course Name" value="${name}" class="c-name">
-        <input type="number" placeholder="Credits" value="${credits}" min="1" max="6" class="c-credit">
-        <input type="number" placeholder="Score (0-100)" min="0" max="100" class="c-score">
-        <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
-            <i class="fas fa-trash-alt"></i>
-        </button>
-    `;
-    container.appendChild(row);
-}
-
-// --- 3. THE MATH ENGINE ---
-
-function calculate() {
-    const scale = document.getElementById('scaleSelect').value;
-    const rows = document.querySelectorAll('.course-row');
-    
-    let totalGradePoints = 0;
-    let totalCredits = 0;
-    let hasData = false;
-
-    rows.forEach(row => {
-        const cred = parseFloat(row.querySelector('.c-credit').value);
-        const score = parseFloat(row.querySelector('.c-score').value);
-
-        if (!isNaN(cred) && !isNaN(score)) {
-            hasData = true;
-            const pointPerCredit = getGradePoint(score, scale);
-            totalGradePoints += (pointPerCredit * cred);
-            totalCredits += cred;
+        // --- 1. MOBILE MENU LOGIC ---
+        function toggleMobileSidebar() {
+            document.querySelector('.sidebar').classList.toggle('mobile-open');
+            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
-    });
 
-    if (!hasData) {
-        alert("Please enter credits and scores for at least one course.");
-        return;
-    }
+        // --- 2. INITIALIZATION & DATA LOADING ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
+            const container = document.getElementById('course-rows');
+            container.innerHTML = ''; 
 
-    const gpa = (totalGradePoints / totalCredits).toFixed(2);
-    
-    // Activate Results Panel
-    const resCard = document.getElementById('resultCard');
-    resCard.style.opacity = '1';
-    resCard.style.pointerEvents = 'all';
-
-    // Update Values with Animation
-    animateValue("gpaValue", 0, parseFloat(gpa), 800);
-    document.getElementById('totalCredits').innerText = totalCredits;
-    document.getElementById('totalPoints').innerText = totalGradePoints.toFixed(1);
-
-    // Update Badge and Colors
-    updateVisuals(parseFloat(gpa), scale);
-}
-
-// --- 4. GRADE SCALES (Strictly following your ranges) ---
-function getGradePoint(score, scale) {
-    if (scale === '5.0') {
-        if (score >= 80) return 5.00; // A+
-        if (score >= 70) return 4.50; // A
-        if (score >= 65) return 4.00; // B+
-        if (score >= 60) return 3.50; // B
-        if (score >= 55) return 3.00; // C+
-        if (score >= 50) return 2.50; // C
-        if (score >= 45) return 2.00; // D+
-        if (score >= 40) return 1.50; // D
-        return 0.00; // F
-    } else {
-        // 4.0 Scale Reference
-        if (score >= 70) return 4.00; // A
-        if (score >= 60) return 3.50; // B+
-        if (score >= 50) return 3.00; // B
-        if (score >= 45) return 2.50; // C+
-        if (score >= 40) return 2.00; // C
-        return 0.00; // F
-    }
-}
-
-// --- 5. VISUAL FEEDBACK & ANIMATION ---
-function updateVisuals(gpa, scale) {
-    const circle = document.getElementById('gpaCircle');
-    const badge = document.getElementById('classBadge');
-    let color = "#ef4444"; // Default Red
-    let label = "Academic Probation";
-
-    if (scale === '5.0') {
-        if(gpa >= 4.5) { color = "#22c55e"; label = "First Class Honours"; }
-        else if(gpa >= 3.5) { color = "#22c55e"; label = "Second Class (Upper)"; }
-        else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
-        else if(gpa >= 1.5) { color = "#f97316"; label = "Third Class"; }
-    } else {
-        if(gpa >= 3.6) { color = "#22c55e"; label = "First Class Honours"; }
-        else if(gpa >= 3.0) { color = "#22c55e"; label = "Second Class (Upper)"; }
-        else if(gpa >= 2.5) { color = "#eab308"; label = "Second Class (Lower)"; }
-        else if(gpa >= 2.0) { color = "#f97316"; label = "Third Class"; }
-    }
-
-    circle.style.borderColor = color;
-    circle.style.color = color;
-    badge.style.background = color + "20"; 
-    badge.style.color = color;
-    badge.innerText = label;
-}
-
-function animateValue(id, start, end, duration) {
-    const obj = document.getElementById(id);
-    let startTimestamp = null;
-    const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        obj.innerHTML = (progress * (end - start) + start).toFixed(2);
-        if (progress < 1) window.requestAnimationFrame(step);
-        // --- DYNAMIC REMARKS LOGIC ---
-    const remarks = document.getElementById('gpaRemarks');
-    let remarkText = "";
-
-    if (scale === '5.0') {
-        if(gpa >= 4.5) remarkText = "Outstanding! You are demonstrating exceptional academic mastery.";
-        else if(gpa >= 3.5) remarkText = "Impressive work! You are maintaining a very strong academic record.";
-        else if(gpa >= 2.5) remarkText = "A solid performance. Consistency is key to reaching the next level.";
-        else if(gpa >= 1.5) remarkText = "You have passed, but there is significant room for improvement.";
-        else remarkText = "Your academic standing is at risk. Please prioritize your studies.";
-    } else {
-        if(gpa >= 3.6) remarkText = "Exceptional! You are currently among the top-performing students.";
-        else if(gpa >= 3.0) remarkText = "Very good! Your hard work is reflecting in your grades.";
-        else if(gpa >= 2.5) remarkText = "Good progress. Aim higher in the coming semesters to reach the top.";
-        else if(gpa >= 2.0) remarkText = "You are on track, but extra effort could yield much better results.";
-        else remarkText = "Urgent: Your grades are below standard. Seek academic support immediately. You can do better than this.";
-    }
-    remarks.innerText = remarkText;
-    };
-    window.requestAnimationFrame(step);
-}
-
-// --- 6. DYNAMIC REFERENCE TABLE ---
-function updateScaleReference() {
-    const scale = document.getElementById('scaleSelect').value;
-    const tbody = document.getElementById('scaleTableBody');
-    tbody.innerHTML = '';
-
-    let data = [];
-    if (scale === '5.0') {
-        data = [
-            { range: '80 - 100', grade: 'A+', point: '5.00' },
-            { range: '70 - 79', grade: 'A', point: '4.50' },
-            { range: '65 - 69', grade: 'B+', point: '4.00' },
-            { range: '60 - 64', grade: 'B', point: '3.50' },
-            { range: '55 - 59', grade: 'C+', point: '3.00' },
-            { range: '50 - 54', grade: 'C', point: '2.50' },
-            { range: '45 - 49', grade: 'D+', point: '2.00' },
-            { range: '40 - 44', grade: 'D', point: '1.50' },
-            { range: '0 - 39', grade: 'F', point: '0.00' }
-        ];
-    } else {
-        data = [
-            { range: '70 - 100', grade: 'A', point: '4.00' },
-            { range: '60 - 69', grade: 'B+', point: '3.50' },
-            { range: '50 - 59', grade: 'B', point: '3.00' },
-            { range: '45 - 49', grade: 'C+', point: '2.50' },
-            { range: '40 - 44', grade: 'C', point: '2.00' },
-            { range: '0 - 39', grade: 'F', point: '0.00' }
-        ];
-    }
-
-    data.forEach(row => {
-        tbody.innerHTML += `<tr><td>${row.range}</td><td><b>${row.grade}</b></td><td>${row.point}</td></tr>`;
-    });
-}
-
-// --- 7. DATABASE SYNC (Dashboard Integration) ---
-async function saveToProfile() {
-    const gpaValue = document.getElementById('gpaValue').innerText;
-    const btn = document.querySelector('.btn-save');
-    
-    // UI Feedback
-    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
-    btn.disabled = true;
-
-    try {
-        // Post current GPA and Courses to PostgreSQL
-        const res = await fetch('/api/user/save-gpa', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                gpa: gpaValue,
-                courses: JSON.parse(localStorage.getItem('portal-courses') || '[]')
-            })
+            if (savedCourses.length > 0) {
+                savedCourses.forEach(c => addRow(c.name, c.credits));
+            } else {
+                for(let i=0; i<5; i++) addRow();
+            }
+            updateScaleReference();
         });
 
-        if (res.ok) {
-            localStorage.setItem('portal-gpa', gpaValue);
-            btn.innerHTML = `<i class="fas fa-check"></i> Saved Successfully!`;
-            btn.style.background = "#22c55e";
+        // --- 3. ROW MANAGEMENT ---
+        function addRow(name = '', credits = '') {
+            const container = document.getElementById('course-rows');
+            const row = document.createElement('div');
+            row.className = 'course-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Course Name (e.g. CS 101)" value="${name}" class="c-name">
+                <input type="number" placeholder="Credits" value="${credits}" min="1" max="6" class="c-credit">
+                <input type="number" placeholder="Score (0-100)" min="0" max="100" class="c-score">
+                <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        // --- 4. THE MATH ENGINE ---
+        function calculate() {
+            const scale = document.getElementById('scaleSelect').value;
+            const rows = document.querySelectorAll('.course-row');
             
-            setTimeout(() => {
-                btn.innerHTML = `<i class="fas fa-save"></i> Save to Profile`;
-                btn.style.background = "var(--text-color)";
+            let totalGradePoints = 0;
+            let totalCredits = 0;
+            let hasData = false;
+
+            rows.forEach(row => {
+                const cred = parseFloat(row.querySelector('.c-credit').value);
+                const score = parseFloat(row.querySelector('.c-score').value);
+
+                if (!isNaN(cred) && !isNaN(score)) {
+                    hasData = true;
+                    const pointPerCredit = getGradePoint(score, scale);
+                    totalGradePoints += (pointPerCredit * cred);
+                    totalCredits += cred;
+                }
+            });
+
+            if (!hasData) {
+                alert("Please enter credits and scores for at least one course to execute the algorithm.");
+                return;
+            }
+
+            const gpa = (totalGradePoints / totalCredits).toFixed(2);
+            
+            // Activate Results Panel
+            const resCard = document.getElementById('resultCard');
+            resCard.style.opacity = '1';
+            resCard.style.pointerEvents = 'all';
+
+            // Update Values with Animation
+            animateValue("gpaValue", 0, parseFloat(gpa), 800);
+            document.getElementById('totalCredits').innerText = totalCredits;
+            document.getElementById('totalPoints').innerText = totalGradePoints.toFixed(1);
+
+            // Update Badge, Colors, and Remarks
+            updateVisuals(parseFloat(gpa), scale);
+        }
+
+        // --- 5. GRADE SCALES ---
+        function getGradePoint(score, scale) {
+            if (scale === '5.0') {
+                if (score >= 80) return 5.00; // A+
+                if (score >= 70) return 4.50; // A
+                if (score >= 65) return 4.00; // B+
+                if (score >= 60) return 3.50; // B
+                if (score >= 55) return 3.00; // C+
+                if (score >= 50) return 2.50; // C
+                if (score >= 45) return 2.00; // D+
+                if (score >= 40) return 1.50; // D
+                return 0.00; // F
+            } else {
+                if (score >= 70) return 4.00; // A
+                if (score >= 60) return 3.50; // B+
+                if (score >= 50) return 3.00; // B
+                if (score >= 45) return 2.50; // C+
+                if (score >= 40) return 2.00; // C
+                return 0.00; // F
+            }
+        }
+
+        // --- 6. VISUAL FEEDBACK & REMARKS ---
+        function updateVisuals(gpa, scale) {
+            const circle = document.getElementById('gpaCircle');
+            const badge = document.getElementById('classBadge');
+            const remarks = document.getElementById('gpaRemarks');
+            
+            let color = "#ef4444"; 
+            let label = "Academic Probation";
+            let remarkText = "";
+
+            if (scale === '5.0') {
+                if(gpa >= 4.5) { 
+                    color = "#10b981"; label = "First Class Honours"; 
+                    remarkText = "Outstanding! You are demonstrating exceptional academic mastery.";
+                } else if(gpa >= 3.5) { 
+                    color = "#10b981"; label = "Second Class (Upper)"; 
+                    remarkText = "Impressive work! You are maintaining a very strong academic record.";
+                } else if(gpa >= 2.5) { 
+                    color = "#f59e0b"; label = "Second Class (Lower)"; 
+                    remarkText = "A solid performance. Consistency is key to reaching the next level.";
+                } else if(gpa >= 1.5) { 
+                    color = "#f97316"; label = "Third Class"; 
+                    remarkText = "You have passed, but there is significant room for improvement.";
+                } else {
+                    remarkText = "Your academic standing is at risk. Please prioritize your studies.";
+                }
+            } else {
+                if(gpa >= 3.6) { 
+                    color = "#10b981"; label = "First Class Honours"; 
+                    remarkText = "Exceptional! You are currently among the top-performing students. Push harder with consistence!!";
+                } else if(gpa >= 3.0) { 
+                    color = "#10b981"; label = "Second Class (Upper)"; 
+                    remarkText = "Very good! Your hard work is reflecting in your grades. Greatness awaits you, you can get to the top!!";
+                } else if(gpa >= 2.5) { 
+                    color = "#f59e0b"; label = "Second Class (Lower)"; 
+                    remarkText = "Good progress. Aim higher in the coming semesters/trimesters to reach the top.";
+                } else if(gpa >= 2.0) { 
+                    color = "#f97316"; label = "Third Class"; 
+                    remarkText = "You are on track, but extra effort could yield much better results. Keep Pushing!!!";
+                } else {
+                    remarkText = "Urgent: Your grades are below standard. Seek academic support immediately. Do not be discouraged, but rather know that you can do it. Keep Pushing!!";
+                }
+            }
+
+            circle.style.borderColor = color;
+            circle.style.color = color;
+            badge.style.background = color + "15"; 
+            badge.style.color = color;
+            badge.style.border = `1px solid ${color}40`;
+            badge.innerText = label;
+            
+            remarks.innerText = `"${remarkText}"`;
+            remarks.style.color = color;
+            remarks.style.borderColor = `${color}40`;
+            remarks.style.background = `${color}05`;
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- 7. DYNAMIC REFERENCE TABLE ---
+        function updateScaleReference() {
+            const scale = document.getElementById('scaleSelect').value;
+            const tbody = document.getElementById('scaleTableBody');
+            tbody.innerHTML = '';
+
+            let data = [];
+            if (scale === '5.0') {
+                data = [
+                    { range: '80 - 100', grade: 'A+', point: '5.00' },
+                    { range: '70 - 79', grade: 'A', point: '4.50' },
+                    { range: '65 - 69', grade: 'B+', point: '4.00' },
+                    { range: '60 - 64', grade: 'B', point: '3.50' },
+                    { range: '55 - 59', grade: 'C+', point: '3.00' },
+                    { range: '50 - 54', grade: 'C', point: '2.50' },
+                    { range: '45 - 49', grade: 'D+', point: '2.00' },
+                    { range: '40 - 44', grade: 'D', point: '1.50' },
+                    { range: '0 - 39', grade: 'F', point: '0.00' }
+                ];
+            } else {
+                data = [
+                    { range: '70 - 100', grade: 'A', point: '4.00' },
+                    { range: '60 - 69', grade: 'B+', point: '3.50' },
+                    { range: '50 - 59', grade: 'B', point: '3.00' },
+                    { range: '45 - 49', grade: 'C+', point: '2.50' },
+                    { range: '40 - 44', grade: 'C', point: '2.00' },
+                    { range: '0 - 39', grade: 'F', point: '0.00' }
+                ];
+            }
+
+            data.forEach(row => {
+                tbody.innerHTML += `<tr><td>${row.range}</td><td><b>${row.grade}</b></td><td>${row.point}</td></tr>`;
+            });
+        }
+
+        // --- 8. DATABASE SYNC (Dashboard Integration) ---
+        async function saveToProfile() {
+            const gpaValue = document.getElementById('gpaValue').innerText;
+            const btn = document.querySelector('.btn-save');
+            
+            if (gpaValue === "0.00") {
+                alert("Please calculate your GPA before syncing to the database.");
+                return;
+            }
+
+            // Extract course data from current rows
+            const rows = document.querySelectorAll('.course-row');
+            let courseData = [];
+            rows.forEach(row => {
+                const name = row.querySelector('.c-name').value.trim();
+                const cred = row.querySelector('.c-credit').value;
+                const score = row.querySelector('.c-score').value;
+                if(name && cred) {
+                    courseData.push({ name: name, credits: cred, score: score });
+                }
+            });
+
+            // UI Feedback
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Syncing to National DB...`;
+            btn.disabled = true;
+
+            try {
+                // Post current GPA and Courses to PostgreSQL Backend
+                const res = await fetch('/api/user/save-gpa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        gpa: gpaValue,
+                        courses: courseData
+                    })
+                });
+
+                if (res.ok) {
+                    // Update Local Storage as a backup and for instant load
+                    localStorage.setItem('portal-gpa', gpaValue);
+                    localStorage.setItem('portal-courses', JSON.stringify(courseData));
+                    
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Successfully Synced!`;
+                    btn.style.background = "#10b981";
+                    btn.style.color = "white";
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = "var(--text-color)";
+                        btn.style.color = "var(--bg-color)";
+                        btn.disabled = false;
+                    }, 2500);
+                } else { throw new Error(); }
+            } catch (err) {
+                alert("Database Connection Failed. Your data has been cached locally and will sync when online.");
+                // Still save locally if offline
+                localStorage.setItem('portal-gpa', gpaValue);
+                localStorage.setItem('portal-courses', JSON.stringify(courseData));
+                
+                btn.innerHTML = originalText;
                 btn.disabled = false;
-            }, 2500);
-        } else { throw new Error(); }
-    } catch (err) {
-        alert("Database Error. GPA saved locally only.");
-        btn.innerHTML = `<i class="fas fa-save"></i> Save to Profile`;
-        btn.disabled = false;
-    }
-}
+            }
+        }
     </script>
 </body>
 </html>
