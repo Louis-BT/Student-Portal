@@ -19,7 +19,7 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
 
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 1000; }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
@@ -263,7 +263,7 @@
                         </div>
 
                         <div class="action-bar no-print">
-                            <div style="display:flex; gap:15px;">
+                            <div style="display:flex; gap:15px; flex-wrap: wrap;">
                                 <button type="button" class="btn btn-primary" id="saveBtn" onclick="saveProfile()">
                                     <i class="fas fa-cloud-upload-alt"></i> Sync to National DB
                                 </button>
@@ -342,7 +342,7 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: black; background: white; width: 800px; position: absolute; left: -9999px;">
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: black; background: white; width: 800px; position: absolute; left: 0; top: 0; z-index: -1;">
         
         <div style="text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
             <h1 style="margin: 0; font-size: 24px; text-transform: uppercase;">National Tertiary Student Portal</h1>
@@ -555,7 +555,7 @@
             closeCropper();
         }
 
-        // --- 7. 🔥 PREMIUM PDF EXPORT ENGINE ---
+        // --- 7. 🔥 PREMIUM PDF EXPORT ENGINE (Fixed Blank Output) ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
@@ -568,22 +568,32 @@
             document.getElementById('print-level').innerText = "Level " + document.getElementById('level').value;
             document.getElementById('print-career').innerText = document.getElementById('career').value || "N/A";
 
-            // Temporarily show template to render it
+            // html2canvas cannot render elements with display:none or off-screen reliably.
+            // We must temporarily display it in the viewport, render, then hide it instantly.
             const element = document.getElementById('official-print-template');
-            element.style.display = 'block';
             
+            // Temporarily make it visible but cover it with the preloader so user doesn't see it flash
+            element.style.display = 'block';
+            element.style.zIndex = '999999';
+            element.style.background = 'white';
+
             const opt = {
                 margin: 15,
                 filename: 'Official_NTS_BioData.pdf',
                 image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 3, useCORS: true }, 
+                html2canvas: { scale: 3, useCORS: true, logging: false }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none'; // Hide it back
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Bio-Data';
-            });
+            // Small timeout allows the DOM to repaint the visible element before capturing
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Hide it back completely
+                    element.style.display = 'none'; 
+                    element.style.zIndex = '-1';
+                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Bio-Data';
+                });
+            }, 100);
         }
     </script>
 </body>

@@ -15,7 +15,7 @@
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
 
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
@@ -109,12 +109,12 @@
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
 
         @media (max-width: 900px) { 
-            .sidebar { display: none; } 
+            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            .sidebar-overlay.mobile-open { display: block; }
             .resource-grid { grid-template-columns: 1fr; } 
             .viewer-mock-text { padding: 30px 5%; } 
             .mobile-menu-btn { display: block; }
-            .sidebar.mobile-open { left: 0; display: flex; position: fixed; height: 100%; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
-            .sidebar-overlay.mobile-open { display: block; }
         }
     </style>
 </head>
@@ -154,7 +154,7 @@
                     <span style="font-size: 0.85rem; color: #cbd5e1;">National Portal Secure Reader</span>
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center;">
-                    <a id="viewerDownload" href="#" download class="btn-action" style="background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 15px; font-size: 0.85rem; width: auto; text-decoration: none;">
+                    <a id="viewerDownload" href="#" onclick="handleDownload(event)" class="btn-action" style="background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 15px; font-size: 0.85rem; width: auto; text-decoration: none;">
                         <i class="fas fa-download"></i> Download Copy
                     </a>
                     <span onclick="closeViewer()" style="cursor: pointer; font-size: 2rem; line-height: 1; color: white;">&times;</span>
@@ -204,6 +204,11 @@
                         </select>
                     </div>
                 </header>
+
+                <div style="margin-bottom: 30px; position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="librarySearch" placeholder="Search across all library categories..." onkeyup="filterLibrary()" style="width: 100%; padding: 15px 20px 15px 50px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;">
+                </div>
 
                 <div class="lib-nav">
                     <div class="lib-tab active" onclick="switchTab('academic')"><i class="fas fa-graduation-cap"></i> Academics</div>
@@ -407,7 +412,7 @@
                                 <option value="legal">Law & Constitution</option>
                                 <option value="tech">Computer Science</option>
                             </select>
-                            <input type="text" id="dict-input" placeholder="Enter a term to define (e.g. 'Polymorphism')..." style="padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); outline: none; flex: 3; min-width: 200px;">
+                            <input type="text" id="dict-input" placeholder="Enter a term to define (e.g. 'Polymorphism')..." style="padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); outline: none; flex: 3; min-width: 200px;" onkeypress="if(event.key === 'Enter') searchDictionary()">
                             <button class="btn-action" id="dict-btn" style="width: auto; background: var(--primary-color); color: white; padding: 0 30px;" onclick="searchDictionary()"><i class="fas fa-search"></i> Define</button>
                         </div>
                         
@@ -426,7 +431,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            switchTab('academic'); // Default to academic to see DB fetches
+            switchTab('academic'); // Default to academic
             fetchLibrary(); // Auto-sync on load
         });
 
@@ -447,9 +452,22 @@
             if(section) section.style.display = 'block';
         }
 
+        // --- GLOBAL SEARCH ENGINE ---
+        function filterLibrary() {
+            let input = document.getElementById('librarySearch').value.toLowerCase();
+            let cards = document.querySelectorAll('.resource-card');
+            
+            cards.forEach(card => {
+                let textContent = card.innerText.toLowerCase();
+                if(textContent.includes(input)) {
+                    card.style.display = "";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
         // --- THE HYBRID SMART READER ---
-        // If fileUrl is provided (from Database), it loads real PDF iframe. 
-        // If null (from simulated cards), it loads the text engine.
         function openSimulatedReader(topic, fileUrl = null) {
             const modal = document.getElementById('viewerModal');
             const iframe = document.getElementById('viewerFrame');
@@ -464,13 +482,22 @@
                 smartReader.style.display = 'none';
                 iframe.style.display = 'block';
                 iframe.src = fileUrl + "#toolbar=0&navpanes=0";
+                
+                // Allow standard download link
                 downloadBtn.href = fileUrl;
+                downloadBtn.onclick = null; // Remove any alert overrides
             } else {
                 // Simulated Text Mode for existing mock cards
                 iframe.style.display = 'none';
                 iframe.src = "";
                 smartReader.style.display = 'block';
+                
+                // Prevent downloading of simulated web text
                 downloadBtn.href = "#"; 
+                downloadBtn.onclick = (e) => {
+                    e.preventDefault();
+                    alert("This is an interactive web document. PDF download is only available for database-uploaded files.");
+                };
 
                 let content = "";
                 if(topic === 'Calculus I' || topic === 'Discrete Mathematics') {
@@ -622,7 +649,7 @@
                         <strong>Related Concepts:</strong> Core principle, Primary dynamic, Systemic function.
                     </div>
                 `;
-            }, 1500); // 1.5s delay for realism
+            }, 1200); // 1.2s delay for realism
         }
     </script>
 </body>

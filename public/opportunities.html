@@ -225,7 +225,7 @@
                         </div>
                     </div>
                     <div class="header-tools">
-                        <div class="notify-bell" onclick="alert('New Sync Complete: 12 new scholarships added.')"><i class="fas fa-bell"></i><span class="bell-dot"></span></div>
+                        <div class="notify-bell" onclick="alert('New Sync Complete: Advanced opportunities added.')"><i class="fas fa-bell"></i><span class="bell-dot"></span></div>
                         <div class="theme-wrapper"><select onchange="setTheme(this.value)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 500;"><option value="system">💻 System</option><option value="light">☀️ Light</option><option value="dark">🌙 Dark</option></select></div>
                     </div>
                 </header>
@@ -233,6 +233,7 @@
                 <div class="lib-nav">
                     <div class="lib-tab active" onclick="switchTab('scholarships', this)"><i class="fas fa-graduation-cap"></i> Scholarship Database</div>
                     <div class="lib-tab" onclick="switchTab('career', this)"><i class="fas fa-briefcase"></i> Internships & NSS</div>
+                    <div class="lib-tab" onclick="switchTab('courses', this)"><i class="fas fa-laptop-code"></i> Online Courses & Certs</div>
                     <div class="lib-tab" onclick="switchTab('admissions', this)"><i class="fas fa-robot"></i> WASSCE AI Predictor</div>
                     <div class="lib-tab" onclick="switchTab('abroad', this)"><i class="fas fa-plane-departure"></i> Study Abroad Center</div>
                 </div>
@@ -245,49 +246,89 @@
                     
                     <div class="search-container">
                         <i class="fas fa-search"></i>
-                        <input type="text" class="search-input" id="search-scholars" placeholder="Search for scholarships, countries, or specific programs..." onkeyup="filterCards('search-scholars', 'scholarship-grid')">
+                        <input type="text" class="search-input" id="search-scholars" placeholder="Search for scholarships, grants, or specific programs..." onkeyup="filterCards('search-scholars', 'scholarship-grid')">
                     </div>
 
                     <div class="opp-grid" id="scholarship-grid">
                         <div class="opp-card">
-                            <span class="card-tag tag-intl">International</span>
-                            <div class="opp-icon" style="color: #9333ea;"><i class="fas fa-globe-europe"></i></div>
-                            <h3 class="opp-title">Chevening UK Scholarships</h3>
-                            <div class="opp-meta"><i class="far fa-clock"></i> Deadline: Nov 2026 • <i class="fas fa-map-marker-alt"></i> United Kingdom</div>
-                            <p class="opp-desc">Fully-funded master's degrees for future leaders. Covers full tuition, flights, and a monthly living allowance.</p>
-                            <a href="#" class="btn-action"><i class="fas fa-external-link-alt"></i> Apply Now</a>
-                        </div>
-                        <div class="opp-card">
                             <span class="card-tag tag-local">National</span>
-                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-building"></i></div>
-                            <h3 class="opp-title">GETFund Local Scholarship</h3>
-                            <div class="opp-meta"><i class="far fa-clock"></i> Rolling Admissions • <i class="fas fa-map-marker-alt"></i> Ghana</div>
-                            <p class="opp-desc">Financial assistance for brilliant but needy Ghanaian students currently enrolled in accredited local public universities.</p>
-                            <a href="#" class="btn-action"><i class="fas fa-file-signature"></i> Open Application</a>
-                        </div>
-                        <div class="opp-card">
-                            <span class="card-tag tag-urgent">Closing Soon</span>
-                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-hand-holding-usd"></i></div>
-                            <h3 class="opp-title">MTN Ghana Bright Scholars</h3>
-                            <div class="opp-meta"><i class="far fa-clock"></i> Closes in 3 Days • <i class="fas fa-briefcase"></i> Corporate</div>
-                            <p class="opp-desc">Corporate scheme aimed at supporting tertiary students pursuing STEM and Business programs. Covers tuition and stipends.</p>
-                            <a href="#" class="btn-action" style="background: #ef4444;"><i class="fas fa-bolt"></i> Fast-Track Apply</a>
-                        </div>
-                        <div class="opp-card">
-                            <span class="card-tag tag-intl">International</span>
-                            <div class="opp-icon" style="color: #3b82f6;"><i class="fas fa-passport"></i></div>
-                            <h3 class="opp-title">MasterCard Foundation Scholars</h3>
-                            <div class="opp-meta"><i class="far fa-clock"></i> Opens Jan 2027 • <i class="fas fa-globe-americas"></i> Canada/US</div>
-                            <p class="opp-desc">Comprehensive support for economically disadvantaged youth. Covers tuition, accommodation, books, and leadership training.</p>
-                            <a href="#" class="btn-action"><i class="fas fa-info-circle"></i> View Requirements</a>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-landmark"></i></div>
+                            <h3 class="opp-title">Scholarships Secretariat</h3>
+                            <div class="opp-meta"><i class="fas fa-globe-africa"></i> Government of Ghana</div>
+                            <p class="opp-desc">Official portal for local and international scholarships managed by the government.</p>
+                            <a href="https://scholarships.gov.gh/" target="_blank" class="btn-action"><i class="fas fa-external-link-alt"></i> Official Portal</a>
                         </div>
                         <div class="opp-card">
                             <span class="card-tag tag-local">Institutional</span>
-                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-university"></i></div>
-                            <h3 class="opp-title">SRC KBN Financial Aid</h3>
-                            <div class="opp-meta"><i class="far fa-clock"></i> Deadline: Oct 2026 • <i class="fas fa-map-marker-alt"></i> Internal</div>
-                            <p class="opp-desc">The Student Representative Council’s fund to support continuing students with partial fee payments for the academic year.</p>
-                            <a href="#" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-download"></i> Download Form</a>
+                            <div class="opp-icon" style="color: #2563eb;"><i class="fas fa-building"></i></div>
+                            <h3 class="opp-title">GETFund Scholarship</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Ghana</div>
+                            <p class="opp-desc">Financial assistance for brilliant but needy Ghanaian students enrolled in accredited local institutions.</p>
+                            <a href="https://scholarships.getfund.gov.gh/" target="_blank" class="btn-action"><i class="fas fa-file-signature"></i> Apply via GETFund</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Corporate</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-gas-pump"></i></div>
+                            <h3 class="opp-title">GNPC Foundation</h3>
+                            <div class="opp-meta"><i class="fas fa-briefcase"></i> Corporate Social Investment</div>
+                            <p class="opp-desc">Scholarships targeting STEM, special needs, and tertiary students across Ghana.</p>
+                            <a href="https://www.gnpcghana.com/gnpc-foundation" target="_blank" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-link"></i> Visit Foundation</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-urgent">Corporate</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-mobile-alt"></i></div>
+                            <h3 class="opp-title">MTN Ghana Bright Scholars</h3>
+                            <div class="opp-meta"><i class="fas fa-bolt"></i> High Demand</div>
+                            <p class="opp-desc">Corporate scheme supporting tertiary students pursuing STEM and Business programs. Covers tuition and stipends.</p>
+                            <a href="https://scholarship.mtn.com.gh/" target="_blank" class="btn-action" style="background: #ef4444;"><i class="fas fa-bolt"></i> Fast-Track Apply</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">International</span>
+                            <div class="opp-icon" style="color: #9333ea;"><i class="fas fa-globe"></i></div>
+                            <h3 class="opp-title">Unicaf Scholarships</h3>
+                            <div class="opp-meta"><i class="fas fa-laptop"></i> Online & Blended</div>
+                            <p class="opp-desc">Generous scholarships to earn internationally recognized degrees from partner universities worldwide.</p>
+                            <a href="https://university.unicaf.org/scholarships/" target="_blank" class="btn-action" style="background: #9333ea;"><i class="fas fa-external-link-alt"></i> View Unicaf</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">National</span>
+                            <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-users"></i></div>
+                            <h3 class="opp-title">NUGS Scholarship Portal</h3>
+                            <div class="opp-meta"><i class="fas fa-hands-helping"></i> Student Union</div>
+                            <p class="opp-desc">Financial aid and support structures managed directly by the National Union of Ghana Students.</p>
+                            <a href="https://nugs.org.gh/nugs-scholarship-portal/" target="_blank" class="btn-action" style="background: #0f172a;"><i class="fas fa-arrow-right"></i> NUGS Portal</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Institutional</span>
+                            <div class="opp-icon" style="color: #3b82f6;"><i class="fas fa-university"></i></div>
+                            <h3 class="opp-title">UG Financial Aid (SFAO)</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> University of Ghana</div>
+                            <p class="opp-desc">Official student financial aid office for the University of Ghana. Open to regular undergrads.</p>
+                            <a href="https://www.ug.edu.gh/financialaid/node/23" target="_blank" class="btn-action"><i class="fas fa-info-circle"></i> SFAO Details</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Institutional</span>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-university"></i></div>
+                            <h3 class="opp-title">CKT-UTAS Scholarships</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Navrongo</div>
+                            <p class="opp-desc">Internal grants and scholarship opportunities for students at C. K. Tedam University.</p>
+                            <a href="https://cktutas.edu.gh/scholarships-grants/" target="_blank" class="btn-action" style="background: #10b981;"><i class="fas fa-external-link-alt"></i> View Grants</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">International</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-plane"></i></div>
+                            <h3 class="opp-title">MFA International Vacancies</h3>
+                            <div class="opp-meta"><i class="fas fa-globe-americas"></i> Ministry of Foreign Affairs</div>
+                            <p class="opp-desc">Bilateral scholarship opportunities and international study grants brokered by the state.</p>
+                            <a href="https://mfa.gov.gh/index.php/scholarships/" target="_blank" class="btn-action" style="background: #ef4444;"><i class="fas fa-plane-departure"></i> Explore Abroad</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">NGO</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-hand-holding-heart"></i></div>
+                            <h3 class="opp-title">J.E. Quansah Foundation</h3>
+                            <div class="opp-meta"><i class="fas fa-heart"></i> Philanthropy</div>
+                            <p class="opp-desc">Supporting brilliant but needy students across various tertiary institutions in Ghana.</p>
+                            <a href="https://www.jequansahfoundation.org/" target="_blank" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-link"></i> Visit Foundation</a>
                         </div>
                     </div>
                 </div>
@@ -305,44 +346,197 @@
 
                     <div class="opp-grid" id="career-grid">
                         <div class="opp-card">
-                            <span class="card-tag tag-local">NSS Placement</span>
-                            <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-landmark"></i></div>
-                            <h3 class="opp-title">Ministry of Communications</h3>
-                            <div class="opp-meta"><i class="fas fa-calendar-alt"></i> 2026/2027 Service Year</div>
-                            <p class="opp-desc">Actively recruiting IT, Computer Science, and Data Engineering graduates for immediate National Service deployment.</p>
-                            <a href="#" class="btn-action" style="background: #0f172a;"><i class="fas fa-paper-plane"></i> Request NSS Pin Match</a>
+                            <span class="card-tag tag-local">Platform</span>
+                            <div class="opp-icon" style="color: #2563eb;"><i class="fas fa-search-dollar"></i></div>
+                            <h3 class="opp-title">Jobberman Ghana</h3>
+                            <div class="opp-meta"><i class="fas fa-briefcase"></i> Graduate Internships</div>
+                            <p class="opp-desc">The leading job portal in Ghana featuring daily updates on graduate and student internship roles.</p>
+                            <a href="https://www.jobberman.com.gh/jobs/internship-graduate" target="_blank" class="btn-action"><i class="fas fa-external-link-alt"></i> Browse Jobberman</a>
                         </div>
                         <div class="opp-card">
-                            <span class="card-tag tag-intl">Paid Internship</span>
-                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-oil-can"></i></div>
-                            <h3 class="opp-title">Tullow Oil - Data Analyst Intern</h3>
-                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Accra HQ (Hybrid)</div>
-                            <p class="opp-desc">Intensive 3-month paid summer internship for Level 300 students. Strong Excel, PowerBI, and SQL knowledge required.</p>
-                            <a href="#" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-file-upload"></i> Submit Resume</a>
+                            <span class="card-tag tag-local">Platform</span>
+                            <div class="opp-icon" style="color: #0077b5;"><i class="fab fa-linkedin"></i></div>
+                            <h3 class="opp-title">LinkedIn Jobs (Ghana)</h3>
+                            <div class="opp-meta"><i class="fas fa-network-wired"></i> Professional Network</div>
+                            <p class="opp-desc">Direct feed for internship opportunities posted by top companies and recruiters in Ghana.</p>
+                            <a href="https://gh.linkedin.com/jobs/internship-jobs" target="_blank" class="btn-action" style="background: #0077b5;"><i class="fab fa-linkedin-in"></i> View on LinkedIn</a>
                         </div>
                         <div class="opp-card">
-                            <span class="card-tag tag-local">Full-Time</span>
-                            <div class="opp-icon" style="color: #3b82f6;"><i class="fas fa-laptop-code"></i></div>
-                            <h3 class="opp-title">Hubtel - Junior Frontend Dev</h3>
-                            <div class="opp-meta"><i class="fas fa-briefcase"></i> Entry Level • Remote</div>
-                            <p class="opp-desc">Full-time position. Requires strong knowledge of React, HTML/CSS, and Git. Recent graduates highly encouraged.</p>
-                            <a href="#" class="btn-action"><i class="fab fa-linkedin"></i> Easy Apply</a>
+                            <span class="card-tag tag-intl">Corporate</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-calculator"></i></div>
+                            <h3 class="opp-title">ACCA Global Internships</h3>
+                            <div class="opp-meta"><i class="fas fa-chart-line"></i> Finance & Accounting</div>
+                            <p class="opp-desc">Dedicated internship portal for accounting and finance students looking to build global careers.</p>
+                            <a href="https://jobs.accaglobal.com/jobs/ghana/internship/" target="_blank" class="btn-action" style="background: #ef4444;"><i class="fas fa-external-link-alt"></i> ACCA Portal</a>
                         </div>
                         <div class="opp-card">
-                            <span class="card-tag tag-local">NSS Placement</span>
-                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-hospital-user"></i></div>
-                            <h3 class="opp-title">Ghana Health Service (GHS)</h3>
-                            <div class="opp-meta"><i class="fas fa-calendar-alt"></i> 2026/2027 Service Year</div>
-                            <p class="opp-desc">Placements available for Nursing, Pharmacy, and Health Administration graduates across regional and district hospitals.</p>
-                            <a href="#" class="btn-action" style="background: #10b981;"><i class="fas fa-paper-plane"></i> Request NSS Pin Match</a>
+                            <span class="card-tag tag-intl">Tech</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-laptop-code"></i></div>
+                            <h3 class="opp-title">AmaliTech Immersive</h3>
+                            <div class="opp-meta"><i class="fas fa-code"></i> Software & IT</div>
+                            <p class="opp-desc">Intensive internship programme for tech enthusiasts offering real-world project experience.</p>
+                            <a href="https://amalitech.com/immersive-internship-programme/" target="_blank" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-link"></i> AmaliTech Hub</a>
                         </div>
                         <div class="opp-card">
-                            <span class="card-tag tag-intl">Internship</span>
-                            <div class="opp-icon" style="color: #ef4444;"><i class="fab fa-google"></i></div>
-                            <h3 class="opp-title">Google Africa - STEP Intern</h3>
-                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> Accra / Lagos (Remote)</div>
-                            <p class="opp-desc">12-week internship for first and second-year undergraduate students with a passion for computer science.</p>
-                            <a href="#" class="btn-action"><i class="fas fa-external-link-alt"></i> View on Google Careers</a>
+                            <span class="card-tag tag-intl">Global</span>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-globe"></i></div>
+                            <h3 class="opp-title">UN Career & UNICEF</h3>
+                            <div class="opp-meta"><i class="fas fa-hands-helping"></i> International Dev</div>
+                            <p class="opp-desc">Prestigious internship pathways with United Nations agencies operating within Ghana.</p>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <a href="https://uncareer.net/country/Ghana" target="_blank" class="btn-action" style="background: #10b981; font-size: 0.8rem; padding: 10px;"><i class="fas fa-globe"></i> UN</a>
+                                <a href="https://www.unicef.org/careers/internships" target="_blank" class="btn-action" style="background: #3b82f6; font-size: 0.8rem; padding: 10px;"><i class="fas fa-child"></i> UNICEF</a>
+                            </div>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Global</span>
+                            <div class="opp-icon" style="color: #9333ea;"><i class="fas fa-heartbeat"></i></div>
+                            <h3 class="opp-title">UNFPA Internships</h3>
+                            <div class="opp-meta"><i class="fas fa-users"></i> Population Fund</div>
+                            <p class="opp-desc">Opportunities for students to engage in projects related to reproductive health and youth empowerment.</p>
+                            <a href="https://ghana.unfpa.org/en/vacancies/2025-internship" target="_blank" class="btn-action" style="background: #9333ea;"><i class="fas fa-external-link-alt"></i> View UNFPA</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Corporate</span>
+                            <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-mug-hot"></i></div>
+                            <h3 class="opp-title">Nestlé Internships</h3>
+                            <div class="opp-meta"><i class="fas fa-industry"></i> FMCG / Supply Chain</div>
+                            <p class="opp-desc">Gain hands-on experience with the world's largest food and beverage company.</p>
+                            <a href="https://www.nestle.com/jobs/career-area/internships" target="_blank" class="btn-action" style="background: #0f172a;"><i class="fas fa-briefcase"></i> View Nestlé</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Remote</span>
+                            <div class="opp-icon" style="color: #2563eb;"><i class="fas fa-laptop-house"></i></div>
+                            <h3 class="opp-title">Virtual Internships</h3>
+                            <div class="opp-meta"><i class="fas fa-wifi"></i> Global Tech / Biz</div>
+                            <p class="opp-desc">Platform connecting students with remote internship opportunities globally. Work from anywhere.</p>
+                            <a href="https://www.virtualinternships.com/" target="_blank" class="btn-action"><i class="fas fa-mouse-pointer"></i> Visit Platform</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Institutional</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-university"></i></div>
+                            <h3 class="opp-title">University Placements</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> KsTU & NYU Accra</div>
+                            <p class="opp-desc">Direct academic and summer internship links via university career services.</p>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <a href="https://kstu.edu.gh/media/announcements/summer-internship-program-kstu-alumni" target="_blank" class="btn-action" style="background: #f59e0b; color:#000; font-size: 0.8rem; padding: 10px;">KsTU</a>
+                                <a href="https://www.nyu.edu/accra/academics/internships.html" target="_blank" class="btn-action" style="background: #ef4444; font-size: 0.8rem; padding: 10px;">NYU</a>
+                            </div>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">NGO / Volunteer</span>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-seedling"></i></div>
+                            <h3 class="opp-title">Volunteering & Dev</h3>
+                            <div class="opp-meta"><i class="fas fa-hands"></i> Sedarvp, A Rocha, PYVO</div>
+                            <p class="opp-desc">Excellent for building soft skills through community service, environmental, and youth NGOs.</p>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <a href="https://passionateyouthvoluntarygh.org/pyvo-ghana-internship/" target="_blank" class="btn-action" style="background: #10b981; font-size: 0.7rem; padding: 10px;">PYVO</a>
+                                <a href="https://ghana.arocha.org/volunteer-internship/" target="_blank" class="btn-action" style="background: #10b981; font-size: 0.7rem; padding: 10px;">A Rocha</a>
+                                <a href="https://sedarvp-ghana.org/internship/" target="_blank" class="btn-action" style="background: #10b981; font-size: 0.7rem; padding: 10px;">Sedarvp</a>
+                            </div>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">International</span>
+                            <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-plane"></i></div>
+                            <h3 class="opp-title">GoAbroad & Roots Interns</h3>
+                            <div class="opp-meta"><i class="fas fa-passport"></i> Global Placements</div>
+                            <p class="opp-desc">Major databases for international students looking to intern in Ghana or abroad.</p>
+                            <div style="display: flex; gap: 10px; width: 100%;">
+                                <a href="https://www.goabroad.com/intern-abroad/search/ghana/internships-abroad-1" target="_blank" class="btn-action" style="background: #0f172a; font-size: 0.8rem; padding: 10px;">GoAbroad</a>
+                                <a href="https://www.rootsinterns.com/destinations/internships-ghana/" target="_blank" class="btn-action" style="background: #3b82f6; font-size: 0.8rem; padding: 10px;">Roots</a>
+                            </div>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Agencies</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-landmark"></i></div>
+                            <h3 class="opp-title">State & Bi-Lateral Agencies</h3>
+                            <div class="opp-meta"><i class="fas fa-building"></i> MFA, AHK, FES, GMMB</div>
+                            <p class="opp-desc">Official government and diplomatic internship openings.</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 100%;">
+                                <a href="https://mfa.gov.gh/index.php/international-vacancies/" target="_blank" class="btn-action" style="background: #ef4444; font-size: 0.7rem; padding: 8px;">MFA</a>
+                                <a href="https://ghana.ahk.de/en/career/internships" target="_blank" class="btn-action" style="background: #ef4444; font-size: 0.7rem; padding: 8px;">AHK</a>
+                                <a href="https://ghana.fes.de/about/internships.html" target="_blank" class="btn-action" style="background: #ef4444; font-size: 0.7rem; padding: 8px;">FES</a>
+                                <a href="https://gmmb.gov.gh/internship/" target="_blank" class="btn-action" style="background: #ef4444; font-size: 0.7rem; padding: 8px;">GMMB</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-courses" class="tab-content">
+                    <div class="live-sync-banner" style="background: rgba(147, 51, 234, 0.05); border-color: rgba(147, 51, 234, 0.2);">
+                        <div class="sync-status" style="color: #9333ea;"><div class="sync-dot" style="background:#9333ea; box-shadow: 0 0 10px #9333ea;"></div> EdTech Link Active</div>
+                        <div class="sync-time" id="courses-sync-time">Synchronized Just Now</div>
+                    </div>
+
+                    <div class="search-container">
+                        <i class="fas fa-laptop-code"></i>
+                        <input type="text" class="search-input" id="search-courses" placeholder="Search for online platforms, Google certs, or Harvard free courses..." onkeyup="filterCards('search-courses', 'courses-grid')">
+                    </div>
+
+                    <div class="opp-grid" id="courses-grid">
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Global</span>
+                            <div class="opp-icon" style="color: #2563eb;"><i class="fas fa-graduation-cap"></i></div>
+                            <h3 class="opp-title">Coursera</h3>
+                            <div class="opp-meta"><i class="fas fa-certificate"></i> Free & Paid Certs</div>
+                            <p class="opp-desc">Access thousands of courses from top universities and companies like IBM and Meta.</p>
+                            <a href="https://www.coursera.org/courses" target="_blank" class="btn-action"><i class="fas fa-external-link-alt"></i> Browse Coursera</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Tech</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fab fa-google"></i></div>
+                            <h3 class="opp-title">Grow with Google</h3>
+                            <div class="opp-meta"><i class="fas fa-laptop-code"></i> Professional Certs</div>
+                            <p class="opp-desc">High-impact certificates in Data Analytics, IT Support, UX Design, and Project Management.</p>
+                            <a href="https://grow.google/intl/ALL_in/learn-skills/" target="_blank" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fab fa-google"></i> Google Hub</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Ivy League</span>
+                            <div class="opp-icon" style="color: #ef4444;"><i class="fas fa-university"></i></div>
+                            <h3 class="opp-title">Harvard Free Courses</h3>
+                            <div class="opp-meta"><i class="fas fa-book-reader"></i> Harvard University</div>
+                            <p class="opp-desc">Take free online courses from Harvard, including the world-famous CS50 computer science series.</p>
+                            <a href="https://pll.harvard.edu/catalog/free" target="_blank" class="btn-action" style="background: #ef4444;"><i class="fas fa-award"></i> View Harvard Catalog</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Aggregator</span>
+                            <div class="opp-icon" style="color: #10b981;"><i class="fas fa-layer-group"></i></div>
+                            <h3 class="opp-title">ClassCentral</h3>
+                            <div class="opp-meta"><i class="fas fa-search"></i> Course Search Engine</div>
+                            <p class="opp-desc">A massive collection of free certificates and courses aggregated from multiple platforms.</p>
+                            <a href="https://www.classcentral.com/collection/free-certificates" target="_blank" class="btn-action" style="background: #10b981;"><i class="fas fa-external-link-alt"></i> Search ClassCentral</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">UK Based</span>
+                            <div class="opp-icon" style="color: #0f172a;"><i class="fas fa-user-graduate"></i></div>
+                            <h3 class="opp-title">Oxford Home Study</h3>
+                            <div class="opp-meta"><i class="fas fa-laptop"></i> Free Certificates</div>
+                            <p class="opp-desc">Short, free online courses providing foundational knowledge in business, management, and HR.</p>
+                            <a href="https://www.oxfordhomestudy.com/free-online-courses-with-certificates" target="_blank" class="btn-action" style="background: #0f172a;"><i class="fas fa-arrow-right"></i> Oxford Portal</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Business</span>
+                            <div class="opp-icon" style="color: #9333ea;"><i class="fas fa-chart-line"></i></div>
+                            <h3 class="opp-title">MSBM Free Courses</h3>
+                            <div class="opp-meta"><i class="fas fa-building"></i> Metrop. School of Biz</div>
+                            <p class="opp-desc">Free online business and management courses targeted at students in Ghana and Africa.</p>
+                            <a href="https://msbm.org.uk/ghana/category/free-courses" target="_blank" class="btn-action" style="background: #9333ea;"><i class="fas fa-external-link-alt"></i> View MSBM</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-intl">Short Courses</span>
+                            <div class="opp-icon" style="color: #3b82f6;"><i class="fas fa-stopwatch"></i></div>
+                            <h3 class="opp-title">UniAthena</h3>
+                            <div class="opp-meta"><i class="fas fa-clock"></i> Self-Paced</div>
+                            <p class="opp-desc">Quick, bite-sized free certificate courses covering leadership, supply chain, and data science.</p>
+                            <a href="https://uniathena.com/uni-short-courses/free-certificate" target="_blank" class="btn-action"><i class="fas fa-mouse-pointer"></i> Explore UniAthena</a>
+                        </div>
+                        <div class="opp-card">
+                            <span class="card-tag tag-local">Institutional</span>
+                            <div class="opp-icon" style="color: #f59e0b;"><i class="fas fa-laptop-code"></i></div>
+                            <h3 class="opp-title">UG Computer Science</h3>
+                            <div class="opp-meta"><i class="fas fa-map-marker-alt"></i> University of Ghana</div>
+                            <p class="opp-desc">Professional online IT certificate short courses hosted by the UG Department of Computer Science.</p>
+                            <a href="https://www.ug.edu.gh/announcement/online-it-professional-certificate-short-courses-department-computer-science" target="_blank" class="btn-action" style="background: #f59e0b; color: #0f172a;"><i class="fas fa-link"></i> UG IT Courses</a>
                         </div>
                     </div>
                 </div>
@@ -525,8 +719,9 @@
         setInterval(() => {
             const now = new Date();
             const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('scholarship-sync-time').innerText = "Last checked: " + timeStr;
-            document.getElementById('career-sync-time').innerText = "Last checked: " + timeStr;
+            if(document.getElementById('scholarship-sync-time')) document.getElementById('scholarship-sync-time').innerText = "Last checked: " + timeStr;
+            if(document.getElementById('career-sync-time')) document.getElementById('career-sync-time').innerText = "Last checked: " + timeStr;
+            if(document.getElementById('courses-sync-time')) document.getElementById('courses-sync-time').innerText = "Last checked: " + timeStr;
         }, 15000); 
 
         function filterCards(inputId, gridId) {

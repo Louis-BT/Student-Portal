@@ -137,11 +137,16 @@
         .emoji-item { font-size: 1.5rem; cursor: pointer; text-align: center; padding: 5px; border-radius: 8px; transition: 0.2s; }
         .emoji-item:hover { background: var(--input-bg); transform: scale(1.2); }
 
-        /* --- 6. CALL MODAL --- */
-        .call-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        /* --- 6. UNIVERSAL MODALS --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        
         .call-avatar { width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 4rem; background: var(--primary-color); color: white; position: relative; }
         .call-avatar::after { content:''; position: absolute; width:100%; height:100%; border-radius:50%; border:2px solid var(--primary-color); animation: ripple 2s infinite; }
         @keyframes ripple { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
+        .close-modal { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 2rem; cursor: pointer; transition: 0.2s; z-index: 10; }
+        .close-modal:hover { color: #ef4444; }
 
         @media (max-width: 850px) {
             .chat-layout { display: block; position: relative; }
@@ -154,7 +159,24 @@
 </head>
 <body>
 
-    <div id="callModal" class="call-modal">
+    <div id="createHubModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModals()">&times;</span>
+            <h2 style="margin: 0 0 10px; color: var(--text-color);"><i class="fas fa-satellite-dish" style="color: var(--primary-color);"></i> Create Public Hub</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Establish a new topic-based chat room. This hub will be visible to all verified students on the National Network.</p>
+            
+            <form onsubmit="event.preventDefault(); createHub();">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Hub Name</label>
+                <input type="text" id="newHubName" placeholder="e.g. Computer Science Class of '26" style="width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.95rem; box-sizing: border-box; margin-bottom: 25px;" required>
+                
+                <button type="submit" id="createHubBtn" style="width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem;">
+                    Launch Hub
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="callModal" class="modal">
         <div style="text-align: center; color: white;">
             <div class="call-avatar" id="callAvatarBg"><i class="fas fa-video"></i></div>
             <div style="font-size: 2rem; font-weight: 800; margin-bottom: 10px;" id="callName">...</div>
@@ -162,7 +184,7 @@
             
             <div style="display: flex; justify-content: center; gap: 30px;">
                 <button style="width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; color: white; background: rgba(255,255,255,0.2); backdrop-filter: blur(5px);"><i class="fas fa-microphone-slash"></i></button>
-                <button style="width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; color: white; background: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4);" onclick="document.getElementById('callModal').style.display='none'"><i class="fas fa-phone-slash"></i></button>
+                <button style="width: 65px; height: 65px; border-radius: 50%; border: none; font-size: 1.5rem; cursor: pointer; color: white; background: #ef4444; box-shadow: 0 0 20px rgba(239,68,68,0.4);" onclick="closeModals()"><i class="fas fa-phone-slash"></i></button>
             </div>
         </div>
     </div>
@@ -191,17 +213,19 @@
             <div class="user-list" id="userList">
                 <div class="chat-category">
                     <span>Public Hubs</span>
-                    <i class="fas fa-plus-circle add-btn" title="Create Hub"></i>
+                    <i class="fas fa-plus-circle add-btn" title="Create Hub" onclick="openCreateHubModal()"></i>
                 </div>
                 
-                <div class="user-item active" onclick="openChat('general', 'National General Room', 'fa-globe-africa', '#2563eb')" id="chat-general">
-                    <div class="avatar-wrapper">
-                        <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
-                        <div class="status-dot"></div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
+                <div id="dynamic-hubs">
+                    <div class="user-item active" onclick="openChat('general', 'National General Room', '<i class=\'fas fa-globe-africa\'></i>', '#2563eb')" id="chat-general">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
+                            <div class="status-dot"></div>
+                        </div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
+                        </div>
                     </div>
                 </div>
 
@@ -287,11 +311,12 @@
         
         // Editing State Tracking
         let isEditing = false;
-        let editMsgId = null; // Used for local storage finding
-        let editMsgElement = null; // The DOM element being edited
+        let editMsgId = null; 
+        let editMsgElement = null; 
 
         document.addEventListener('DOMContentLoaded', async () => {
             await fetchRealUsers();
+            loadCustomHubs(); // Load custom hubs created by users
             loadMessages('general');
             
             setInterval(() => {
@@ -335,7 +360,61 @@
             } catch (e) { console.warn("User list sync offline."); }
         }
 
-        // --- 3. UI TOGGLES ---
+        // --- 3. DYNAMIC HUB CREATION ---
+        function openCreateHubModal() { document.getElementById('createHubModal').style.display = 'flex'; }
+        function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+        function createHub() {
+            const name = document.getElementById('newHubName').value.trim();
+            if(!name) return;
+
+            const hubId = 'hub_' + Date.now();
+            const hubs = JSON.parse(localStorage.getItem('portal-custom-hubs')) || [];
+            hubs.push({ id: hubId, name: name });
+            localStorage.setItem('portal-custom-hubs', JSON.stringify(hubs));
+
+            closeModals();
+            document.getElementById('newHubName').value = '';
+            loadCustomHubs();
+            openChat(hubId, name, '<i class="fas fa-users"></i>', '#f59e0b');
+        }
+
+        function loadCustomHubs() {
+            const hubs = JSON.parse(localStorage.getItem('portal-custom-hubs')) || [];
+            const container = document.getElementById('dynamic-hubs');
+            
+            // Re-inject General to keep it at the top
+            container.innerHTML = `
+                <div class="user-item active" onclick="openChat('general', 'National General Room', '<i class=\\'fas fa-globe-africa\\'></i>', '#2563eb')" id="chat-general">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
+                        <div class="status-dot"></div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
+                    </div>
+                </div>
+            `;
+
+            hubs.forEach(h => {
+                container.innerHTML += `
+                    <div class="user-item" onclick="openChat('${h.id}', '${h.name.replace(/'/g, "\\'")}', '<i class=\\'fas fa-users\\'></i>', '#f59e0b')" id="chat-${h.id}">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-initials" style="background:#f59e0b"><i class="fas fa-users"></i></div>
+                            <div class="status-dot"></div>
+                        </div>
+                        <div style="flex: 1; overflow: hidden;">
+                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${h.name}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Public Hub</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+
+        // --- 4. UI TOGGLES ---
         function toggleMenu(menuId) {
             document.querySelectorAll('.popover-menu').forEach(m => {
                 if(m.id !== menuId) m.classList.remove('active');
@@ -355,12 +434,13 @@
             resetEditState(); // Cancel any active edits when switching chats
             
             document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`chat-${id}`).classList.add('active');
+            const targetEl = document.getElementById(`chat-${id}`);
+            if(targetEl) targetEl.classList.add('active');
 
             document.getElementById('chat-title').innerText = name;
             const avatarBox = document.getElementById('activeAvatar');
             avatarBox.style.background = color;
-            avatarBox.innerHTML = id === 'general' ? '<i class="fas fa-globe-africa"></i>' : avatarData;
+            avatarBox.innerHTML = avatarData;
 
             if (window.innerWidth <= 850) {
                 document.getElementById('mainLayout').classList.add('mobile-chat-active');
@@ -383,7 +463,7 @@
             modal.style.display = 'flex';
         }
 
-        // --- 4. MESSAGE ENGINE ---
+        // --- 5. MESSAGE ENGINE ---
         async function loadMessages(chatId, isSilentRefresh = false) {
             const container = document.getElementById('msg-container');
             
@@ -440,16 +520,13 @@
                 } catch (e) { alert("Server connection error."); }
             } else {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
-                // Push new message object. isRead is false initially.
                 history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });
                 localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
                 
-                // Append to UI immediately (will have single grey tick)
                 const newMsgEl = appendMessageUI(currentUser, text, 'out', time, false, tempId, false, false);
                 input.value = '';
                 scrollToBottom();
 
-                // Simulate "Read Receipt" turning blue after 2 seconds
                 setTimeout(() => {
                     const h = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
                     const msgToUpdate = h.find(m => m.id === tempId);
@@ -457,7 +534,6 @@
                         msgToUpdate.isRead = true;
                         localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(h));
                         
-                        // Update UI Tick to Blue
                         if(newMsgEl) {
                             const tick = newMsgEl.querySelector('.read-receipt');
                             if(tick) {
@@ -470,7 +546,7 @@
             }
         }
 
-        // --- 5. EDIT PROTOCOL ---
+        // --- 6. EDIT PROTOCOL ---
         function initiateEdit(id, text, element) {
             isEditing = true;
             editMsgId = id;
@@ -486,14 +562,14 @@
             
             btn.innerHTML = '<i class="fas fa-check"></i>';
             btn.classList.add('edit-mode');
-            micBtn.style.display = 'none'; // Hide mic during edit
+            micBtn.style.display = 'none'; 
         }
 
         function saveEditedMessage() {
             const input = document.getElementById('msg-input');
             const newText = input.value.trim();
             
-            if (!newText) { resetEditState(); return; } // If empty, cancel edit
+            if (!newText) { resetEditState(); return; } 
 
             if (activeChatId !== 'general') {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
@@ -504,9 +580,7 @@
                     history[msgIndex].isEdited = true;
                     localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
                     
-                    // Update UI Bubble directly without full reload
                     const bubble = editMsgElement.querySelector('.msg-bubble');
-                    // We clear it out and re-insert the text and the (edited) tag
                     bubble.innerHTML = newText + '<span class="edited-tag">(edited)</span>';
                 }
             } else {
@@ -534,14 +608,13 @@
         }
 
 
-        // --- 6. PREMIUM MESSAGE RENDERER ---
+        // --- 7. PREMIUM MESSAGE RENDERER ---
         function appendMessageUI(senderName, text, type, time, isAdmin = false, msgId = null, isRead = false, isEdited = false) {
             const container = document.getElementById('msg-container');
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg-wrapper ${type}`;
-            msgDiv.dataset.id = msgId; // Store ID for editing finding
+            msgDiv.dataset.id = msgId; 
             
-            // Handle Code Formatting
             let bubbleContent = text;
             if (text.startsWith('/code ')) {
                 const cleanCode = text.replace('/code ', '');
@@ -553,7 +626,6 @@
                 `;
             }
 
-            // Append Edited Tag if true
             if (isEdited) {
                 bubbleContent += '<span class="edited-tag">(edited)</span>';
             }
@@ -561,17 +633,15 @@
             const adminBadge = isAdmin ? 'admin-badge' : '';
             const senderLabel = type === 'in' ? `<div class="msg-sender ${adminBadge}">${senderName}</div>` : '';
             
-            // Setup Read Receipts (Double Ticks) for OUT messages
             let tickHTML = '';
             if (type === 'out') {
                 if (isRead) {
-                    tickHTML = '<span class="read-receipt read"><i class="fas fa-check-double"></i></span>'; // Blue
+                    tickHTML = '<span class="read-receipt read"><i class="fas fa-check-double"></i></span>'; 
                 } else {
-                    tickHTML = '<span class="read-receipt"><i class="fas fa-check"></i></span>'; // Grey Single Tick
+                    tickHTML = '<span class="read-receipt"><i class="fas fa-check"></i></span>'; 
                 }
             }
 
-            // Hover Tools (Includes new Edit button logic)
             const hoverTools = `
                 <div class="msg-hover-tools">
                     <div class="tool-btn" title="React"><i class="far fa-smile"></i></div>
@@ -600,13 +670,13 @@
                 ${hoverTools}
             `;
             container.appendChild(msgDiv);
-            return msgDiv; // Return element so we can update ticks later
+            return msgDiv; 
         }
 
-        // --- 7. PREMIUM VOICE NOTE SIMULATION ---
+        // --- 8. PREMIUM VOICE NOTE SIMULATION ---
         let isRecording = false;
         function toggleRecording() {
-            if (isEditing) return; // Disable audio recording while editing
+            if (isEditing) return; 
 
             const micBtn = document.getElementById('micBtn');
             const input = document.getElementById('msg-input');
@@ -645,7 +715,6 @@
                 container.appendChild(msgDiv);
                 scrollToBottom();
 
-                // Make the tick turn blue after 2 seconds
                 setTimeout(() => {
                     const tick = msgDiv.querySelector('.read-receipt');
                     if(tick) {
@@ -656,25 +725,21 @@
             }
         }
 
-        // Play audio logic with animations
         function playAudioNote(btn) {
             const icon = btn.querySelector('i');
             const waveBars = btn.nextElementSibling.querySelectorAll('.wave-bar');
             const timer = btn.nextElementSibling.nextElementSibling;
 
             if (icon.classList.contains('fa-play')) {
-                // Play State
                 icon.classList.remove('fa-play');
                 icon.classList.add('fa-pause');
                 icon.style.marginLeft = '0px';
                 
-                // Animate waves
                 waveBars.forEach((bar, i) => {
                     bar.classList.add('active');
                     bar.style.animationDelay = `${i * 0.1}s`;
                 });
 
-                // Simulate countdown
                 let timeLeft = 3;
                 btn.dataset.interval = setInterval(() => {
                     timeLeft--;
@@ -686,7 +751,6 @@
                 }, 1000);
 
             } else {
-                // Pause State
                 clearInterval(btn.dataset.interval);
                 resetAudioNote(btn, waveBars, timer);
             }

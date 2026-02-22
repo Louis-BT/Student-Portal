@@ -13,10 +13,10 @@
     <style>
         /* --- 1. CORE LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; }
+        .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
 
         /* --- 2. COMMAND CENTER SIDEBAR (Strict Dark Mode) --- */
-        .sidebar { width: 280px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; color: white; transition: 0.3s; z-index: 1000;}
+        .sidebar { width: 280px; background: #0f172a; border-right: 1px solid #1e293b; display: flex; flex-direction: column; flex-shrink: 0; color: white; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;}
         .sidebar-header { padding: 25px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 12px; font-size: 1.2rem; letter-spacing: -0.5px; }
         
         .nav-links { list-style: none; padding: 20px 0; margin: 0; flex: 1; overflow-y: auto; }
@@ -31,7 +31,7 @@
         .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
         .scroll-area { flex: 1; padding: 40px; overflow-y: auto; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 15px; }
         .header h1 { margin: 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px; color: var(--text-color); }
         
         .admin-badge { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; gap: 6px; }
@@ -58,7 +58,7 @@
         .section-title { font-size: 1.3rem; font-weight: 800; color: var(--text-color); display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
 
         .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .admin-table th { padding: 15px 20px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; border-bottom: 2px solid var(--border-color); background: var(--input-bg); }
+        .admin-table th { padding: 15px 20px; font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; border-bottom: 2px solid var(--border-color); background: var(--input-bg); white-space: nowrap; }
         .admin-table td { padding: 16px 20px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; color: var(--text-color); vertical-align: middle; }
         .admin-table tr:hover td { background: rgba(37, 99, 235, 0.02); }
 
@@ -67,13 +67,13 @@
         .btn-primary { background: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2); }
         .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); }
         
-        .action-btn { padding: 8px 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .action-btn { padding: 8px 12px; border-radius: 6px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
         .btn-approve { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
         .btn-approve:hover { background: #10b981; color: #fff; }
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
         .btn-reject:hover { background: #ef4444; color: #fff; }
 
-        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; }
+        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; white-space: nowrap; display: inline-block; }
         .status-pending { background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); }
         .status-approved { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.3); }
         
@@ -112,6 +112,8 @@
             .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
             .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .sidebar-overlay.mobile-open { display: block; }
+            .section-title { flex-direction: column; align-items: stretch; gap: 10px; }
+            .table-search { width: 100%; }
         }
     </style>
 </head>
@@ -249,9 +251,9 @@
 
                 <div id="panel-leadership" class="admin-section">
                     <div class="section-box">
-                        <div class="section-title">
-                            <span><i class="fas fa-crown" style="color: #8b5cf6;"></i> Vanguard Applications</span>
-                            <span class="status-pill status-pending" id="pending-count-badge" style="margin-left:auto;">0 Pending</span>
+                        <div class="section-title" style="flex-wrap: wrap;">
+                            <span style="flex: 1;"><i class="fas fa-crown" style="color: #8b5cf6;"></i> Vanguard Applications</span>
+                            <span class="status-pill status-pending" id="pending-count-badge">0 Pending</span>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="admin-table">
@@ -303,9 +305,9 @@
 
                 <div id="panel-library" class="admin-section">
                     <div class="section-box">
-                        <div class="section-title">
-                            <span><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting</span>
-                            <button class="btn btn-primary btn-sm" style="margin-left: auto; padding: 10px 15px;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
+                        <div class="section-title" style="flex-wrap: wrap;">
+                            <span style="flex: 1;"><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting</span>
+                            <button class="btn btn-primary btn-sm" style="padding: 10px 15px;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="admin-table">
@@ -680,6 +682,14 @@
                 
                 if(res.ok) {
                     this.innerHTML = '<i class="fas fa-check"></i> Success';
+                    
+                    // --- 🔥 FIX: Trigger WhatsApp Link Alert if Vanguard is Approved
+                    if (currentActionUrl === '/api/admin/leadership-review' && currentActionPayload.status === 'APPROVED') {
+                        setTimeout(() => {
+                            alert("Vanguard Student Approved!\n\nPlease send them this secure invite link to join the leadership hub:\n\nhttps://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K");
+                        }, 500);
+                    }
+
                     setTimeout(() => {
                         closeModal();
                         if(currentActionCallback) currentActionCallback();

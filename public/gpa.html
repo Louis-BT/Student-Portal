@@ -16,7 +16,7 @@
         .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
 
         /* SIDEBAR (Consistent) */
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: 0.3s; z-index: 1000; }
+        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem;}
         .nav-links { list-style: none; padding: 20px; margin: 0; }
         .nav-links li { margin-bottom: 8px; }
@@ -180,6 +180,7 @@
                 <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
                 <li><a href="gpa.html" class="active"><i class="fas fa-calculator"></i> GPA Calc</a></li>
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
+                <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
                 <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
@@ -355,7 +356,7 @@
             document.getElementById('totalCredits').innerText = totalCredits;
             document.getElementById('totalPoints').innerText = totalGradePoints.toFixed(1);
 
-            // Update Badge, Colors, and Remarks
+            // Update Badge, Colors, and Remarks instantly
             updateVisuals(parseFloat(gpa), scale);
         }
 
@@ -391,6 +392,7 @@
             let label = "Academic Probation";
             let remarkText = "";
 
+            // Dynamic logic pulled out of animation frame for instant firing
             if (scale === '5.0') {
                 if(gpa >= 4.5) { 
                     color = "#10b981"; label = "First Class Honours"; 
@@ -425,6 +427,7 @@
                 }
             }
 
+            // Apply Visual Updates
             circle.style.borderColor = color;
             circle.style.color = color;
             badge.style.background = color + "15"; 
