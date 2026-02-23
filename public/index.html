@@ -111,23 +111,24 @@
         }
         .logo i { font-size: 1.4rem; }
 
-        /* --- HERO SECTION (Upgraded with 10-Image Premium Slider) --- */
+        /* --- HERO SECTION (Upgraded & Fixed Visibility) --- */
         .hero {
             text-align: center;
-            padding: 9rem 1rem 8rem; /* Slightly adjusted padding for visual balance */
+            padding: 9rem 1rem 8rem;
             position: relative;
             overflow: hidden;
-            background: #111827; /* Replaced pure black (#000) with a softer, premium deep slate */
+            /* FIX: Set a fallback background, but don't let it overlap the images */
+            background-color: #0f172a; 
         }
 
-        /* Dynamic Background Images (Blur removed, slight brightness reduction for contrast) */
+        /* Dynamic Background Images (Brightness increased, blur removed) */
         .hero-slider-bg {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
-            filter: brightness(0.65); /* Increased brightness slightly from 0.45 to let images pop more, as requested */
-            z-index: -1;
+            filter: brightness(0.80); /* Brightened significantly for clear display */
+            z-index: 0; /* FIX: Changed from -1 to 0 so it doesn't hide behind the section background */
             opacity: 0;
             transform: scale(1);
             transition: opacity 1.5s ease-in-out, transform 8s linear;
@@ -138,50 +139,51 @@
             transform: scale(1.1); /* Smooth elegant zoom */
         }
 
-        .hero-content { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; }
+        /* FIX: Elevated content above the images */
+        .hero-content { position: relative; z-index: 10; max-width: 1000px; margin: 0 auto; }
 
         /* Beautified Premium Tagline Styling */
         .hero h1 {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(3.5rem, 7vw, 6.5rem); /* Scaled up slightly for impact */
+            font-size: clamp(3.8rem, 8vw, 7rem); /* Slightly larger for emphasis */
             font-weight: 900;
-            line-height: 1.05;
+            line-height: 1.1;
             margin-bottom: 1.5rem;
             letter-spacing: -1.5px;
             color: #ffffff; 
-            text-shadow: 0px 10px 40px rgba(0,0,0,0.9); /* Deepened shadow for contrast against brighter images */
+            text-shadow: 0px 15px 40px rgba(0,0,0,0.9), 0px 4px 10px rgba(0,0,0,0.8); /* Deep contrast shadow */
         }
         
         .hero h1 span {
             font-family: 'Inter', sans-serif;
             font-weight: 800;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); /* Richer gold gradient */
+            background: linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #d97706 100%); /* Premium Gold */
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+            font-size: clamp(2.5rem, 5vw, 4.2rem);
             display: block;
             margin-top: 15px;
             text-transform: uppercase;
-            letter-spacing: 5px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); /* Makes the gold text pop off the screen */
+            letter-spacing: 6px;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8)); /* Makes gold pop dramatically */
         }
 
         .hero p {
-            font-size: 1.25rem;
-            color: #f8fafc; /* Made sub-text slightly whiter */
+            font-size: 1.3rem;
+            color: #f8fafc; 
             margin-bottom: 3rem;
             line-height: 1.7;
-            font-weight: 400;
+            font-weight: 500;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            text-shadow: 0 4px 15px rgba(0,0,0,0.9);
+            text-shadow: 0 4px 20px rgba(0,0,0,1); /* Heavy shadow to remain readable over bright images */
         }
 
         .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
 
         .btn-hero {
-            padding: 16px 45px; /* Slightly wider buttons */
+            padding: 16px 45px;
             border-radius: 50px;
             font-weight: 700;
             text-decoration: none;
@@ -200,12 +202,12 @@
         .btn-primary-hero:hover { transform: translateY(-3px); background: #1d4ed8; box-shadow: 0 15px 35px -5px rgba(37, 99, 235, 0.6); }
         
         .btn-outline-hero {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             color: white;
-            border: 2px solid rgba(255,255,255,0.5);
+            border: 2px solid rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
         }
-        .btn-outline-hero:hover { border-color: white; background: rgba(255,255,255,0.25); transform: translateY(-3px); }
+        .btn-outline-hero:hover { border-color: white; background: rgba(255,255,255,0.3); transform: translateY(-3px); }
 
         /* Progress Lines */
         .slider-progress {
@@ -223,7 +225,7 @@
             background: rgba(255,255,255,0.3);
             border-radius: 2px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Added shadow to progress bars so they don't get lost in bright images */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5); 
         }
         .progress-fill {
             height: 100%;
@@ -380,10 +382,6 @@
         <div class="hero-slider-bg" id="slide-3" style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2000&auto=format&fit=crop');"></div>
         <div class="hero-slider-bg" id="slide-4" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=2000&auto=format&fit=crop');"></div>
         <div class="hero-slider-bg" id="slide-5" style="background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2000&auto=format&fit=crop');"></div>
-        <div class="hero-slider-bg" id="slide-6" style="background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2000&auto=format&fit=crop');"></div>
-        <div class="hero-slider-bg" id="slide-7" style="background-image: url('https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2000&auto=format&fit=crop');"></div>
-        <div class="hero-slider-bg" id="slide-8" style="background-image: url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2000&auto=format&fit=crop');"></div>
-        <div class="hero-slider-bg" id="slide-9" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2000&auto=format&fit=crop');"></div>
 
         <div class="hero-content">
             <h1 class="animate-enter delay-1">Your Academic Life.<span>Unified & Simplified.</span></h1>
@@ -510,14 +508,14 @@
                     console.log("Using default ticker (Server unreachable)");
                 });
 
-            // 2. Setup Hero Slider Progress Bars (For 10 images)
-            const totalSlides = 10;
+            // 2. Setup Hero Slider Progress Bars (For 6 images)
+            const totalSlides = 6;
             const progressContainer = document.getElementById('progress-container');
             for(let i=0; i<totalSlides; i++) {
                 progressContainer.innerHTML += `<div class="progress-line"><div class="progress-fill" id="fill-${i}"></div></div>`;
             }
 
-            // 3. Hero Slider Logic (6 seconds zoom and fade to accommodate 10 images smoothly)
+            // 3. Hero Slider Logic 
             let currentSlide = 0;
             function changeSlide() {
                 // Reset all progress bars instantly
@@ -535,7 +533,7 @@
                 // Activate current background (triggers CSS zoom & fade)
                 document.getElementById(`slide-${currentSlide}`).classList.add('active');
 
-                // Animate the current progress bar over exactly 6 seconds
+                // Animate the current progress bar
                 setTimeout(() => {
                     const activeFill = document.getElementById(`fill-${currentSlide}`);
                     activeFill.style.transition = 'width 6s linear';
