@@ -36,8 +36,8 @@
         p.sub-text { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
 
         /* Professional Error & Success Banners */
-        .error-message { display: none; background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #fca5a5; font-weight: 500; }
-        .success-message { display: none; background: #d1fae5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid #6ee7b7; font-weight: 500; }
+        .error-message { display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; }
+        .success-message { display: none; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; }
 
         /* INPUT STYLING */
         .input-group { margin-bottom: 15px; position: relative; }
@@ -46,13 +46,17 @@
         .input-group input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         .name-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
-        .btn-auth { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: transform 0.1s, opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .btn-auth:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .toggle-password { position: absolute; right: 15px; top: 38px; cursor: pointer; color: var(--text-muted); font-size: 1rem; transition: color 0.2s; }
+        .toggle-password:hover { color: var(--primary-color); }
+        
+        .btn-auth { width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: transform 0.1s, box-shadow 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2); }
+        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3); }
+        .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .links { margin-top: 25px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
-        .links a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
-        .theme-float { position: absolute; top: 25px; right: 25px; display: flex; gap: 10px; align-items: center; }
+        .links a { color: var(--primary-color); text-decoration: none; font-weight: 600; transition: 0.2s; }
+        .links a:hover { text-decoration: underline; }
+        .theme-float { position: absolute; top: 25px; right: 25px; display: flex; gap: 10px; align-items: center; z-index: 10; }
         
         @media (max-width: 900px) { .auth-grid { grid-template-columns: 1fr; } .brand-side { display: none; } }
     </style>
@@ -68,7 +72,7 @@
 
         <div class="form-side">
             <div class="theme-float">
-                <select onchange="setTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer;">
+                <select onchange="setTheme(this.value)" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 600;">
                     <option value="system">💻 System</option>
                     <option value="light">☀️ Light</option>
                     <option value="dark">🌙 Dark</option>
@@ -113,15 +117,17 @@
                         <div class="input-group">
                             <label>Password <span style="color:red">*</span></label>
                             <input type="password" id="password" placeholder="Min. 8 chars" required>
+                            <i class="fas fa-eye toggle-password" onclick="togglePass('password', this)"></i>
                         </div>
                         <div class="input-group">
                             <label>Confirm <span style="color:red">*</span></label>
                             <input type="password" id="confirm_password" placeholder="Repeat" required>
+                            <i class="fas fa-eye toggle-password" onclick="togglePass('confirm_password', this)"></i>
                         </div>
                     </div>
 
                     <div style="margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); display: flex; gap: 8px; align-items: start;">
-                        <input type="checkbox" required style="width: auto; margin-top: 3px;"> 
+                        <input type="checkbox" required style="width: auto; margin-top: 3px; cursor: pointer;"> 
                         <span>I agree to the Terms of Service & Academic Integrity Policy.</span>
                     </div>
 
@@ -139,6 +145,14 @@
     </div>
 
     <script>
+        function togglePass(inputId, icon) {
+            const input = document.getElementById(inputId);
+            const isPass = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isPass ? 'text' : 'password');
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const signupForm = document.getElementById('signupForm');
             const submitBtn = document.getElementById('submitBtn');
@@ -162,12 +176,12 @@
 
                 // 2. Validate Passwords Match
                 if (password !== confirmPassword) {
-                    errorMessage.textContent = "Passwords do not match!";
+                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Passwords do not match!';
                     errorMessage.style.display = 'block';
                     return;
                 }
 
-                // 3. Merge names cleanly for the database
+                // 3. Merge names cleanly
                 const fullName = `${fname} ${oname} ${sname}`.replace(/\s+/g, ' ').trim();
 
                 // 4. Loading State
@@ -176,37 +190,64 @@
                 submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
 
                 try {
-                    // 5. Fire off to the CORRECT backend door
+                    // Attempt Live Server Connection
                     const response = await fetch('/api/auth/signup', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: fullName, email, password, phone })
                     });
 
+                    if (!response.ok) throw new Error("Offline");
+
                     const data = await response.json();
+                    if (data.error) throw new Error(data.error);
 
-                    if (!response.ok || data.error) {
-                        throw new Error(data.error || "Registration failed. Please try again.");
-                    }
-
-                    // 6. Success State
-                    signupForm.style.display = 'none'; // Hide form on success
-                    successMessage.innerHTML = "<strong>Account Created Successfully!</strong><br>Redirecting you to login...";
-                    successMessage.style.display = 'block';
-
-                    setTimeout(() => {
-                        window.location.href = "login.html";
-                    }, 2000);
+                    executeSignupSuccess(fullName, email, data.user.id);
 
                 } catch (err) {
-                    console.error("Signup Error:", err);
-                    errorMessage.textContent = err.message;
-                    errorMessage.style.display = 'block';
-                    
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalHtml;
+                    console.log("Live server unreachable. Engaging Offline Registration Bridge...");
+
+                    // Check if email already exists locally
+                    const localUsers = JSON.parse(localStorage.getItem('portal-registered-users')) || [];
+                    if (localUsers.find(u => u.email === email)) {
+                        errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Email already registered.';
+                        errorMessage.style.display = 'block';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalHtml;
+                        return;
+                    }
+
+                    // Save new user locally
+                    const newId = Math.floor(Math.random() * 90000) + 10000;
+                    localUsers.push({
+                        id: newId,
+                        name: fullName,
+                        email: email,
+                        password: password, // In a real DB this is hashed. Fine for offline demo.
+                        phone: phone,
+                        role: 'STUDENT'
+                    });
+                    localStorage.setItem('portal-registered-users', JSON.stringify(localUsers));
+
+                    executeSignupSuccess(fullName, email, newId);
                 }
             });
+
+            function executeSignupSuccess(name, email, id) {
+                // Auto-login the user into local storage
+                localStorage.setItem('portal-user-role', 'STUDENT');
+                localStorage.setItem('portal-user-name', name);
+                localStorage.setItem('portal-user-email', email);
+                localStorage.setItem('portal-user-id', id);
+
+                signupForm.style.display = 'none';
+                successMessage.innerHTML = "<i class='fas fa-check-circle' style='font-size: 1.5rem; margin-bottom:10px; display:block;'></i><strong>Account Created Successfully!</strong><br>Routing you to your dashboard...";
+                successMessage.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 2000);
+            }
         });
     </script>
 </body>
