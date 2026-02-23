@@ -209,7 +209,7 @@
                         <h2>Course Grades</h2>
                         <select id="scaleSelect" class="scale-selector" onchange="updateScaleReference()">
                             <option value="4.0">Standard 4.0 Scale</option>
-                            <option value="5.0">Weighted 5.0 Scale</option>
+                            <option value="5.0" selected>Weighted 5.0 Scale</option>
                         </select>
                     </div>
 
@@ -257,7 +257,7 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button type="button" class="btn-save" onclick="saveToProfile()">
+                        <button type="button" class="btn-save" id="syncBtn" onclick="saveToProfile()">
                             <i class="fas fa-cloud-upload-alt"></i> Sync to National DB
                         </button>
                         
@@ -290,27 +290,30 @@
 
         // --- 2. INITIALIZATION & DATA LOADING ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Load courses from Local Storage first
             const savedCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
             const container = document.getElementById('course-rows');
             container.innerHTML = ''; 
 
             if (savedCourses.length > 0) {
-                savedCourses.forEach(c => addRow(c.name, c.credits));
+                savedCourses.forEach(c => addRow(c.name, c.credits, c.score));
+                // Automatically run calculation if data exists
+                setTimeout(calculate, 100);
             } else {
-                for(let i=0; i<5; i++) addRow();
+                for(let i=0; i<3; i++) addRow();
             }
             updateScaleReference();
         });
 
         // --- 3. ROW MANAGEMENT ---
-        function addRow(name = '', credits = '') {
+        function addRow(name = '', credits = '', score = '') {
             const container = document.getElementById('course-rows');
             const row = document.createElement('div');
             row.className = 'course-row';
             row.innerHTML = `
                 <input type="text" placeholder="Course Name (e.g. CS 101)" value="${name}" class="c-name">
                 <input type="number" placeholder="Credits" value="${credits}" min="1" max="6" class="c-credit">
-                <input type="number" placeholder="Score (0-100)" min="0" max="100" class="c-score">
+                <input type="number" placeholder="Score (0-100)" value="${score}" min="0" max="100" class="c-score">
                 <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -340,8 +343,7 @@
             });
 
             if (!hasData) {
-                alert("Please enter credits and scores for at least one course to execute the algorithm.");
-                return;
+                return; // Suppressed alert on auto-load
             }
 
             const gpa = (totalGradePoints / totalCredits).toFixed(2);
@@ -392,7 +394,6 @@
             let label = "Academic Probation";
             let remarkText = "";
 
-            // Dynamic logic pulled out of animation frame for instant firing
             if (scale === '5.0') {
                 if(gpa >= 4.5) { 
                     color = "#10b981"; label = "First Class Honours"; 
@@ -491,7 +492,7 @@
         // --- 8. DATABASE SYNC (Dashboard Integration) ---
         async function saveToProfile() {
             const gpaValue = document.getElementById('gpaValue').innerText;
-            const btn = document.querySelector('.btn-save');
+            const btn = document.getElementById('syncBtn');
             
             if (gpaValue === "0.00") {
                 alert("Please calculate your GPA before syncing to the database.");
@@ -510,6 +511,10 @@
                 }
             });
 
+            // INSTANT LOCAL SAVE: Ensures data is never lost even if DB fails
+            localStorage.setItem('portal-gpa', gpaValue);
+            localStorage.setItem('portal-courses', JSON.stringify(courseData));
+
             // UI Feedback
             const originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Syncing to National DB...`;
@@ -527,10 +532,6 @@
                 });
 
                 if (res.ok) {
-                    // Update Local Storage as a backup and for instant load
-                    localStorage.setItem('portal-gpa', gpaValue);
-                    localStorage.setItem('portal-courses', JSON.stringify(courseData));
-                    
                     btn.innerHTML = `<i class="fas fa-check-circle"></i> Successfully Synced!`;
                     btn.style.background = "#10b981";
                     btn.style.color = "white";
@@ -541,15 +542,21 @@
                         btn.style.color = "var(--bg-color)";
                         btn.disabled = false;
                     }, 2500);
-                } else { throw new Error(); }
+                } else { 
+                    throw new Error("Server rejected request"); 
+                }
             } catch (err) {
-                alert("Database Connection Failed. Your data has been cached locally and will sync when online.");
-                // Still save locally if offline
-                localStorage.setItem('portal-gpa', gpaValue);
-                localStorage.setItem('portal-courses', JSON.stringify(courseData));
+                // Failsafe execution: The data is already in localStorage. We just update the UI.
+                btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally (Offline Mode)`;
+                btn.style.background = "#f59e0b"; // Warning Orange
+                btn.style.color = "white";
                 
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = "var(--text-color)";
+                    btn.style.color = "var(--bg-color)";
+                    btn.disabled = false;
+                }, 3500);
             }
         }
     </script>
