@@ -21,6 +21,14 @@
 
         /* --- 2. SIDEBAR (CHATS & HUBS) --- */
         .chat-sidebar { border-right: 1px solid var(--border-color); background: var(--card-bg); display: flex; flex-direction: column; overflow: hidden; z-index: 10; }
+        
+        /* 🔥 Injecting Dashboard Consistency: User Profile Widget */
+        .user-profile-widget { padding: 20px; text-align: center; border-bottom: 1px solid var(--border-color); background: var(--card-bg); display: flex; align-items: center; gap: 15px; }
+        .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary-color); object-fit: cover; background: #1e293b; flex-shrink: 0; }
+        .user-info { text-align: left; overflow: hidden; }
+        .user-name { font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
         .chat-search { padding: 20px; border-bottom: 1px solid var(--border-color); }
         .chat-search input { width: 100%; padding: 12px 18px; border-radius: 25px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); outline: none; font-size: 0.9rem; transition: 0.2s; }
         .chat-search input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
@@ -206,6 +214,14 @@
     <div class="chat-layout" id="mainLayout">
         
         <aside class="chat-sidebar">
+            <div class="user-profile-widget">
+                <img id="sidebar-pic" src="https://via.placeholder.com/45" class="user-avatar" alt="Profile">
+                <div class="user-info">
+                    <div id="sidebar-name" class="user-name">User</div>
+                    <div id="sidebar-role" class="user-role">Verified Student</div>
+                </div>
+            </div>
+
             <div class="chat-search">
                 <input type="text" id="searchInput" placeholder="Search hubs or students...">
             </div>
@@ -315,6 +331,13 @@
         let editMsgElement = null; 
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // 🔥 Sync Identity Profile
+            const name = localStorage.getItem('portal-user-name') || 'Student User';
+            const pic = localStorage.getItem('portal-avatar');
+            const elName = document.getElementById('sidebar-name');
+            if(elName) elName.innerText = name;
+            if(pic && document.getElementById('sidebar-pic')) document.getElementById('sidebar-pic').src = pic;
+
             await fetchRealUsers();
             loadCustomHubs(); // Load custom hubs created by users
             loadMessages('general');
@@ -357,7 +380,9 @@
                         `;
                     }
                 });
-            } catch (e) { console.warn("User list sync offline."); }
+            } catch (e) { 
+                console.warn("User list sync offline. Only hubs available."); 
+            }
         }
 
         // --- 3. DYNAMIC HUB CREATION ---
@@ -470,6 +495,7 @@
             if (chatId === 'general') {
                 try {
                     const res = await fetch('/api/chat');
+                    if(!res.ok) throw new Error("Offline");
                     const messages = await res.json();
                     
                     if(isSilentRefresh && container.childElementCount - 1 >= messages.length) return;
@@ -485,7 +511,13 @@
                     if(!isSilentRefresh) scrollToBottom();
 
                 } catch (e) { 
-                    if(!isSilentRefresh) container.innerHTML = '<p style="text-align:center; color:red;">Database offline.</p>'; 
+                    // Fallback local chat for General if server offline
+                    const history = JSON.parse(localStorage.getItem(`chat_history_general`)) || [];
+                    if(!isSilentRefresh) {
+                        container.innerHTML = '<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">OFFLINE LOCAL MODE</span></div>';
+                        history.forEach(msg => appendMessageUI(msg.sender, msg.text, msg.type, msg.time, false, msg.id, msg.isRead, msg.isEdited));
+                        scrollToBottom();
+                    }
                 }
             } else {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
@@ -517,7 +549,14 @@
                     });
                     input.value = '';
                     loadMessages('general');
-                } catch (e) { alert("Server connection error."); }
+                } catch (e) { 
+                    // Offline fallback save
+                    const history = JSON.parse(localStorage.getItem(`chat_history_general`)) || [];
+                    history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });
+                    localStorage.setItem(`chat_history_general`, JSON.stringify(history));
+                    input.value = '';
+                    loadMessages('general');
+                }
             } else {
                 const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
                 history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });

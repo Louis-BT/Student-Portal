@@ -13,7 +13,7 @@
     <style>
         /* --- WEB LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
+        .wrapper { display: flex; width: 100%; height: 100%; }
 
         /* --- SIDEBAR NAVIGATION (Premium Hovers Included) --- */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;}
@@ -39,7 +39,6 @@
             display: flex; flex-direction: column;
         }
 
-        /* 🔥 FIX: Added relative positioning to anchor the dropdown perfectly */
         .input-group { position: relative; width: 100%; }
 
         input[type="text"], input[type="number"] {
@@ -50,7 +49,6 @@
         input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .manual-entry-grid { display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 10px; margin-bottom: 10px; }
 
-        /* 🔥 FIX: Dropdown locked directly under the search bar */
         .suggestions-list {
             position: absolute; top: calc(100% + 5px); left: 0; right: 0;
             background: var(--card-bg); border: 1px solid var(--border-color);
@@ -79,11 +77,14 @@
         .btn-delete { background: #fee2e2; color: #ef4444; padding: 8px 12px; border-radius: 6px; }
         .btn-delete:hover { background: #fecaca; transform: scale(1.05); }
         .btn-print { background: #1e293b; color: white; }
-        .btn-print:hover { background: #0f172a; }
+        .btn-print:hover { background: #0f172a; transform: translateY(-2px); }
+        
+        /* New Button Style for Sync */
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; transform: translateY(-2px); }
 
         .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
         
-        /* Layout for the Timetable controls */
         .timetable-controls { display: flex; gap: 15px; align-items: center; }
         .view-toggle { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
         
@@ -141,6 +142,7 @@
             .sidebar-overlay.mobile-open { display: block; }
             .timetable-controls { flex-direction: column; align-items: stretch;}
             .timetable { display: block; overflow-x: auto; white-space: nowrap; }
+            .action-buttons-grid { flex-direction: column; }
         }
     </style>
 </head>
@@ -227,8 +229,17 @@
                         <h2 style="margin:0;"><i class="fas fa-list-ul"></i> Registered List</h2>
                         <span id="total-credits" style="font-size: 0.85rem; background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #bae6fd;">0 Credits</span>
                     </div>
+                    
                     <div class="course-list-container" id="registered-list"></div>
-                    <button class="btn btn-print" style="margin-top:15px;" onclick="printDocument('registration')"><i class="fas fa-print"></i> Print Registration Slip</button>
+                    
+                    <div class="action-buttons-grid" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-success" id="syncBtn" style="flex: 1;" onclick="syncWithServerUI()">
+                            <i class="fas fa-cloud-upload-alt"></i> Save to National DB
+                        </button>
+                        <button class="btn btn-print" style="flex: 1;" onclick="printDocument('registration')">
+                            <i class="fas fa-print"></i> Print Slip
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -275,7 +286,8 @@
             { name: "Discrete Math", code: "MATH 123", credits: 3 }
         ];
 
-        let myCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
+        // 🔥 STATE DECOUPLING FIX: We use a different local storage key from GPA
+        let myCourses = JSON.parse(localStorage.getItem('portal-registered-courses')) || [];
 
         document.addEventListener('DOMContentLoaded', () => {
             renderList();
@@ -301,26 +313,56 @@
             }
         }
 
-        // 🔥 CRITICAL FIX: Bulletproof Server Sync
-        async function syncWithServer() {
+        // 🔥 NEW UI SYNC BUTTON PROTOCOL
+        async function syncWithServerUI() {
+            const btn = document.getElementById('syncBtn');
+            const originalText = btn.innerHTML;
+
+            if (myCourses.length === 0) {
+                alert("Please add courses to your list before saving to the database.");
+                return;
+            }
+
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+            btn.disabled = true;
+
             // 1. INSTANT LOCAL SAVE (Guarantees data is never lost)
-            localStorage.setItem('portal-courses', JSON.stringify(myCourses));
-            renderList();
-            generateTimetable();
+            localStorage.setItem('portal-registered-courses', JSON.stringify(myCourses));
+            
+            // Note: If you want these courses to ALSO show up in the GPA calculator automatically, 
+            // you can optionally inject them into the GPA key as well here, but without scores.
+            // For true isolation, we leave them separate as requested.
 
             // 2. ATTEMPT BACKGROUND API SYNC
             try {
-                const currentGPA = localStorage.getItem('portal-gpa') || "0.00";
+                // Here we might just update the profile courses array 
+                // We'll reuse the save-gpa endpoint, but only send the courses array
                 const res = await fetch('/api/user/save-gpa', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ gpa: currentGPA, courses: myCourses })
+                    body: JSON.stringify({ gpa: localStorage.getItem('portal-gpa') || "0.00", courses: myCourses })
                 });
                 
                 if (!res.ok) throw new Error("Server rejected request");
+
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Saved!`;
+                btn.style.background = "#059669";
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = "#10b981";
+                    btn.disabled = false;
+                }, 2000);
+
             } catch (e) { 
-                // Quietly fail the API sync because we already saved it locally.
-                console.warn("API Offline: Courses saved securely to local browser cache."); 
+                btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
+                btn.style.background = "#f59e0b"; // Warning Orange
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = "#10b981";
+                    btn.disabled = false;
+                }, 3000);
             }
         }
 
@@ -361,10 +403,12 @@
         function addCourse(name, code, credits) {
             if(myCourses.find(c => c.code === code)) return alert("Course already registered!");
             
-            // Note: We don't have a 'score' yet when initially registering, 
-            // so we set it to empty string so the GPA calculator can handle it later.
-            myCourses.push({ name: name, code: code, credits: parseInt(credits), score: "" });
-            syncWithServer();
+            myCourses.push({ name: name, code: code, credits: parseInt(credits) });
+            
+            // Auto-save locally so UI updates instantly
+            localStorage.setItem('portal-registered-courses', JSON.stringify(myCourses));
+            renderList();
+            generateTimetable();
         }
 
         function addManualCourse() {
@@ -382,7 +426,9 @@
 
         function removeCourse(index) {
             myCourses.splice(index, 1);
-            syncWithServer();
+            localStorage.setItem('portal-registered-courses', JSON.stringify(myCourses));
+            renderList();
+            generateTimetable();
         }
 
         function renderList() {

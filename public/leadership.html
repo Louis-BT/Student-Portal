@@ -379,7 +379,7 @@
             }
         }
 
-        // --- 5. SUBMIT LOGIC ---
+        // --- 5. THE ADMIN BRIDGE (SUBMIT LOGIC) ---
         async function submitApp() {
             const btn = document.getElementById('submit-btn');
             const pos = document.getElementById('target-pos').value;
@@ -390,10 +390,29 @@
             btn.style.opacity = '0.8';
             btn.disabled = true;
 
-            const payload = { position: pos, experience: exp, vision: vis };
+            const payload = { 
+                id: Date.now(), // Generate a unique ID for the admin table
+                name: localStorage.getItem('portal-user-name') || 'Student',
+                institution: localStorage.getItem('portal-institution') || 'National DB',
+                position: pos, 
+                experience: exp, 
+                vision: vis,
+                status: 'PENDING',
+                date: new Date().toISOString()
+            };
+
+            // 🔥 ALWAYS CACHE TO THE GLOBAL ADMIN ARRAY FIRST
+            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
+            globalApps.push(payload);
+            localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
+
+            // Cache for the local student UI state
+            localStorage.setItem('portal-leadership-status', 'PENDING');
+            localStorage.setItem('portal-leadership-pos', pos);
+            localStorage.setItem('portal-leadership-date', payload.date);
 
             try {
-                // Send to DB
+                // Attempt to send to DB
                 const res = await fetch('/api/leadership/apply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -407,26 +426,34 @@
             } catch(e) {
                 // Local Fallback if server disconnected
                 setTimeout(() => {
-                    localStorage.setItem('portal-leadership-status', 'PENDING');
-                    localStorage.setItem('portal-leadership-pos', pos);
-                    localStorage.setItem('portal-leadership-date', new Date().toISOString());
                     fetchApplicationStatus(); 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }, 1500);
             }
         }
 
-        // --- 6. WITHDRAW LOGIC ---
+        // --- 6. THE ADMIN BRIDGE (WITHDRAW LOGIC) ---
         async function withdrawApp() {
             if(!confirm("⚠️ Are you sure you want to retract your manifesto? This action will permanently remove your dossier from the Admin Vetting Queue.")) return;
             
+            // 🔥 ALWAYS REMOVE FROM THE GLOBAL ADMIN ARRAY FIRST
+            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
+            const userName = localStorage.getItem('portal-user-name') || 'Student';
+            
+            // Filter out the application belonging to this user
+            globalApps = globalApps.filter(app => app.name !== userName);
+            localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
+
+            // Clear local student UI state
+            localStorage.removeItem('portal-leadership-status');
+            localStorage.removeItem('portal-leadership-pos');
+            localStorage.removeItem('portal-leadership-date');
+
             try {
                 // Tell DB to delete
                 await fetch('/api/leadership/withdraw', { method: 'DELETE' });
-                localStorage.removeItem('portal-leadership-status');
                 fetchApplicationStatus(); 
             } catch(e) {
-                localStorage.removeItem('portal-leadership-status');
                 fetchApplicationStatus();
             }
         }

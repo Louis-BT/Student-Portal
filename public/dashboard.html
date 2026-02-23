@@ -319,12 +319,12 @@
                 <div class="dashboard-grid">
                     <div class="card admin-stat" style="border-left-color: #3b82f6;">
                         <h3>Total Students</h3>
-                        <p class="card-stat" style="margin: 10px 0;">1359</p>
+                        <p class="card-stat" style="margin: 10px 0;">1,359</p>
                         <span style="color: #3b82f6;">▲ Active Accounts</span>
                     </div>
                     <div class="card admin-stat" style="border-left-color: #f59e0b;">
                         <h3>Pending Leaders</h3>
-                        <p class="card-stat" style="margin: 10px 0;">5</p>
+                        <p class="card-stat" id="admin-pending-leaders" style="margin: 10px 0;">0</p>
                         <span style="color: #f59e0b;">Review Needed</span>
                     </div>
                     <div class="card admin-stat" style="border-left-color: #10b981;">
@@ -393,7 +393,6 @@
         }
     }
 
-
     document.addEventListener("DOMContentLoaded", () => {
         const role = localStorage.getItem('portal-user-role') || 'STUDENT';
         
@@ -405,12 +404,18 @@
     });
 
     function setupAdminView() {
-        document.getElementById('welcome-message').innerText = "Admin Console";
+        // 🔥 Dynamic Greeting Engine
+        const hour = new Date().getHours();
+        let greeting = "Good Evening";
+        if (hour < 12) greeting = "Good Morning";
+        else if (hour < 18) greeting = "Good Afternoon";
+
+        document.getElementById('welcome-message').innerText = `${greeting}, Admin!`;
         document.getElementById('welcome-sub').innerText = "System Controls & Overview";
         document.getElementById('admin-view').style.display = 'block';
         document.getElementById('portal-title').innerText = "Admin Panel";
         document.getElementById('sidebar-role').innerText = "System Administrator";
-        document.getElementById('sidebar-name').innerText = "Admin";
+        document.getElementById('sidebar-name').innerText = "Directorate";
         document.querySelector('.sidebar').style.background = "#0f172a"; 
 
         document.getElementById('menu-list').innerHTML = `
@@ -419,6 +424,11 @@
             <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
             <li><a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         `;
+
+        // 🔥 Dynamic Admin Data Fetch (Syncs with Phase 3 Leadership Bridge)
+        const pendingApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps') || '[]');
+        const pendingCount = pendingApps.filter(app => app.status === 'PENDING').length;
+        document.getElementById('admin-pending-leaders').innerText = pendingCount;
     }
 
     async function setupStudentView() {
@@ -444,11 +454,18 @@
     async function loadStudentData() {
         const cachedName = localStorage.getItem('portal-user-name') || 'User';
         const cachedPic = localStorage.getItem('portal-avatar');
+        
+        // 🔥 Dynamic Greeting Engine
+        const hour = new Date().getHours();
+        let greeting = "Good Evening";
+        if (hour < 12) greeting = "Good Morning";
+        else if (hour < 18) greeting = "Good Afternoon";
+
         document.getElementById('sidebar-name').innerText = cachedName;
-        document.getElementById('welcome-message').innerText = `Welcome, ${cachedName.split(' ')[0]}!`;
+        document.getElementById('welcome-message').innerText = `${greeting}, ${cachedName.split(' ')[0]}!`;
         if(cachedPic) document.getElementById('sidebar-pic').src = cachedPic;
 
-        let gpaValue = localStorage.getItem('portal-gpa') || 0.00;
+        let gpaValue = localStorage.getItem('portal-gpa') || "0.00";
 
         try {
             const res = await fetch('/api/user/profile');
@@ -459,7 +476,8 @@
                 document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
                 document.getElementById('stu-program').innerText = data.program || 'General';
                 
-                document.getElementById('stu-career').innerText = data.career || 'Not Set';
+                // 🔥 Phase 2 Bridge: Accurately fetches the persisted career identity
+                document.getElementById('stu-career').innerText = data.career || localStorage.getItem('portal-career') || 'Not Set';
                 
                 gpaValue = data.gpa || gpaValue;
                 document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
@@ -485,30 +503,30 @@
                 try {
                     courseArray = typeof data.courses === 'string' ? JSON.parse(data.courses) : (data.courses || []);
                 } catch(e) {}
-                // Fallback to local storage if DB courses are empty
+                
+                // 🔥 Phase 1 Bridge: Pulls from isolated `portal-registered-courses`
                 if (courseArray.length === 0) {
-                    courseArray = JSON.parse(localStorage.getItem('portal-courses') || '[]');
+                    courseArray = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');
                 }
                 document.getElementById('course-count').innerText = courseArray.length;
                 
                 if(data.name) {
                     document.getElementById('sidebar-name').innerText = data.name;
-                    document.getElementById('welcome-message').innerText = `Welcome, ${data.name.split(' ')[0]}!`;
+                    document.getElementById('welcome-message').innerText = `${greeting}, ${data.name.split(' ')[0]}!`;
                 }
             }
         } catch (e) {
             console.log("Offline mode, using cached data.");
+            
+            document.getElementById('stu-school').innerText = localStorage.getItem('portal-institution') || 'Not Set';
+            document.getElementById('stu-career').innerText = localStorage.getItem('portal-career') || 'Not Set';
+            
             document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
             document.getElementById('card-gpa').innerText = Number(gpaValue).toFixed(2);
-            const savedCourses = JSON.parse(localStorage.getItem('portal-courses') || '[]');
+            
+            // 🔥 Phase 1 Bridge: Offline Fallback
+            const savedCourses = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');
             document.getElementById('course-count').innerText = savedCourses.length;
-        }
-
-        const leadershipStatus = localStorage.getItem('portal-leadership-status');
-        if (leadershipStatus === 'APPROVED') {
-            document.getElementById('vanguard-banner').style.display = 'none';
-            document.getElementById('vanguard-member-card').style.display = 'block';
-            document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
         }
 
         const ctx = document.getElementById('gpaChart').getContext('2d');
@@ -518,7 +536,7 @@
                 labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Current'],
                 datasets: [{
                     label: 'CGPA Progress',
-                    data: [2.5, 3.0, 3.2, gpaValue],
+                    data: [2.5, 3.0, 3.2, Number(gpaValue)],
                     borderColor: '#2563eb',
                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                     borderWidth: 2,
@@ -560,28 +578,36 @@
     }
 
     async function checkVanguardStatus() {
+        let status = 'NONE';
+        
         try {
             const response = await fetch('/api/leadership/status');
+            if(!response.ok) throw new Error("API Offline");
             const data = await response.json();
+            status = data.status;
+        } catch (error) {
+            // 🔥 Phase 3 Bridge: Accurate Local Check
+            status = localStorage.getItem('portal-leadership-status') || 'NONE';
+        }
 
-            const applyBanner = document.getElementById('vanguard-banner');
-            const memberCard = document.getElementById('vanguard-member-card');
+        const applyBanner = document.getElementById('vanguard-banner');
+        const memberCard = document.getElementById('vanguard-member-card');
 
-            if (data.status === 'APPROVED') {
-                if (applyBanner) applyBanner.style.display = 'none';
-                if (memberCard) memberCard.style.display = 'block';
-            } else if (data.status === 'PENDING') {
-                if (applyBanner) {
-                    applyBanner.innerHTML = `
-                        <div>
-                            <strong style="color: #f59e0b; font-size: 1.1rem;">Leadership Vanguard</strong>
-                            <p style="margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem;">Your application is currently Under Review.</p>
-                        </div>
-                        <button class="btn-gold" style="opacity: 0.5; cursor: not-allowed;">Pending</button>
-                    `;
-                }
+        if (status === 'APPROVED') {
+            if (applyBanner) applyBanner.style.display = 'none';
+            if (memberCard) memberCard.style.display = 'block';
+            document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
+        } else if (status === 'PENDING') {
+            if (applyBanner) {
+                applyBanner.innerHTML = `
+                    <div>
+                        <strong style="color: #f59e0b; font-size: 1.1rem;">Leadership Vanguard</strong>
+                        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem;">Your application is currently Under Review.</p>
+                    </div>
+                    <button class="btn-gold" style="opacity: 0.6; cursor: not-allowed; pointer-events: none;"><i class="fas fa-spinner fa-spin"></i> Pending</button>
+                `;
             }
-        } catch (error) {}
+        }
     }
 
     document.addEventListener('DOMContentLoaded', checkVanguardStatus);

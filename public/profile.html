@@ -434,12 +434,15 @@
                 if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
                 if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
                 
-                // Fetch Career Aspirations if it exists in DB
-                if(data.career) document.getElementById("career").value = data.career;
+                // Fetch Career Aspirations if it exists in DB, otherwise check local cache
+                document.getElementById("career").value = data.career || localStorage.getItem('portal-career') || "";
                 
             } catch (e) {
+                console.log("Using cached profile data");
                 document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
                 document.getElementById("name").value = localStorage.getItem("portal-user-name") || "";
+                document.getElementById("schoolSearch").value = localStorage.getItem("portal-institution") || "";
+                document.getElementById("career").value = localStorage.getItem("portal-career") || "";
             }
         });
 
@@ -481,10 +484,12 @@
             if (!schoolInput.contains(e.target)) suggestionBox.style.display = 'none';
         });
 
-        // --- 5. SAVE PROFILE (POSTGRES SYNC) ---
+        // --- 5. SAVE PROFILE (POSTGRES SYNC + LOCAL FALLBACK) ---
         async function saveProfile() {
             const btn = document.getElementById('saveBtn');
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+            btn.disabled = true;
             
             const payload = {
                 name: document.getElementById("name").value,
@@ -499,6 +504,11 @@
                 career: document.getElementById("career").value // Save Career Aspiration
             };
 
+            // 🔥 ALWAYS CACHE LOCALLY FIRST (Prevents data loss on reload)
+            localStorage.setItem("portal-user-name", payload.name);
+            localStorage.setItem("portal-institution", payload.institution);
+            localStorage.setItem("portal-career", payload.career);
+
             try {
                 const res = await fetch('/api/user/update-profile', {
                     method: 'POST',
@@ -512,13 +522,20 @@
                     setTimeout(() => { msg.style.opacity = 0; }, 3000);
 
                     document.getElementById("student-name").innerText = payload.name;
-                    localStorage.setItem("portal-user-name", payload.name);
-                    localStorage.setItem("portal-institution", payload.institution);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 } else { throw new Error(); }
             } catch (err) {
-                alert("Database Connection Error. Data saved locally.");
-            } finally {
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Sync to National DB';
+                // FALLBACK UX
+                document.getElementById("student-name").innerText = payload.name;
+                btn.innerHTML = '<i class="fas fa-hdd"></i> Saved Locally (Offline)';
+                btn.style.background = '#f59e0b'; // Orange warning
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'var(--primary-color)';
+                    btn.disabled = false;
+                }, 3000);
             }
         }
 
@@ -558,7 +575,9 @@
         // --- 7. 🔥 PREMIUM PDF EXPORT ENGINE (Fixed Blank Output) ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            btn.disabled = true;
 
             // Populate the hidden formal template
             document.getElementById('print-date').innerText = new Date().toLocaleDateString();
@@ -591,7 +610,8 @@
                     // Hide it back completely
                     element.style.display = 'none'; 
                     element.style.zIndex = '-1';
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Export Bio-Data';
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 });
             }, 100);
         }
