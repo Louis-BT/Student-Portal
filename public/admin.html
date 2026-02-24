@@ -422,19 +422,30 @@
                 document.getElementById('kpi-users').innerText = studentCount;
 
             } catch(e) {
-                // If API offline, show fallback mock data for testing
-                tbody.innerHTML = `
-                    <tr class="user-row">
-                        <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#10284909</td>
-                        <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">Louis Baffoe-Tachie</strong><br><small style="color: var(--text-muted);">student@nationalportal.edu.gh</small></td>
-                        <td class="u-inst">Kwame Nkrumah Univ. of Sci & Tech (KNUST)</td>
-                        <td><span class="status-pill status-approved">Verified User</span></td>
-                        <td style="text-align: right;">
-                            <button class="action-btn btn-reject" title="Terminate Account"><i class="fas fa-trash"></i> Drop User</button>
-                        </td>
-                    </tr>
-                `;
-                document.getElementById('kpi-users').innerText = 1;
+                // Offline fallback
+                const offlineUsers = JSON.parse(localStorage.getItem('portal-registered-users')) || [];
+                tbody.innerHTML = '';
+                
+                if (offlineUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No offline users registered.</td></tr>`;
+                    document.getElementById('kpi-users').innerText = 0;
+                    return;
+                }
+
+                offlineUsers.forEach(u => {
+                    tbody.innerHTML += `
+                        <tr class="user-row">
+                            <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#${u.id}</td>
+                            <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">${u.name}</strong><br><small style="color: var(--text-muted);">${u.email}</small></td>
+                            <td class="u-inst">National DB (Offline)</td>
+                            <td><span class="status-pill status-approved">Verified User</span></td>
+                            <td style="text-align: right;">
+                                <button class="action-btn btn-reject" title="Terminate Account"><i class="fas fa-trash"></i> Drop User</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('kpi-users').innerText = offlineUsers.length;
             }
         }
 
@@ -448,7 +459,7 @@
             });
         }
 
-        // --- 2. 🔥 LEADERSHIP VANGUARD (OFFLINE SYNC UPGRADE) ---
+        // --- 2. 🔥 LEADERSHIP VANGUARD (OFFLINE SYNC) ---
         async function loadLeadership() {
             let apps = [];
             
@@ -457,7 +468,7 @@
                 if(!res.ok) throw new Error("API Offline");
                 apps = await res.json();
             } catch(e) {
-                // Intercept data directly from localStorage bridge (Phase 3 upgrade)
+                // Intercept data directly from localStorage bridge
                 apps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
             }
                 
@@ -476,7 +487,6 @@
             apps.forEach(app => {
                 let actions = '';
                 if(app.status === 'PENDING') {
-                    // Injecting ID to uniquely identify the application for editing
                     actions = `
                         <button class="action-btn btn-approve" onclick="triggerReviewApp('${app.id}', 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
                         <button class="action-btn btn-reject" onclick="triggerReviewApp('${app.id}', 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
@@ -504,55 +514,61 @@
 
         // --- 3. LIBRARY MODERATION ---
         async function loadResources() { 
+            let data = [];
             try {
                 const res = await fetch('/api/admin/pending-resources');
-                const data = await res.json();
-                
-                const pendingCount = data.filter(r => r.status === 'PENDING').length;
-                document.getElementById('kpi-files').innerText = pendingCount;
+                if(!res.ok) throw new Error();
+                data = await res.json();
+            } catch(e) {
+                // Offline Fallback for Quarantine
+                data = JSON.parse(localStorage.getItem('portal-offline-library')) || [];
+                data = data.map(item => ({...item, status: item.status || 'PENDING', date: item.date || new Date().toISOString()}));
+            }
 
-                const tbody = document.getElementById('resource-table-body');
-                tbody.innerHTML = '';
-                
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
-                    return;
+            const pendingCount = data.filter(r => r.status === 'PENDING').length;
+            document.getElementById('kpi-files').innerText = pendingCount;
+
+            const tbody = document.getElementById('resource-table-body');
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
+                return;
+            }
+
+            data.forEach(item => {
+                let actions = '';
+                if(item.status === 'PENDING') {
+                    actions = `
+                        <button class="action-btn btn-approve" onclick="triggerReviewResource('${item.fileName}', 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
+                        <button class="action-btn btn-reject" onclick="triggerReviewResource('${item.fileName}', 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
+                    `;
+                } else {
+                    actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Processed</span>`;
                 }
 
-                data.forEach(item => {
-                    let actions = '';
-                    if(item.status === 'PENDING') {
-                        actions = `
-                            <button class="action-btn btn-approve" onclick="triggerReviewResource(${item.id}, 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
-                            <button class="action-btn btn-reject" onclick="triggerReviewResource(${item.id}, 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
-                        `;
-                    } else {
-                        actions = `<button class="action-btn btn-reject" onclick="triggerReviewResource(${item.id}, 'REJECTED')"><i class="fas fa-trash"></i> Delete Record</button>`;
-                    }
+                let icon = 'fa-file-alt'; let color = '#3b82f6';
+                if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
+                if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
 
-                    let icon = 'fa-file-alt'; let color = '#3b82f6';
-                    if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
-                    if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
-                                    <div>
-                                        <strong style="color: var(--text-color);">${item.title}</strong><br>
-                                        <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
-                                    </div>
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong style="color: var(--text-color);">${item.title}</strong><br>
+                                    <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
                                 </div>
-                            </td>
-                            <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
-                            <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
-                            <td style="text-align:right;">${actions}</td>
-                        </tr>
-                    `;
-                });
-            } catch(e) { console.error(e); }
+                            </div>
+                        </td>
+                        <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
+                        <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
+                        <td style="text-align:right;">${actions}</td>
+                    </tr>
+                `;
+            });
         }
 
         // --- 4. BROADCAST ENGINE ---
@@ -566,17 +582,10 @@
             btn.disabled = true;
 
             try {
-                await fetch('/api/news', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, message: msg, category })
-                });
-
-                await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_name: 'System Admin', message: `📢 [${category.toUpperCase()}] ${title}: ${msg}` })
-                });
+                // Offline Broadcast logic
+                const newsDb = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
+                newsDb.push({ id: Date.now(), title, category, message: msg, date: new Date().toISOString() });
+                localStorage.setItem('portal-news-broadcasts', JSON.stringify(newsDb));
 
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Transmitted';
                 btn.style.background = '#10b981';
@@ -590,20 +599,19 @@
                 }, 2500);
 
             } catch(e) {
-                alert("Transmission failed. Database connection lost.");
-                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Transmit to National Network';
+                alert("Transmission failed.");
                 btn.disabled = false;
             }
         }
 
         async function loadNews() {
             try {
-                const res = await fetch('/api/news');
-                const news = await res.json();
+                // Offline mode fetch
+                const news = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
                 const list = document.getElementById('news-history-list');
                 list.innerHTML = '';
                 
-                news.forEach(n => {
+                news.reverse().forEach(n => {
                     list.innerHTML += `
                         <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -621,28 +629,15 @@
         async function loadReports() { 
             try {
                 const res = await fetch('/api/admin/reports');
+                if(!res.ok) throw new Error();
                 const data = await res.json();
                 document.getElementById('kpi-reports').innerText = data.length;
-                
+            } catch(e) {
+                // Offline mock
+                document.getElementById('kpi-reports').innerText = 0;
                 const tbody = document.getElementById('reports-table-body');
-                tbody.innerHTML = '';
-
-                if(data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active support tickets.</td></tr>`;
-                    return;
-                }
-
-                data.forEach(r => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><strong style="color: var(--text-color);">${r.user_name}</strong></td>
-                            <td style="color: var(--text-muted);">${r.message}</td>
-                            <td style="font-size: 0.85rem;">${new Date(r.date).toLocaleDateString()}</td>
-                            <td style="text-align:right;"><button class="action-btn btn-approve" onclick="triggerResolveTicket(${r.id})"><i class="fas fa-check-double"></i> Resolve</button></td>
-                        </tr>
-                    `;
-                });
-            } catch(e) {}
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active support tickets.</td></tr>`;
+            }
         }
 
 
@@ -690,7 +685,7 @@
             this.disabled = true;
 
             try {
-                // Check if this is the offline-friendly Vanguard Review Protocol
+                // 1. LEADERSHIP REVIEW PROTOCOL
                 if (currentActionType === 'LEADERSHIP_REVIEW') {
                     const apps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
                     const index = apps.findIndex(app => app.id.toString() === currentActionPayload.id.toString());
@@ -699,15 +694,40 @@
                         apps[index].status = currentActionPayload.status;
                         localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(apps));
                         
-                        // Also update the student's personal cache so they see it instantly when they log in
+                        // Sync the student's personal view
                         localStorage.setItem('portal-leadership-status', currentActionPayload.status);
                     }
                 } 
-                // Handle all other API calls here (omitted real fetch logic for brevity in offline mode)
+                
+                // 2. LIBRARY REVIEW PROTOCOL
+                if (currentActionType === 'RESOURCE_REVIEW') {
+                    const lib = JSON.parse(localStorage.getItem('portal-offline-library')) || [];
+                    const index = lib.findIndex(doc => doc.fileName === currentActionPayload.id);
+                    
+                    if (index !== -1) {
+                        lib[index].status = currentActionPayload.status;
+                        localStorage.setItem('portal-offline-library', JSON.stringify(lib));
+                    }
+                }
+
+                // 3. NEWS DELETE PROTOCOL
+                if (currentActionType === 'DELETE_NEWS') {
+                    const news = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
+                    const filtered = news.filter(n => n.id.toString() !== currentActionPayload.id.toString());
+                    localStorage.setItem('portal-news-broadcasts', JSON.stringify(filtered));
+                }
+
+                // 4. DATABASE WIPE PROTOCOL
+                if (currentActionType === 'WIPE_DB') {
+                    localStorage.removeItem('portal-registered-users');
+                    localStorage.removeItem('portal-global-vanguard-apps');
+                    localStorage.removeItem('portal-offline-library');
+                    localStorage.removeItem('portal-news-broadcasts');
+                }
 
                 this.innerHTML = '<i class="fas fa-check"></i> Success';
                 
-                // --- 🔥 Trigger WhatsApp Link Alert if Vanguard is Approved ---
+                // WhatsApp Link for Approved Leaders
                 if (currentActionType === 'LEADERSHIP_REVIEW' && currentActionPayload.status === 'APPROVED') {
                     setTimeout(() => {
                         alert("Vanguard Student Approved!\n\nPlease send them this secure invite link to join the leadership hub:\n\nhttps://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K");
@@ -717,8 +737,10 @@
                 setTimeout(() => {
                     closeModal();
                     if (currentActionType === 'LEADERSHIP_REVIEW') loadLeadership();
-                    if (currentActionType === 'USER_DELETE') loadUsers();
-                    initDashboard(); // Update KPIs
+                    if (currentActionType === 'RESOURCE_REVIEW') loadResources();
+                    if (currentActionType === 'DELETE_NEWS') loadNews();
+                    if (currentActionType === 'WIPE_DB') { loadUsers(); loadLeadership(); loadResources(); }
+                    initDashboard(); 
                     this.disabled = false;
                 }, 1000);
 
@@ -742,11 +764,11 @@
             }
         }
 
-        function triggerReviewResource(id, status) {
+        function triggerReviewResource(fileName, status) {
             if(status === 'APPROVED') {
-                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id, status});
+                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id: fileName, status});
             } else {
-                openModal('Purge Document', 'This document will be rejected and deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id, status});
+                openModal('Purge Document', 'This document will be rejected and deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id: fileName, status});
             }
         }
 
@@ -759,7 +781,7 @@
         }
 
         function triggerWipeModal() {
-            openModal('SYSTEM WIPE', 'CRITICAL WARNING: This will delete ALL student accounts and reset the database. This cannot be undone.', '<i class="fas fa-radiation-alt" style="color: #ef4444;"></i>', 'EXECUTE WIPE', '#ef4444', 'WIPE_DB', null);
+            openModal('SYSTEM WIPE', 'CRITICAL WARNING: This will delete ALL student accounts, applications, and offline data. This cannot be undone.', '<i class="fas fa-radiation-alt" style="color: #ef4444;"></i>', 'EXECUTE WIPE', '#ef4444', 'WIPE_DB', null);
         }
 
     </script>
