@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- 1. CORE LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
@@ -166,7 +168,7 @@
                             <h1>National Administrator Console</h1>
                         </div>
                         <div class="server-status">
-                            <div class="pulse-dot"></div> System Online • Encrypted Connection Established
+                            <div class="pulse-dot"></div> Firebase Cloud Server Online • Encrypted Connection
                         </div>
                     </div>
                     <div style="display: flex; gap: 15px; align-items: center;">
@@ -186,25 +188,25 @@
                         <div class="kpi-card" style="--card-accent: #3b82f6;">
                             <i class="fas fa-users kpi-icon"></i>
                             <span class="kpi-label">Registered Students</span>
-                            <div class="kpi-val" id="kpi-users">0</div>
+                            <div class="kpi-val" id="kpi-users"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i></div>
                             <div style="font-size: 0.85rem; color: #3b82f6; font-weight: 600; margin-top: 5px;">Verified Accounts</div>
                         </div>
                         <div class="kpi-card" style="--card-accent: #f59e0b;">
                             <i class="fas fa-file-upload kpi-icon"></i>
                             <span class="kpi-label">Library Quarantine</span>
-                            <div class="kpi-val" id="kpi-files">0</div>
+                            <div class="kpi-val" id="kpi-files"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i></div>
                             <div style="font-size: 0.85rem; color: #f59e0b; font-weight: 600; margin-top: 5px;">Pending Scans</div>
                         </div>
                         <div class="kpi-card" style="--card-accent: #8b5cf6;">
                             <i class="fas fa-crown kpi-icon"></i>
                             <span class="kpi-label">Vanguard Apps</span>
-                            <div class="kpi-val" id="kpi-leaders">0</div>
+                            <div class="kpi-val" id="kpi-leaders"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i></div>
                             <div style="font-size: 0.85rem; color: #8b5cf6; font-weight: 600; margin-top: 5px;">Awaiting Review</div>
                         </div>
                         <div class="kpi-card" style="--card-accent: #ef4444;">
                             <i class="fas fa-ticket-alt kpi-icon"></i>
                             <span class="kpi-label">Support Tickets</span>
-                            <div class="kpi-val" id="kpi-reports">0</div>
+                            <div class="kpi-val" id="kpi-reports"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i></div>
                             <div style="font-size: 0.85rem; color: #ef4444; font-weight: 600; margin-top: 5px;">Action Required</div>
                         </div>
                     </div>
@@ -214,6 +216,7 @@
                         <div style="display: flex; gap: 15px; flex-wrap: wrap;">
                             <button class="btn btn-primary" onclick="switchTab('broadcast', document.querySelectorAll('.nav-links a')[3])"><i class="fas fa-bullhorn"></i> New Broadcast</button>
                             <button class="btn" style="background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color);" onclick="switchTab('users', document.querySelectorAll('.nav-links a')[1])"><i class="fas fa-search"></i> Find Student</button>
+                            <button class="btn btn-danger-zone" onclick="triggerWipeModal()"><i class="fas fa-radiation-alt"></i> WIPE CLOUD DATABASE</button>
                         </div>
                     </div>
                 </div>
@@ -221,14 +224,8 @@
                 <div id="panel-users" class="admin-section">
                     <div class="section-box">
                         <div class="section-title" style="flex-wrap: wrap; gap: 15px;">
-                            <span style="flex: 1;"><i class="fas fa-users-cog" style="color: #3b82f6;"></i> Global User Matrix</span>
-                            
+                            <span style="flex: 1;"><i class="fas fa-users-cog" style="color: #3b82f6;"></i> Global User Matrix (Live)</span>
                             <input type="text" id="userSearchBox" class="table-search" placeholder="Search ID or Name..." onkeyup="filterUserTable()">
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn btn-primary" onclick="loadUsers()"><i class="fas fa-sync"></i> Refresh</button>
-                                <button class="btn btn-danger-zone" onclick="triggerWipeModal()"><i class="fas fa-radiation-alt"></i> WIPE DATABASE</button>
-                            </div>
                         </div>
                         
                         <div style="overflow-x: auto;">
@@ -243,7 +240,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="user-table-body">
-                                    <tr><td colspan="5" style="text-align:center;">Fetching secure database...</td></tr>
+                                    <tr><td colspan="5" style="text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> Synchronizing with Cloud...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -253,7 +250,7 @@
                 <div id="panel-leadership" class="admin-section">
                     <div class="section-box">
                         <div class="section-title" style="flex-wrap: wrap;">
-                            <span style="flex: 1;"><i class="fas fa-crown" style="color: #8b5cf6;"></i> Vanguard Applications</span>
+                            <span style="flex: 1;"><i class="fas fa-crown" style="color: #8b5cf6;"></i> Vanguard Applications (Live)</span>
                             <span class="status-pill status-pending" id="pending-count-badge">0 Pending</span>
                         </div>
                         <div style="overflow-x: auto;">
@@ -266,7 +263,9 @@
                                         <th style="text-align: right;">Executive Decision</th>
                                     </tr>
                                 </thead>
-                                <tbody id="leadership-table-body"></tbody>
+                                <tbody id="leadership-table-body">
+                                    <tr><td colspan="4" style="text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> Synchronizing with Cloud...</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -298,7 +297,9 @@
 
                             <div style="background: var(--input-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);">
                                 <h4 style="margin-top: 0; color: var(--text-color); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Transmission History</h4>
-                                <div id="news-history-list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;"></div>
+                                <div id="news-history-list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+                                    <div style="text-align:center; padding: 20px;"><i class="fas fa-circle-notch fa-spin"></i> Loading broadcasts...</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -307,8 +308,7 @@
                 <div id="panel-library" class="admin-section">
                     <div class="section-box">
                         <div class="section-title" style="flex-wrap: wrap;">
-                            <span style="flex: 1;"><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting</span>
-                            <button class="btn btn-primary btn-sm" style="padding: 10px 15px;" onclick="loadResources()"><i class="fas fa-sync"></i> Scan Database</button>
+                            <span style="flex: 1;"><i class="fas fa-shield-alt" style="color: #f59e0b;"></i> Document Quarantine & Vetting (Live)</span>
                         </div>
                         <div style="overflow-x: auto;">
                             <table class="admin-table">
@@ -321,7 +321,9 @@
                                         <th style="text-align: right;">Moderation Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="resource-table-body"></tbody>
+                                <tbody id="resource-table-body">
+                                    <tr><td colspan="5" style="text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> Synchronizing with Cloud...</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -329,7 +331,7 @@
 
                 <div id="panel-reports" class="admin-section">
                     <div class="section-box">
-                        <div class="section-title"><i class="fas fa-ticket-alt" style="color: #ef4444;"></i> IT Support & Reports</div>
+                        <div class="section-title"><i class="fas fa-ticket-alt" style="color: #ef4444;"></i> IT Support & Reports (Live)</div>
                         <div style="overflow-x: auto;">
                             <table class="admin-table">
                                 <thead>
@@ -340,7 +342,9 @@
                                         <th style="text-align: right;">Status / Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="reports-table-body"></tbody>
+                                <tbody id="reports-table-body">
+                                    <tr><td colspan="4" style="text-align:center;"><i class="fas fa-circle-notch fa-spin"></i> Synchronizing with Cloud...</td></tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -351,7 +355,7 @@
     </div>
 
     <script>
-        // Global variables for offline execution modal logic
+        // Global variables for cloud execution modal logic
         let currentActionType = null;
         let currentActionPayload = null;
 
@@ -363,16 +367,8 @@
                 window.location.href = 'login.html';
                 return;
             }
-            initDashboard();
+            initFirebaseListeners();
         });
-
-        function initDashboard() {
-            loadUsers();
-            loadLeadership();
-            loadNews();
-            loadResources();
-            loadReports();
-        }
 
         // --- UI TOGGLES ---
         function toggleMobileSidebar() {
@@ -386,67 +382,6 @@
             
             document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
             if(element) element.classList.add('active');
-
-            if(tabId === 'users') loadUsers();
-            if(tabId === 'leadership') loadLeadership();
-            if(tabId === 'library') loadResources();
-        }
-
-        // --- 1. GLOBAL USER MATRIX ---
-        async function loadUsers() {
-            const tbody = document.getElementById('user-table-body');
-            try {
-                const res = await fetch('/api/admin/users'); 
-                const users = await res.json(); 
-                
-                tbody.innerHTML = '';
-                let studentCount = 0;
-
-                users.forEach(u => {
-                    if(u.role === 'ADMIN') return;
-                    studentCount++;
-                    const idTag = u.id ? `102${u.id}09` : 'PENDING';
-                    
-                    tbody.innerHTML += `
-                        <tr class="user-row">
-                            <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#${idTag}</td>
-                            <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">${u.name}</strong><br><small style="color: var(--text-muted);">${u.email || 'No email linked'}</small></td>
-                            <td class="u-inst">${u.institution || 'National DB'}</td>
-                            <td><span class="status-pill status-approved">Verified User</span></td>
-                            <td style="text-align: right;">
-                                <button class="action-btn btn-reject" title="Terminate Account" onclick="triggerDeleteUser(${u.id})"><i class="fas fa-trash"></i> Drop User</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('kpi-users').innerText = studentCount;
-
-            } catch(e) {
-                // Offline fallback
-                const offlineUsers = JSON.parse(localStorage.getItem('portal-registered-users')) || [];
-                tbody.innerHTML = '';
-                
-                if (offlineUsers.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No offline users registered.</td></tr>`;
-                    document.getElementById('kpi-users').innerText = 0;
-                    return;
-                }
-
-                offlineUsers.forEach(u => {
-                    tbody.innerHTML += `
-                        <tr class="user-row">
-                            <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#${u.id}</td>
-                            <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">${u.name}</strong><br><small style="color: var(--text-muted);">${u.email}</small></td>
-                            <td class="u-inst">National DB (Offline)</td>
-                            <td><span class="status-pill status-approved">Verified User</span></td>
-                            <td style="text-align: right;">
-                                <button class="action-btn btn-reject" title="Terminate Account"><i class="fas fa-trash"></i> Drop User</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('kpi-users').innerText = offlineUsers.length;
-            }
         }
 
         function filterUserTable() {
@@ -459,120 +394,210 @@
             });
         }
 
-        // --- 2. 🔥 LEADERSHIP VANGUARD (OFFLINE SYNC) ---
-        async function loadLeadership() {
-            let apps = [];
+
+        // =========================================================================
+        // 🔥 MASTER FIREBASE REAL-TIME LISTENERS
+        // =========================================================================
+        function initFirebaseListeners() {
             
-            try {
-                const res = await fetch('/api/admin/leadership-apps');
-                if(!res.ok) throw new Error("API Offline");
-                apps = await res.json();
-            } catch(e) {
-                // Intercept data directly from localStorage bridge
-                apps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
-            }
+            // 1. Users Listener
+            db.ref('users').on('value', (snapshot) => {
+                const tbody = document.getElementById('user-table-body');
+                tbody.innerHTML = '';
                 
-            const pendingCount = apps.filter(a => a.status === 'PENDING').length;
-            document.getElementById('kpi-leaders').innerText = pendingCount;
-            document.getElementById('pending-count-badge').innerText = `${pendingCount} Pending`;
-
-            const tbody = document.getElementById('leadership-table-body');
-            tbody.innerHTML = '';
-            
-            if(apps.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No vanguard applications in queue.</td></tr>`;
-                return;
-            }
-
-            apps.forEach(app => {
-                let actions = '';
-                if(app.status === 'PENDING') {
-                    actions = `
-                        <button class="action-btn btn-approve" onclick="triggerReviewApp('${app.id}', 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
-                        <button class="action-btn btn-reject" onclick="triggerReviewApp('${app.id}', 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
-                    `;
-                } else {
-                    actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">No users found in database.</td></tr>`;
+                    document.getElementById('kpi-users').innerText = '0';
+                    return;
                 }
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>
-                            <strong style="color: var(--text-color); font-size: 1.05rem;">${app.name}</strong><br>
-                            <small style="color:var(--text-muted);">${app.institution}</small>
-                        </td>
-                        <td>
-                            <span style="color:var(--primary-color); font-weight:700;">${app.position}</span><br>
-                            <small style="font-style: italic;">"${app.vision.substring(0, 45)}..."</small>
-                        </td>
-                        <td><span class="status-pill status-${app.status.toLowerCase()}">${app.status}</span></td>
-                        <td style="text-align:right;">${actions}</td>
-                    </tr>
-                `;
+                let studentCount = 0;
+                snapshot.forEach((childSnapshot) => {
+                    const u = childSnapshot.val();
+                    const key = childSnapshot.key;
+                    
+                    if(u.role === 'ADMIN') return;
+                    studentCount++;
+                    const idTag = u.id ? `102${u.id.toString().substring(0,4)}09` : 'PENDING';
+                    
+                    tbody.innerHTML += `
+                        <tr class="user-row">
+                            <td style="font-family: 'Fira Code', monospace; color: var(--primary-color); font-weight: 600;">#${idTag}</td>
+                            <td><strong style="color: var(--text-color); font-size: 1.05rem;" class="u-name">${u.name}</strong><br><small style="color: var(--text-muted);">${u.email || 'No email linked'}</small></td>
+                            <td class="u-inst">${u.institution || 'National DB'}</td>
+                            <td><span class="status-pill status-approved">Verified User</span></td>
+                            <td style="text-align: right;">
+                                <button class="action-btn btn-reject" title="Terminate Account" onclick="triggerDeleteUser('${key}')"><i class="fas fa-trash"></i> Drop User</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('kpi-users').innerText = studentCount;
             });
-        }
 
-        // --- 3. LIBRARY MODERATION ---
-        async function loadResources() { 
-            let data = [];
-            try {
-                const res = await fetch('/api/admin/pending-resources');
-                if(!res.ok) throw new Error();
-                data = await res.json();
-            } catch(e) {
-                // Offline Fallback for Quarantine
-                data = JSON.parse(localStorage.getItem('portal-offline-library')) || [];
-                data = data.map(item => ({...item, status: item.status || 'PENDING', date: item.date || new Date().toISOString()}));
-            }
-
-            const pendingCount = data.filter(r => r.status === 'PENDING').length;
-            document.getElementById('kpi-files').innerText = pendingCount;
-
-            const tbody = document.getElementById('resource-table-body');
-            tbody.innerHTML = '';
-            
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
-                return;
-            }
-
-            data.forEach(item => {
-                let actions = '';
-                if(item.status === 'PENDING') {
-                    actions = `
-                        <button class="action-btn btn-approve" onclick="triggerReviewResource('${item.fileName}', 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
-                        <button class="action-btn btn-reject" onclick="triggerReviewResource('${item.fileName}', 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
-                    `;
-                } else {
-                    actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Processed</span>`;
+            // 2. Vanguard Leadership Listener
+            db.ref('vanguard_apps').on('value', (snapshot) => {
+                const tbody = document.getElementById('leadership-table-body');
+                tbody.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No vanguard applications in queue.</td></tr>`;
+                    document.getElementById('kpi-leaders').innerText = '0';
+                    document.getElementById('pending-count-badge').innerText = `0 Pending`;
+                    return;
                 }
 
-                let icon = 'fa-file-alt'; let color = '#3b82f6';
-                if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
-                if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
+                let pendingCount = 0;
+                snapshot.forEach((childSnapshot) => {
+                    const app = childSnapshot.val();
+                    const key = childSnapshot.key;
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
-                                <div>
-                                    <strong style="color: var(--text-color);">${item.title}</strong><br>
-                                    <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
+                    if (app.status === 'PENDING') pendingCount++;
+
+                    let actions = '';
+                    if(app.status === 'PENDING') {
+                        actions = `
+                            <button class="action-btn btn-approve" onclick="triggerReviewApp('${key}', 'APPROVED')"><i class="fas fa-check"></i> Induct</button>
+                            <button class="action-btn btn-reject" onclick="triggerReviewApp('${key}', 'REJECTED')"><i class="fas fa-times"></i> Reject</button>
+                        `;
+                    } else {
+                        actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>
+                                <strong style="color: var(--text-color); font-size: 1.05rem;">${app.name}</strong><br>
+                                <small style="color:var(--text-muted);">${app.institution || 'Unknown'}</small>
+                            </td>
+                            <td>
+                                <span style="color:var(--primary-color); font-weight:700;">${app.position}</span><br>
+                                <small style="font-style: italic;">"${app.vision ? app.vision.substring(0, 45) : ''}..."</small>
+                            </td>
+                            <td><span class="status-pill status-${app.status.toLowerCase()}">${app.status}</span></td>
+                            <td style="text-align:right;">${actions}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('kpi-leaders').innerText = pendingCount;
+                document.getElementById('pending-count-badge').innerText = `${pendingCount} Pending`;
+            });
+
+            // 3. Library Quarantine Listener
+            db.ref('library_quarantine').on('value', (snapshot) => {
+                const tbody = document.getElementById('resource-table-body');
+                tbody.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
+                    document.getElementById('kpi-files').innerText = '0';
+                    return;
+                }
+
+                let pendingCount = 0;
+                snapshot.forEach((childSnapshot) => {
+                    const item = childSnapshot.val();
+                    const key = childSnapshot.key;
+
+                    if (item.status === 'PENDING') pendingCount++;
+
+                    let actions = '';
+                    if(item.status === 'PENDING') {
+                        actions = `
+                            <button class="action-btn btn-approve" onclick="triggerReviewResource('${key}', 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
+                            <button class="action-btn btn-reject" onclick="triggerReviewResource('${key}', 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
+                        `;
+                    } else {
+                        actions = `<button class="action-btn btn-reject" onclick="triggerReviewResource('${key}', 'DELETE')"><i class="fas fa-trash"></i> Delete Record</button>`;
+                    }
+
+                    let icon = 'fa-file-alt'; let color = '#3b82f6';
+                    if(item.category === 'BOOK') { icon = 'fa-book'; color = '#10b981'; }
+                    if(item.category === 'PAST_QUESTION') { icon = 'fa-file-signature'; color = '#ef4444'; }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas ${icon}" style="color: ${color}; font-size: 1.2rem;"></i>
+                                    <div>
+                                        <strong style="color: var(--text-color);">${item.title}</strong><br>
+                                        <small style="color: var(--text-muted);">By: ${item.uploaded_by || 'System'}</small>
+                                    </div>
                                 </div>
+                            </td>
+                            <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
+                            <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
+                            <td style="text-align:right;">${actions}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('kpi-files').innerText = pendingCount;
+            });
+
+            // 4. Broadcasts / News Listener
+            db.ref('broadcasts').on('value', (snapshot) => {
+                const list = document.getElementById('news-history-list');
+                list.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    list.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">No broadcasts transmitted yet.</div>`;
+                    return;
+                }
+
+                // Convert to array to reverse it (newest first)
+                let newsArray = [];
+                snapshot.forEach(child => {
+                    newsArray.push({ key: child.key, ...child.val() });
+                });
+                newsArray.reverse();
+
+                newsArray.forEach(n => {
+                    list.innerHTML += `
+                        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">${n.title}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${new Date(n.date).toLocaleDateString()} • ${n.category || 'General'}</div>
                             </div>
-                        </td>
-                        <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
-                        <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
-                        <td style="text-align:right;">${actions}</td>
-                    </tr>
-                `;
+                            <button class="action-btn btn-reject" onclick="triggerDeleteNews('${n.key}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                });
+            });
+
+            // 5. Support Tickets Listener
+            db.ref('support_tickets').on('value', (snapshot) => {
+                const tbody = document.getElementById('reports-table-body');
+                tbody.innerHTML = '';
+                
+                if (!snapshot.exists()) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active support tickets.</td></tr>`;
+                    document.getElementById('kpi-reports').innerText = '0';
+                    return;
+                }
+
+                let ticketCount = 0;
+                snapshot.forEach(child => {
+                    ticketCount++;
+                    const r = child.val();
+                    const key = child.key;
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong style="color: var(--text-color);">${r.user_name}</strong></td>
+                            <td style="color: var(--text-muted);">${r.message}</td>
+                            <td style="font-size: 0.85rem;">${new Date(r.date).toLocaleDateString()}</td>
+                            <td style="text-align:right;"><button class="action-btn btn-approve" onclick="triggerResolveTicket('${key}')"><i class="fas fa-check-double"></i> Resolve</button></td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('kpi-reports').innerText = ticketCount;
             });
         }
 
-        // --- 4. BROADCAST ENGINE ---
-        async function sendBroadcast() {
+        // --- BROADCAST SUBMIT FUNCTION ---
+        function sendBroadcast() {
             const btn = document.getElementById('b-submit');
             const title = document.getElementById('b-title').value;
             const category = document.getElementById('b-category').value;
@@ -581,12 +606,15 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Transmitting...';
             btn.disabled = true;
 
-            try {
-                // Offline Broadcast logic
-                const newsDb = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
-                newsDb.push({ id: Date.now(), title, category, message: msg, date: new Date().toISOString() });
-                localStorage.setItem('portal-news-broadcasts', JSON.stringify(newsDb));
+            const payload = {
+                title: title,
+                category: category,
+                message: msg,
+                date: new Date().toISOString()
+            };
 
+            db.ref('broadcasts').push(payload)
+            .then(() => {
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Transmitted';
                 btn.style.background = '#10b981';
 
@@ -595,54 +623,18 @@
                     btn.style.background = 'var(--primary-color)';
                     btn.disabled = false;
                     document.querySelector('.broadcast-form').reset();
-                    loadNews();
                 }, 2500);
-
-            } catch(e) {
-                alert("Transmission failed.");
+            })
+            .catch(err => {
+                alert("Transmission failed: " + err.message);
                 btn.disabled = false;
-            }
-        }
-
-        async function loadNews() {
-            try {
-                // Offline mode fetch
-                const news = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
-                const list = document.getElementById('news-history-list');
-                list.innerHTML = '';
-                
-                news.reverse().forEach(n => {
-                    list.innerHTML += `
-                        <div style="background: var(--card-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">${n.title}</div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">${new Date(n.date).toLocaleDateString()} • ${n.category || 'General'}</div>
-                            </div>
-                            <button class="action-btn btn-reject" onclick="triggerDeleteNews(${n.id})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    `;
-                });
-            } catch(e) {}
-        }
-
-        // --- 5. SUPPORT TICKETS ---
-        async function loadReports() { 
-            try {
-                const res = await fetch('/api/admin/reports');
-                if(!res.ok) throw new Error();
-                const data = await res.json();
-                document.getElementById('kpi-reports').innerText = data.length;
-            } catch(e) {
-                // Offline mock
-                document.getElementById('kpi-reports').innerText = 0;
-                const tbody = document.getElementById('reports-table-body');
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active support tickets.</td></tr>`;
-            }
+                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Transmit to National Network';
+            });
         }
 
 
         // =========================================================================
-        // 🔥 THE PREMIUM UNIVERSAL ACTION MODAL ENGINE
+        // 🔥 CLOUD ACTION MODAL & EXECUTION ENGINE
         // =========================================================================
 
         function openModal(title, desc, iconHtml, btnText, btnColor, actionType, payload) {
@@ -672,7 +664,7 @@
             document.getElementById('actionModal').style.display = 'none';
         }
 
-        document.getElementById('modalConfirmBtn').addEventListener('click', async function() {
+        document.getElementById('modalConfirmBtn').addEventListener('click', function() {
             if (document.getElementById('dangerInput').style.display === 'block') {
                 if (document.getElementById('dangerInput').value !== 'DELETE') {
                     alert("Verification failed. You must type 'DELETE' to proceed.");
@@ -681,53 +673,53 @@
             }
 
             const originalText = this.innerText;
-            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Executing...';
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Executing in Cloud...';
             this.disabled = true;
 
-            try {
-                // 1. LEADERSHIP REVIEW PROTOCOL
-                if (currentActionType === 'LEADERSHIP_REVIEW') {
-                    const apps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
-                    const index = apps.findIndex(app => app.id.toString() === currentActionPayload.id.toString());
-                    
-                    if (index !== -1) {
-                        apps[index].status = currentActionPayload.status;
-                        localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(apps));
-                        
-                        // Sync the student's personal view
-                        localStorage.setItem('portal-leadership-status', currentActionPayload.status);
+            const dbKey = currentActionPayload ? currentActionPayload.id : null;
+
+            // Define the specific promise based on action type
+            let actionPromise;
+
+            switch(currentActionType) {
+                case 'USER_DELETE':
+                    actionPromise = db.ref('users/' + dbKey).remove();
+                    break;
+                case 'LEADERSHIP_REVIEW':
+                    actionPromise = db.ref('vanguard_apps/' + dbKey).update({ status: currentActionPayload.status });
+                    break;
+                case 'RESOURCE_REVIEW':
+                    if (currentActionPayload.status === 'DELETE') {
+                        actionPromise = db.ref('library_quarantine/' + dbKey).remove();
+                    } else {
+                        actionPromise = db.ref('library_quarantine/' + dbKey).update({ status: currentActionPayload.status });
                     }
-                } 
-                
-                // 2. LIBRARY REVIEW PROTOCOL
-                if (currentActionType === 'RESOURCE_REVIEW') {
-                    const lib = JSON.parse(localStorage.getItem('portal-offline-library')) || [];
-                    const index = lib.findIndex(doc => doc.fileName === currentActionPayload.id);
-                    
-                    if (index !== -1) {
-                        lib[index].status = currentActionPayload.status;
-                        localStorage.setItem('portal-offline-library', JSON.stringify(lib));
-                    }
-                }
+                    break;
+                case 'DELETE_NEWS':
+                    actionPromise = db.ref('broadcasts/' + dbKey).remove();
+                    break;
+                case 'RESOLVE_TICKET':
+                    actionPromise = db.ref('support_tickets/' + dbKey).remove();
+                    break;
+                case 'WIPE_DB':
+                    // Extreme Wipe: Erase all major nodes
+                    actionPromise = Promise.all([
+                        db.ref('users').remove(),
+                        db.ref('vanguard_apps').remove(),
+                        db.ref('library_quarantine').remove(),
+                        db.ref('broadcasts').remove(),
+                        db.ref('support_tickets').remove()
+                    ]);
+                    break;
+                default:
+                    actionPromise = Promise.reject(new Error("Unknown action type"));
+            }
 
-                // 3. NEWS DELETE PROTOCOL
-                if (currentActionType === 'DELETE_NEWS') {
-                    const news = JSON.parse(localStorage.getItem('portal-news-broadcasts')) || [];
-                    const filtered = news.filter(n => n.id.toString() !== currentActionPayload.id.toString());
-                    localStorage.setItem('portal-news-broadcasts', JSON.stringify(filtered));
-                }
-
-                // 4. DATABASE WIPE PROTOCOL
-                if (currentActionType === 'WIPE_DB') {
-                    localStorage.removeItem('portal-registered-users');
-                    localStorage.removeItem('portal-global-vanguard-apps');
-                    localStorage.removeItem('portal-offline-library');
-                    localStorage.removeItem('portal-news-broadcasts');
-                }
-
+            // Execute the promise
+            actionPromise.then(() => {
                 this.innerHTML = '<i class="fas fa-check"></i> Success';
                 
-                // WhatsApp Link for Approved Leaders
+                // WhatsApp Link specifically for Approved Leaders
                 if (currentActionType === 'LEADERSHIP_REVIEW' && currentActionPayload.status === 'APPROVED') {
                     setTimeout(() => {
                         alert("Vanguard Student Approved!\n\nPlease send them this secure invite link to join the leadership hub:\n\nhttps://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K");
@@ -736,22 +728,17 @@
 
                 setTimeout(() => {
                     closeModal();
-                    if (currentActionType === 'LEADERSHIP_REVIEW') loadLeadership();
-                    if (currentActionType === 'RESOURCE_REVIEW') loadResources();
-                    if (currentActionType === 'DELETE_NEWS') loadNews();
-                    if (currentActionType === 'WIPE_DB') { loadUsers(); loadLeadership(); loadResources(); }
-                    initDashboard(); 
                     this.disabled = false;
                 }, 1000);
 
-            } catch (e) {
-                alert('Database Execution Failed.');
+            }).catch((error) => {
+                alert('Cloud Execution Failed: ' + error.message);
                 this.innerHTML = originalText;
                 this.disabled = false;
-            }
+            });
         });
 
-        // Modal Triggers
+        // --- MODAL TRIGGERS ---
         function triggerDeleteUser(id) {
             openModal('Terminate Account', 'Are you sure you want to permanently delete this user from the National Database?', '<i class="fas fa-user-times" style="color: #ef4444;"></i>', 'Delete User', '#ef4444', 'USER_DELETE', { id });
         }
@@ -764,11 +751,13 @@
             }
         }
 
-        function triggerReviewResource(fileName, status) {
+        function triggerReviewResource(id, status) {
             if(status === 'APPROVED') {
-                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id: fileName, status});
+                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id, status});
+            } else if (status === 'REJECTED') {
+                openModal('Purge Document', 'This document will be rejected and permanently deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id, 'DELETE'});
             } else {
-                openModal('Purge Document', 'This document will be rejected and deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id: fileName, status});
+                 openModal('Delete Document', 'Remove this processed document record completely?', '<i class="fas fa-trash" style="color: #ef4444;"></i>', 'Delete', '#ef4444', 'RESOURCE_REVIEW', {id, status: 'DELETE'});
             }
         }
 
@@ -777,11 +766,11 @@
         }
 
         function triggerResolveTicket(id) {
-            openModal('Resolve Ticket', 'Mark this IT support ticket as resolved and close the case?', '<i class="fas fa-check-double" style="color: #10b981;"></i>', 'Resolve', '#10b981', 'RESOLVE_TICKET', {id});
+            openModal('Resolve Ticket', 'Mark this IT support ticket as resolved and close the case?', '<i class="fas fa-check-double" style="color: #10b981;"></i>', 'Resolve Ticket', '#10b981', 'RESOLVE_TICKET', {id});
         }
 
         function triggerWipeModal() {
-            openModal('SYSTEM WIPE', 'CRITICAL WARNING: This will delete ALL student accounts, applications, and offline data. This cannot be undone.', '<i class="fas fa-radiation-alt" style="color: #ef4444;"></i>', 'EXECUTE WIPE', '#ef4444', 'WIPE_DB', null);
+            openModal('SYSTEM WIPE', 'CRITICAL WARNING: This will delete ALL student accounts, applications, library documents, and broadcast data from the Cloud Database. This cannot be undone.', '<i class="fas fa-radiation-alt" style="color: #ef4444;"></i>', 'EXECUTE WIPE', '#ef4444', 'WIPE_DB', null);
         }
 
     </script>
