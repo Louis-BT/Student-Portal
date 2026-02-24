@@ -302,25 +302,30 @@
             }
         }
 
-        // --- 3. INITIALIZATION & SERVER SYNC ---
+        // --- 3. INITIALIZATION & SINGLE-SOURCE OF TRUTH ---
         document.addEventListener('DOMContentLoaded', () => {
             fetchApplicationStatus();
         });
 
         async function fetchApplicationStatus() {
+            const userName = localStorage.getItem('portal-user-name') || 'Student';
+            
             try {
-                // Try fetching real status from DB first
+                // Attempt live server fetch
                 const res = await fetch('/api/leadership/status');
                 if(!res.ok) throw new Error("Offline");
-                
                 const data = await res.json();
                 renderState(data.status, data.position, data.date);
             } catch (error) {
-                // Fallback to local storage if API is unlinked
-                const localStatus = localStorage.getItem('portal-leadership-status');
-                const localPos = localStorage.getItem('portal-leadership-pos') || 'Pending Allocation';
-                const localDate = localStorage.getItem('portal-leadership-date') || new Date().toLocaleDateString();
-                renderState(localStatus, localPos, localDate);
+                // THE UPGRADE: Student now pulls directly from the Admin's Master Array
+                const globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
+                const userApp = globalApps.find(app => app.name === userName);
+                
+                if (userApp) {
+                    renderState(userApp.status, userApp.position, userApp.date);
+                } else {
+                    renderState(null, null, null); // No application found
+                }
             }
         }
 
@@ -336,7 +341,6 @@
             const pendingActions = document.getElementById('pending-actions');
             const approvedActions = document.getElementById('approved-actions');
 
-            // Set Receipt Data
             if(position) document.getElementById('receipt-pos').innerText = position;
             if(dateStr) document.getElementById('receipt-date').innerText = new Date(dateStr).toLocaleDateString();
 
@@ -390,9 +394,11 @@
             btn.style.opacity = '0.8';
             btn.disabled = true;
 
+            const userName = localStorage.getItem('portal-user-name') || 'Student';
+
             const payload = { 
-                id: Date.now(), // Generate a unique ID for the admin table
-                name: localStorage.getItem('portal-user-name') || 'Student',
+                id: Date.now(), 
+                name: userName,
                 institution: localStorage.getItem('portal-institution') || 'National DB',
                 position: pos, 
                 experience: exp, 
@@ -401,34 +407,17 @@
                 date: new Date().toISOString()
             };
 
-            // 🔥 ALWAYS CACHE TO THE GLOBAL ADMIN ARRAY FIRST
+            // CACHE DIRECTLY TO THE MASTER ADMIN DB
             let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
+            globalApps = globalApps.filter(app => app.name !== userName); // Prevent duplicate glitches
             globalApps.push(payload);
             localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
 
-            // Cache for the local student UI state
-            localStorage.setItem('portal-leadership-status', 'PENDING');
-            localStorage.setItem('portal-leadership-pos', pos);
-            localStorage.setItem('portal-leadership-date', payload.date);
-
             try {
-                // Attempt to send to DB
-                const res = await fetch('/api/leadership/apply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if(!res.ok) throw new Error("API Offline");
-                
+                await fetch('/api/leadership/apply', { method: 'POST', body: JSON.stringify(payload) });
                 setTimeout(() => { fetchApplicationStatus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
-
             } catch(e) {
-                // Local Fallback if server disconnected
-                setTimeout(() => {
-                    fetchApplicationStatus(); 
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 1500);
+                setTimeout(() => { fetchApplicationStatus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
             }
         }
 
@@ -436,21 +425,14 @@
         async function withdrawApp() {
             if(!confirm("⚠️ Are you sure you want to retract your manifesto? This action will permanently remove your dossier from the Admin Vetting Queue.")) return;
             
-            // 🔥 ALWAYS REMOVE FROM THE GLOBAL ADMIN ARRAY FIRST
-            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
             const userName = localStorage.getItem('portal-user-name') || 'Student';
+            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
             
-            // Filter out the application belonging to this user
+            // Instantly delete from Master Admin DB
             globalApps = globalApps.filter(app => app.name !== userName);
             localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
 
-            // Clear local student UI state
-            localStorage.removeItem('portal-leadership-status');
-            localStorage.removeItem('portal-leadership-pos');
-            localStorage.removeItem('portal-leadership-date');
-
             try {
-                // Tell DB to delete
                 await fetch('/api/leadership/withdraw', { method: 'DELETE' });
                 fetchApplicationStatus(); 
             } catch(e) {
