@@ -806,12 +806,13 @@
 
         function triggerReviewApp(id, status) {
             if(status === 'APPROVED') {
-                openModal('Authorize Verification', 'This will permanently approve the user into the Leadership Vanguard. Proceed?', '<i class="fas fa-medal" style="color: #10b981;"></i>', 'Authorize', '#10b981', 'LEADERSHIP_REVIEW', {id, status});
+                openModal('Authorize Verification', 'This will permanently approve the user into the Leadership Vanguard. Proceed?', '<i class="fas fa-medal" style="color: #10b981;"></i>', 'Authorize', '#10b981', 'LEADERSHIP_REVIEW', {id: id, status: status});
             } else {
-                openModal('Reject Dossier', 'This will permanently deny the leadership application. Proceed?', '<i class="fas fa-times-circle" style="color: #ef4444;"></i>', 'Deny Application', '#ef4444', 'LEADERSHIP_REVIEW', {id, status});
+                openModal('Reject Dossier', 'This will permanently deny the leadership application. Proceed?', '<i class="fas fa-times-circle" style="color: #ef4444;"></i>', 'Deny Application', '#ef4444', 'LEADERSHIP_REVIEW', {id: id, status: status});
             }
         }
 
+        // 🔥 FIXED SYNTAX ERROR HERE
         function triggerReviewResource(id, status) {
             if(status === 'APPROVED') {
                 openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id: id, status: status});
@@ -823,11 +824,11 @@
         }
 
         function triggerDeleteNews(id) {
-            openModal('Delete Broadcast', 'Remove this official announcement from the network history?', '<i class="fas fa-broadcast-tower" style="color: #ef4444;"></i>', 'Delete Broadcast', '#ef4444', 'DELETE_NEWS', {id});
+            openModal('Delete Broadcast', 'Remove this official announcement from the network history?', '<i class="fas fa-broadcast-tower" style="color: #ef4444;"></i>', 'Delete Broadcast', '#ef4444', 'DELETE_NEWS', {id: id});
         }
 
         function triggerResolveTicket(id) {
-            openModal('Resolve Ticket', 'Mark this IT support ticket as resolved and close the case?', '<i class="fas fa-check-double" style="color: #10b981;"></i>', 'Resolve Ticket', '#10b981', 'RESOLVE_TICKET', {id});
+            openModal('Resolve Ticket', 'Mark this IT support ticket as resolved and close the case?', '<i class="fas fa-check-double" style="color: #10b981;"></i>', 'Resolve Ticket', '#10b981', 'RESOLVE_TICKET', {id: id});
         }
 
         function triggerWipeModal() {
