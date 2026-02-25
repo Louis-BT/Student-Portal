@@ -814,11 +814,11 @@
 
         function triggerReviewResource(id, status) {
             if(status === 'APPROVED') {
-                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id, status});
+                openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id: id, status: status});
             } else if (status === 'REJECTED') {
-                openModal('Purge Document', 'This document will be rejected and permanently deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id, 'DELETE'});
+                openModal('Purge Document', 'This document will be rejected and permanently deleted from the queue. Proceed?', '<i class="fas fa-trash-alt" style="color: #ef4444;"></i>', 'Purge File', '#ef4444', 'RESOURCE_REVIEW', {id: id, status: 'DELETE'});
             } else {
-                 openModal('Delete Document', 'Remove this processed document record completely?', '<i class="fas fa-trash" style="color: #ef4444;"></i>', 'Delete', '#ef4444', 'RESOURCE_REVIEW', {id, status: 'DELETE'});
+                 openModal('Delete Document', 'Remove this processed document record completely?', '<i class="fas fa-trash" style="color: #ef4444;"></i>', 'Delete', '#ef4444', 'RESOURCE_REVIEW', {id: id, status: 'DELETE'});
             }
         }
 
