@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- 1. CORE LAYOUT & SIDEBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
@@ -132,7 +134,7 @@
                     <h2 style="color: var(--text-color);">Leadership Command</h2>
                 </div>
                 <div class="header-tools">
-                    <div class="notify-bell" title="Vanguard Alerts" onclick="alert('No new alerts.')">
+                    <div class="notify-bell" title="Vanguard Alerts" onclick="alert('Live Sync Active: Connection to Command Center is encrypted.')">
                         <i class="fas fa-bell"></i>
                         <span class="bell-dot"></span>
                     </div>
@@ -287,13 +289,22 @@
     </div>
 
     <script>
-        // --- 1. MOBILE MENU LOGIC ---
+        // --- 1. GLOBAL STATE & FIREBASE ---
+        let userEmail = localStorage.getItem('portal-user-email');
+        let userName = localStorage.getItem('portal-user-name') || 'Student';
+        let userAppKey = null; // Tracks the specific application ID in the cloud
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchApplicationStatus();
+        });
+
+        // --- 2. MOBILE MENU LOGIC ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        // --- 2. CHARACTER COUNTER ---
+        // --- 3. CHARACTER COUNTER ---
         function countChars(obj) {
             document.getElementById('char-count').innerHTML = obj.value.length;
             if(obj.value.length > 5000) {
@@ -302,35 +313,27 @@
             }
         }
 
-        // --- 3. INITIALIZATION & SINGLE-SOURCE OF TRUTH ---
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchApplicationStatus();
-        });
+        // --- 4. CLOUD LIVE LISTENER (The Magic Sync) ---
+        function fetchApplicationStatus() {
+            if (!userEmail) return;
 
-        async function fetchApplicationStatus() {
-            const userName = localStorage.getItem('portal-user-name') || 'Student';
-            
-            try {
-                // Attempt live server fetch
-                const res = await fetch('/api/leadership/status');
-                if(!res.ok) throw new Error("Offline");
-                const data = await res.json();
-                renderState(data.status, data.position, data.date);
-            } catch (error) {
-                // THE UPGRADE: Student now pulls directly from the Admin's Master Array
-                const globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
-                const userApp = globalApps.find(app => app.name === userName);
-                
-                if (userApp) {
-                    renderState(userApp.status, userApp.position, userApp.date);
+            // This creates a LIVE connection to the vanguard_apps node in Firebase
+            db.ref('vanguard_apps').orderByChild('email').equalTo(userEmail).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        userAppKey = child.key; // Store the unique key so we can withdraw later
+                        const data = child.val();
+                        renderState(data.status, data.position, data.date, child.key);
+                    });
                 } else {
-                    renderState(null, null, null); // No application found
+                    userAppKey = null;
+                    renderState(null, null, null, null); // No application found, show form
                 }
-            }
+            });
         }
 
-        // --- 4. UI STATE MANAGEMENT ---
-        function renderState(status, position, dateStr) {
+        // --- 5. UI STATE MANAGEMENT ---
+        function renderState(status, position, dateStr, dbKey) {
             const form = document.getElementById('application-form');
             const tracker = document.getElementById('application-tracker');
             
@@ -350,7 +353,7 @@
                 
                 document.getElementById('tracker-headline').innerText = "Vetting In Progress";
                 document.getElementById('tracker-headline').style.color = "#d97706";
-                document.getElementById('receipt-id').innerText = Math.floor(Math.random() * 90000) + 10000;
+                document.getElementById('receipt-id').innerText = dbKey.substring(1, 6).toUpperCase(); // Make a clean ID from firebase key
                 
                 progressBar.style.width = '50%';
                 step2.className = 'step active';
@@ -377,14 +380,21 @@
                 pendingActions.style.display = 'none';
                 approvedActions.style.display = 'block';
 
+            } else if (status === 'REJECTED') {
+                // If rejected, let them know and allow them to resubmit
+                form.style.display = 'block';
+                tracker.style.display = 'none';
+                alert("Your previous application was reviewed and rejected. You may submit a new manifesto.");
+                // Delete the rejected one so they can start over
+                if(userAppKey) db.ref('vanguard_apps/' + userAppKey).remove();
             } else {
                 form.style.display = 'block';
                 tracker.style.display = 'none';
             }
         }
 
-        // --- 5. THE ADMIN BRIDGE (SUBMIT LOGIC) ---
-        async function submitApp() {
+        // --- 6. SUBMIT TO ADMIN CLOUD ---
+        function submitApp() {
             const btn = document.getElementById('submit-btn');
             const pos = document.getElementById('target-pos').value;
             const exp = document.getElementById('experience-level').value;
@@ -394,11 +404,9 @@
             btn.style.opacity = '0.8';
             btn.disabled = true;
 
-            const userName = localStorage.getItem('portal-user-name') || 'Student';
-
             const payload = { 
-                id: Date.now(), 
                 name: userName,
+                email: userEmail, // Crucial for identifying the user in the cloud
                 institution: localStorage.getItem('portal-institution') || 'National DB',
                 position: pos, 
                 experience: exp, 
@@ -407,36 +415,30 @@
                 date: new Date().toISOString()
             };
 
-            // CACHE DIRECTLY TO THE MASTER ADMIN DB
-            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
-            globalApps = globalApps.filter(app => app.name !== userName); // Prevent duplicate glitches
-            globalApps.push(payload);
-            localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
-
-            try {
-                await fetch('/api/leadership/apply', { method: 'POST', body: JSON.stringify(payload) });
-                setTimeout(() => { fetchApplicationStatus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
-            } catch(e) {
-                setTimeout(() => { fetchApplicationStatus(); window.scrollTo({ top: 0, behavior: 'smooth' }); }, 1500);
-            }
+            // Push directly to Firebase. 
+            // We do NOT need to update the UI manually here because our live listener (.on) 
+            // will detect this new data in 0.1 seconds and trigger renderState() automatically!
+            db.ref('vanguard_apps').push(payload)
+            .then(() => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            })
+            .catch(err => {
+                alert("Submission failed. Check your internet connection.");
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit to Admin Queue';
+                btn.style.opacity = '1';
+                btn.disabled = false;
+            });
         }
 
-        // --- 6. THE ADMIN BRIDGE (WITHDRAW LOGIC) ---
-        async function withdrawApp() {
+        // --- 7. WITHDRAW FROM CLOUD ---
+        function withdrawApp() {
             if(!confirm("⚠️ Are you sure you want to retract your manifesto? This action will permanently remove your dossier from the Admin Vetting Queue.")) return;
             
-            const userName = localStorage.getItem('portal-user-name') || 'Student';
-            let globalApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps')) || [];
-            
-            // Instantly delete from Master Admin DB
-            globalApps = globalApps.filter(app => app.name !== userName);
-            localStorage.setItem('portal-global-vanguard-apps', JSON.stringify(globalApps));
-
-            try {
-                await fetch('/api/leadership/withdraw', { method: 'DELETE' });
-                fetchApplicationStatus(); 
-            } catch(e) {
-                fetchApplicationStatus();
+            if (userAppKey) {
+                db.ref('vanguard_apps/' + userAppKey).remove()
+                .catch(err => alert("Retraction failed: " + err.message));
+                // Again, no manual UI update needed. The .on listener will detect the deletion 
+                // and switch the view back to the empty form instantly.
             }
         }
     </script>
