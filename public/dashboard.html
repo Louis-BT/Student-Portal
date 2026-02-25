@@ -12,7 +12,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- LAYOUT ARCHITECTURE --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .dashboard-wrapper { display: flex; width: 100%; height: 100%; position: relative; }
@@ -106,16 +108,6 @@
         .admin-stat { border-left: 4px solid #ef4444; text-align: left; cursor: default;}
         .admin-stat:hover { transform: none; box-shadow: none; border-color: #ef4444; }
         
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card-bg); border-radius: 8px; overflow: hidden; }
-        .admin-table th { background: var(--input-bg); color: var(--text-muted); padding: 12px; text-align: left; font-size: 0.85rem; text-transform: uppercase;}
-        .admin-table td { padding: 12px; border-bottom: 1px solid var(--border-color); color: var(--text-color);}
-        
-        .btn-action { padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
-        .btn-approve { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);}
-        .btn-approve:hover { background: #10b981; color: white; transform: scale(1.05); }
-        .btn-reject { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);}
-        .btn-reject:hover { background: #ef4444; color: white; transform: scale(1.05); }
-
         /* MOBILE RESPONSIVENESS & HAMBURGER MENU */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
@@ -205,7 +197,7 @@
                 <div class="identity-strip">
                     <div class="id-item">
                         <span class="id-label">Institution</span>
-                        <span class="id-val" id="stu-school">Loading...</span>
+                        <span class="id-val" id="stu-school"><i class="fas fa-circle-notch fa-spin"></i> Syncing...</span>
                     </div>
                     <div class="id-item">
                         <span class="id-label">Program</span>
@@ -282,9 +274,9 @@
                         <div style="height:250px;"><canvas id="gpaChart"></canvas></div>
                     </div>
                     <div class="news-box">
-                        <h3 style="margin-top:0;">Campus News</h3>
+                        <h3 style="margin-top:0;">Campus News (Live)</h3>
                         <div id="news-feed" style="color:var(--text-muted); font-size:0.9rem;">
-                            <p class="text-center" style="padding: 20px;">Loading news from portal...</p>
+                            <p class="text-center" style="padding: 20px;"><i class="fas fa-circle-notch fa-spin"></i> Syncing broadcasts...</p>
                         </div>
                     </div>
                 </div>
@@ -319,18 +311,18 @@
                 <div class="dashboard-grid">
                     <div class="card admin-stat" style="border-left-color: #3b82f6;">
                         <h3>Total Students</h3>
-                        <p class="card-stat" style="margin: 10px 0;">1,359</p>
+                        <p class="card-stat" id="admin-user-count" style="margin: 10px 0;"><i class="fas fa-circle-notch fa-spin"></i></p>
                         <span style="color: #3b82f6;">▲ Active Accounts</span>
                     </div>
                     <div class="card admin-stat" style="border-left-color: #f59e0b;">
                         <h3>Pending Leaders</h3>
-                        <p class="card-stat" id="admin-pending-leaders" style="margin: 10px 0;">0</p>
+                        <p class="card-stat" id="admin-pending-leaders" style="margin: 10px 0;"><i class="fas fa-circle-notch fa-spin"></i></p>
                         <span style="color: #f59e0b;">Review Needed</span>
                     </div>
                     <div class="card admin-stat" style="border-left-color: #10b981;">
                         <h3>System Status</h3>
                         <p class="card-stat" style="margin: 10px 0;">Optimal</p>
-                        <span style="color: #10b981;">Servers Online</span>
+                        <span style="color: #10b981;">Firebase Cloud Online</span>
                     </div>
                 </div>
 
@@ -338,7 +330,7 @@
                     <i class="fas fa-tachometer-alt" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 15px;"></i>
                     <h2 style="margin:0 0 10px; color: var(--text-color);">Directorate Control Panel</h2>
                     <p style="color: var(--text-muted); margin-bottom: 20px;">To manage users, vet leadership applications, quarantine library files, and respond to support tickets, please access the full Command Center.</p>
-                    <button class="btn-action" style="background: var(--primary-color); color: white; padding: 12px 25px; font-size: 1rem; border-radius: 8px;" onclick="location.href='admin.html'"><i class="fas fa-shield-alt"></i> Enter Command Center</button>
+                    <button class="btn-action" style="background: var(--primary-color); color: white; padding: 12px 25px; font-size: 1rem; border-radius: 8px; cursor:pointer;" onclick="location.href='admin.html'"><i class="fas fa-shield-alt"></i> Enter Command Center</button>
                 </div>
             </div>
 
@@ -357,25 +349,23 @@
         document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
     }
 
-    // 🔥 Support Ticket Modal Logic
+    // 🔥 Support Ticket Modal Logic (Cloud Wired)
     function openReportModal() { document.getElementById('reportModal').style.display = 'flex'; }
     function closeReportModal() { document.getElementById('reportModal').style.display = 'none'; document.getElementById('reportMessage').value = ''; }
     
-    async function submitReport() {
+    function submitReport() {
         const msg = document.getElementById('reportMessage').value;
         const btn = document.getElementById('submitReportBtn');
         const user = localStorage.getItem('portal-user-name') || 'Unknown Student';
         
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Transmitting...';
         btn.disabled = true;
 
-        try {
-            await fetch('/api/user/report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_name: user, message: msg })
-            });
-            
+        db.ref('support_tickets').push({
+            user_name: user,
+            message: msg,
+            date: new Date().toISOString()
+        }).then(() => {
             btn.innerHTML = '<i class="fas fa-check"></i> Ticket Submitted';
             btn.style.background = '#10b981';
             
@@ -385,12 +375,11 @@
                 btn.style.background = 'var(--primary-color)';
                 btn.disabled = false;
             }, 2000);
-        } catch (e) {
-            alert("Connection error. Ticket saved locally and will transmit when online.");
-            closeReportModal();
+        }).catch(err => {
+            alert("Transmission Failed: " + err.message);
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Ticket';
             btn.disabled = false;
-        }
+        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -404,7 +393,7 @@
     });
 
     function setupAdminView() {
-        // 🔥 Dynamic Greeting Engine
+        // Dynamic Greeting Engine
         const hour = new Date().getHours();
         let greeting = "Good Evening";
         if (hour < 12) greeting = "Good Morning";
@@ -422,13 +411,18 @@
             <li class="active"><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard Home</a></li>
             <li><a href="admin.html"><i class="fas fa-tachometer-alt"></i> Command Center</a></li>
             <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
-            <li><a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="index.html" class="logout-btn" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         `;
 
-        // 🔥 Dynamic Admin Data Fetch (Syncs with Phase 3 Leadership Bridge)
-        const pendingApps = JSON.parse(localStorage.getItem('portal-global-vanguard-apps') || '[]');
-        const pendingCount = pendingApps.filter(app => app.status === 'PENDING').length;
-        document.getElementById('admin-pending-leaders').innerText = pendingCount;
+        // Firebase Admin Live Data Fetch
+        db.ref('users').on('value', (snapshot) => {
+            document.getElementById('admin-user-count').innerText = snapshot.numChildren() || 0;
+        });
+        db.ref('vanguard_apps').on('value', (snapshot) => {
+            let pendingCount = 0;
+            snapshot.forEach(child => { if(child.val().status === 'PENDING') pendingCount++; });
+            document.getElementById('admin-pending-leaders').innerText = pendingCount;
+        });
     }
 
     async function setupStudentView() {
@@ -444,18 +438,21 @@
             <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
             <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
             <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-            <li><a href="index.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="index.html" class="logout-btn" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         `;
 
         await loadStudentData(); 
-        loadNews(); 
+        loadLiveNews(); 
+        checkVanguardStatus();
     }
 
     async function loadStudentData() {
         const cachedName = localStorage.getItem('portal-user-name') || 'User';
+        const cachedEmail = localStorage.getItem('portal-user-email');
         const cachedPic = localStorage.getItem('portal-avatar');
+        let gpaValue = localStorage.getItem('portal-gpa') || "0.00";
         
-        // 🔥 Dynamic Greeting Engine
+        // Dynamic Greeting
         const hour = new Date().getHours();
         let greeting = "Good Evening";
         if (hour < 12) greeting = "Good Morning";
@@ -465,70 +462,35 @@
         document.getElementById('welcome-message').innerText = `${greeting}, ${cachedName.split(' ')[0]}!`;
         if(cachedPic) document.getElementById('sidebar-pic').src = cachedPic;
 
-        let gpaValue = localStorage.getItem('portal-gpa') || "0.00";
-
-        try {
-            const res = await fetch('/api/user/profile');
-            if(res.ok) {
-                const data = await res.json();
-                
-                document.getElementById('stu-school').innerText = data.institution || localStorage.getItem('portal-institution') || 'Not Set';
-                document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
-                document.getElementById('stu-program').innerText = data.program || 'General';
-                
-                // 🔥 Phase 2 Bridge: Accurately fetches the persisted career identity
-                document.getElementById('stu-career').innerText = data.career || localStorage.getItem('portal-career') || 'Not Set';
-                
-                gpaValue = data.gpa || gpaValue;
-                document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
-                document.getElementById('card-gpa').innerText = Number(gpaValue).toFixed(2);
-                
-                const remarkBadge = document.getElementById('gpa-remark');
-                remarkBadge.style.display = 'inline-block';
-                if (gpaValue >= 3.60) {
-                    remarkBadge.innerText = 'First Class Honour';
-                    remarkBadge.className = 'gpa-remark gpa-first';
-                } else if (gpaValue >= 3.00) {
-                    remarkBadge.innerText = 'Second Class Upper';
-                    remarkBadge.className = 'gpa-remark gpa-second-upper';
-                } else if (gpaValue >= 2.00) {
-                    remarkBadge.innerText = 'Second Class Lower';
-                    remarkBadge.className = 'gpa-remark gpa-second-lower';
+        // Firebase User Profile Sync
+        if (cachedEmail) {
+            db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const data = child.val();
+                        // Populate UI with DB data
+                        document.getElementById('stu-school').innerText = data.institution || 'Not Set';
+                        document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
+                        document.getElementById('stu-program').innerText = data.program || 'General';
+                        document.getElementById('stu-career').innerText = data.career || 'Not Set';
+                        
+                        gpaValue = data.gpa || gpaValue;
+                        updateGPAUI(gpaValue);
+                    });
                 } else {
-                    remarkBadge.innerText = 'Needs Improvement';
-                    remarkBadge.className = 'gpa-remark gpa-third';
+                    // Fallback to local
+                    document.getElementById('stu-school').innerText = localStorage.getItem('portal-institution') || 'Not Set';
+                    document.getElementById('stu-career').innerText = localStorage.getItem('portal-career') || 'Not Set';
+                    updateGPAUI(gpaValue);
                 }
-
-                let courseArray = [];
-                try {
-                    courseArray = typeof data.courses === 'string' ? JSON.parse(data.courses) : (data.courses || []);
-                } catch(e) {}
-                
-                // 🔥 Phase 1 Bridge: Pulls from isolated `portal-registered-courses`
-                if (courseArray.length === 0) {
-                    courseArray = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');
-                }
-                document.getElementById('course-count').innerText = courseArray.length;
-                
-                if(data.name) {
-                    document.getElementById('sidebar-name').innerText = data.name;
-                    document.getElementById('welcome-message').innerText = `${greeting}, ${data.name.split(' ')[0]}!`;
-                }
-            }
-        } catch (e) {
-            console.log("Offline mode, using cached data.");
-            
-            document.getElementById('stu-school').innerText = localStorage.getItem('portal-institution') || 'Not Set';
-            document.getElementById('stu-career').innerText = localStorage.getItem('portal-career') || 'Not Set';
-            
-            document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
-            document.getElementById('card-gpa').innerText = Number(gpaValue).toFixed(2);
-            
-            // 🔥 Phase 1 Bridge: Offline Fallback
-            const savedCourses = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');
-            document.getElementById('course-count').innerText = savedCourses.length;
+            });
         }
 
+        // Pull isolated courses data
+        const savedCourses = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');
+        document.getElementById('course-count').innerText = savedCourses.length;
+
+        // Chart Rendering
         const ctx = document.getElementById('gpaChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
@@ -553,64 +515,90 @@
         });
     }
 
-    async function loadNews() {
-        try {
-            const res = await fetch('/api/news');
-            const news = await res.json();
+    function updateGPAUI(gpaValue) {
+        document.getElementById('stu-gpa').innerText = Number(gpaValue).toFixed(2);
+        document.getElementById('card-gpa').innerText = Number(gpaValue).toFixed(2);
+        
+        const remarkBadge = document.getElementById('gpa-remark');
+        remarkBadge.style.display = 'inline-block';
+        if (gpaValue >= 3.60) {
+            remarkBadge.innerText = 'First Class Honour';
+            remarkBadge.className = 'gpa-remark gpa-first';
+        } else if (gpaValue >= 3.00) {
+            remarkBadge.innerText = 'Second Class Upper';
+            remarkBadge.className = 'gpa-remark gpa-second-upper';
+        } else if (gpaValue >= 2.00) {
+            remarkBadge.innerText = 'Second Class Lower';
+            remarkBadge.className = 'gpa-remark gpa-second-lower';
+        } else {
+            remarkBadge.innerText = 'Needs Improvement';
+            remarkBadge.className = 'gpa-remark gpa-third';
+        }
+    }
+
+    function loadLiveNews() {
+        db.ref('broadcasts').on('value', (snapshot) => {
             const feed = document.getElementById('news-feed');
             
-            if(news.length > 0) {
+            if(snapshot.exists()) {
                 feed.innerHTML = ''; 
-                news.slice(0, 3).forEach(n => {
+                // Convert to array and reverse to get newest first
+                let newsArray = [];
+                snapshot.forEach(child => newsArray.push(child.val()));
+                newsArray.reverse();
+
+                newsArray.slice(0, 3).forEach(n => {
                     feed.innerHTML += `
                         <div style="margin-bottom:15px; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
-                            <div style="font-weight:700; color:var(--text-color); margin-bottom:4px;">
-                                <i class="fas fa-bullhorn" style="color:var(--primary-color);"></i> ${n.title}
+                            <div style="font-weight:700; color:var(--text-color); margin-bottom:4px; display:flex; justify-content:space-between;">
+                                <span><i class="fas fa-bullhorn" style="color:var(--primary-color);"></i> ${n.title}</span>
+                                <span style="font-size:0.7rem; color:var(--text-muted); font-weight:normal;">${new Date(n.date).toLocaleDateString()}</span>
                             </div>
                             <div style="font-size:0.85rem;">${n.message}</div>
                         </div>
                     `;
                 });
             } else {
-                feed.innerHTML = '<p class="text-center">No new announcements.</p>';
+                feed.innerHTML = '<p class="text-center">No new announcements from the Directorate.</p>';
             }
-        } catch (e) {}
+        });
     }
 
-    async function checkVanguardStatus() {
-        let status = 'NONE';
-        
-        try {
-            const response = await fetch('/api/leadership/status');
-            if(!response.ok) throw new Error("API Offline");
-            const data = await response.json();
-            status = data.status;
-        } catch (error) {
-            // 🔥 Phase 3 Bridge: Accurate Local Check
-            status = localStorage.getItem('portal-leadership-status') || 'NONE';
-        }
+    function checkVanguardStatus() {
+        const userName = localStorage.getItem('portal-user-name');
+        if (!userName) return;
 
-        const applyBanner = document.getElementById('vanguard-banner');
-        const memberCard = document.getElementById('vanguard-member-card');
+        db.ref('vanguard_apps').orderByChild('name').equalTo(userName).on('value', (snapshot) => {
+            const applyBanner = document.getElementById('vanguard-banner');
+            const memberCard = document.getElementById('vanguard-member-card');
+            
+            if (snapshot.exists()) {
+                let status = 'PENDING';
+                snapshot.forEach(child => { status = child.val().status; });
 
-        if (status === 'APPROVED') {
-            if (applyBanner) applyBanner.style.display = 'none';
-            if (memberCard) memberCard.style.display = 'block';
-            document.getElementById('welcome-message').innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
-        } else if (status === 'PENDING') {
-            if (applyBanner) {
-                applyBanner.innerHTML = `
-                    <div>
-                        <strong style="color: #f59e0b; font-size: 1.1rem;">Leadership Vanguard</strong>
-                        <p style="margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem;">Your application is currently Under Review.</p>
-                    </div>
-                    <button class="btn-gold" style="opacity: 0.6; cursor: not-allowed; pointer-events: none;"><i class="fas fa-spinner fa-spin"></i> Pending</button>
-                `;
+                if (status === 'APPROVED') {
+                    if (applyBanner) applyBanner.style.display = 'none';
+                    if (memberCard) memberCard.style.display = 'block';
+                    
+                    // Add badge to welcome message if not already there
+                    const welcomeMsg = document.getElementById('welcome-message');
+                    if (!welcomeMsg.innerHTML.includes('🏅')) {
+                        welcomeMsg.innerHTML += ' <span title="Verified Leader" style="color:#fbbf24; font-size:1.2rem;">🏅</span>';
+                    }
+                } else if (status === 'PENDING') {
+                    if (applyBanner) {
+                        applyBanner.innerHTML = `
+                            <div>
+                                <strong style="color: #f59e0b; font-size: 1.1rem;">Leadership Vanguard</strong>
+                                <p style="margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem;">Your application is currently Under Review.</p>
+                            </div>
+                            <button class="btn-gold" style="opacity: 0.6; cursor: not-allowed; pointer-events: none;"><i class="fas fa-spinner fa-spin"></i> Pending</button>
+                        `;
+                    }
+                }
             }
-        }
+        });
     }
-
-    document.addEventListener('DOMContentLoaded', checkVanguardStatus);
 </script>
 
 </body>

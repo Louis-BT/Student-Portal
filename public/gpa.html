@@ -6,11 +6,13 @@
     <title>GPA Calculator | Student Portal</title>
     
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- LAYOUT & CORE --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
@@ -27,7 +29,7 @@
         .main-content { flex: 1; padding: 30px; overflow-y: auto; background: var(--bg-color); position: relative; }
         
         .gpa-layout {
-            display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px; max-width: 1300px; margin: 0 auto;
         }
 
         /* --- CALCULATOR CARD --- */
@@ -46,11 +48,11 @@
 
         /* INPUT ROWS */
         .course-header {
-            display: grid; grid-template-columns: 3fr 1fr 1.5fr auto; gap: 15px;
+            display: grid; grid-template-columns: 1fr 2.5fr 1fr 1.5fr auto; gap: 15px;
             font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 15px;
         }
         .course-row {
-            display: grid; grid-template-columns: 3fr 1fr 1.5fr auto; gap: 15px; margin-bottom: 12px; align-items: center;
+            display: grid; grid-template-columns: 1fr 2.5fr 1fr 1.5fr auto; gap: 15px; margin-bottom: 12px; align-items: center;
             background: var(--bg-color); padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);
             transition: transform 0.2s, box-shadow 0.2s;
         }
@@ -118,20 +120,20 @@
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 25px; }
         
         .btn-save {
-            background: var(--text-color); color: var(--bg-color); border: none;
+            background: #10b981; color: white; border: none;
             padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s; font-size: 1rem;
+            transition: 0.2s; font-size: 1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
-        .btn-save:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-save:hover { background: #059669; transform: translateY(-2px); }
 
         .btn-download {
-            background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color);
+            background: transparent; color: var(--text-color); border: 2px solid var(--border-color);
             padding: 14px; border-radius: 8px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 8px;
             transition: 0.2s; font-size: 1rem;
         }
-        .btn-download:hover { background: var(--primary-color); color: white; }
+        .btn-download:hover { border-color: var(--primary-color); color: var(--primary-color); background: var(--input-bg); }
 
         /* --- GRADING SCALE REFERENCE --- */
         .scale-ref { margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; text-align: left; }
@@ -149,17 +151,79 @@
             .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .sidebar-overlay.mobile-open { display: block; }
             .mobile-menu-btn { display: block; }
-            .course-header { display: none; } /* Hide headers on small screens */
-            .course-row { grid-template-columns: 1fr 1fr 1fr auto; }
-            .c-name { grid-column: 1 / -1; margin-bottom: 5px; } /* Course name takes full width on mobile */
+            .course-header { display: none; } 
+            .course-row { grid-template-columns: 1fr 1fr; }
+            .c-code { grid-column: 1 / 2; }
+            .c-name { grid-column: 2 / -1; } 
+            .btn-remove { grid-column: 1 / -1; width: 100%; }
         }
 
-        /* PRINT STYLES */
+        /* ========================================================= */
+        /* --- PREMIUM ENTERPRISE TRANSCRIPT PRINT ARCHITECTURE ---  */
+        /* ========================================================= */
+        .print-only-transcript { display: none; }
+
         @media print {
-            body * { visibility: hidden; }
-            .result-panel, .result-panel * { visibility: visible; }
-            .result-panel { position: absolute; left: 0; top: 0; width: 100%; border: none; }
-            .btn-save, .btn-download, .scale-selector { display: none; }
+            @page { size: A4 portrait; margin: 15mm; }
+            body { background: white !important; color: black !important; font-family: 'Inter', Helvetica, Arial, sans-serif; }
+            
+            /* Hide entire web UI */
+            .wrapper, .sidebar, .mobile-menu-btn, .theme-wrapper, .gpa-layout { display: none !important; }
+            
+            /* Reveal Print DOM */
+            .print-only-transcript { 
+                display: block !important; 
+                width: 100%; 
+                text-transform: uppercase; /* Force ALL CAPS as requested */
+            }
+
+            /* Watermark Overlay */
+            .print-only-transcript::after {
+                content: "OFFICIAL TRANSCRIPT";
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 8rem; color: rgba(0,0,0,0.03); font-weight: 900; z-index: -1; white-space: nowrap; pointer-events: none;
+            }
+
+            /* Header Section */
+            .t-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px double #000; padding-bottom: 20px; margin-bottom: 20px; }
+            .t-logo { width: 110px; height: 110px; object-fit: contain; }
+            .t-avatar { width: 110px; height: 110px; border-radius: 50%; border: 3px solid #000; object-fit: cover; }
+            
+            .t-title-block { text-align: center; flex: 1; padding: 0 20px; }
+            .t-title-block h1 { margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 22pt; font-weight: 900; letter-spacing: 1px;}
+            .t-title-block h2 { margin: 0 0 8px 0; font-size: 14pt; font-weight: 700; color: #333; }
+            .t-title-block h3 { margin: 0; font-size: 16pt; font-weight: 800; text-decoration: underline; letter-spacing: 2px;}
+
+            /* Bio Data Section */
+            .t-bio-grid { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 10.5pt; line-height: 1.8; }
+            .t-bio-left { text-align: left; }
+            .t-bio-right { text-align: right; }
+            .t-bio-grid strong { width: 130px; display: inline-block; }
+
+            /* Term Headers */
+            .t-term-center { text-align: center; font-size: 12pt; font-weight: 900; margin: 15px 0; text-decoration: underline;}
+            .t-term-left { text-align: left; font-size: 11pt; font-weight: 800; margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 5px;}
+
+            /* Transcript Table */
+            .t-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10pt; }
+            .t-table th, .t-table td { border: 1px solid #000; padding: 10px 8px; text-align: center; }
+            .t-table th { background-color: #f0f0f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 800; }
+            .t-table td:nth-child(1) { text-align: left; font-weight: bold; width: 15%; }
+            .t-table td:nth-child(2) { text-align: left; width: 50%; }
+            
+            /* Summary */
+            .t-summary { font-size: 12pt; font-weight: 900; margin-bottom: 50px; background: #f9f9f9 !important; -webkit-print-color-adjust: exact; padding: 10px; border: 1px solid #000; text-align: center; letter-spacing: 1px;}
+            
+            /* Signatures */
+            .t-signatures { display: flex; justify-content: space-between; margin-bottom: 50px; }
+            .t-sig-box { width: 250px; text-align: center; position: relative;}
+            .t-sig-line { border-top: 1px solid #000; padding-top: 8px; font-size: 10pt; font-weight: 800; margin-top: 60px; }
+            .t-stamp { position: absolute; top: 10px; left: 50%; transform: translate(-50%, -20%) rotate(-10deg); font-family: 'Playfair Display', serif; font-size: 24pt; color: rgba(0,0,0,0.3); border: 3px double rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 8px;}
+
+            /* Barcode */
+            .t-barcode-container { text-align: center; margin-top: auto; }
+            .t-barcode { height: 60px; margin-bottom: 5px; }
+            .t-index { font-family: monospace; font-size: 11pt; font-weight: bold; letter-spacing: 4px; }
         }
     </style>
 </head>
@@ -167,6 +231,70 @@
 
     <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
+    <div class="print-only-transcript">
+        <div class="t-header">
+            <img id="t-logo" class="t-logo" src="" alt="University Logo">
+            <div class="t-title-block">
+                <h1 id="t-inst">NATIONAL TERTIARY PORTAL</h1>
+                <h2 id="t-dept">DEPARTMENT OF GENERAL ACADEMICS</h2>
+                <h3>STATEMENT OF RESULTS</h3>
+            </div>
+            <img id="t-avatar" class="t-avatar" src="https://via.placeholder.com/150" alt="Student Photo">
+        </div>
+
+        <div class="t-bio-grid">
+            <div class="t-bio-left">
+                <div><strong>STUDENT ID:</strong> <span id="t-id">...</span></div>
+                <div><strong>NAME:</strong> <span id="t-name">...</span></div>
+                <div><strong>PROGRAMME:</strong> <span id="t-prog">...</span></div>
+                <div><strong>STUDY STATUS:</strong> ON-GOING</div>
+            </div>
+            <div class="t-bio-right">
+                <div><strong>FEE CATEGORY:</strong> <span id="t-fee">REGULAR</span></div>
+                <div><strong>LEVEL:</strong> <span id="t-level">...</span></div>
+                <div><strong>DATE PRINTED:</strong> <span id="t-date">...</span></div>
+                <div><strong>ACADEMIC YR:</strong> 2025/2026</div>
+                <div><strong>SEMESTER:</strong> ONE</div>
+            </div>
+        </div>
+
+        <div class="t-term-center">[FIRST YEAR(2025/2026)]</div>
+        <div class="t-term-left">TRIMESTER 1</div>
+
+        <table class="t-table">
+            <thead>
+                <tr>
+                    <th>COURSE CODE</th>
+                    <th>COURSE TITLE</th>
+                    <th>CREDITS</th>
+                    <th>MARK/SCORE</th>
+                    <th>GRADE</th>
+                </tr>
+            </thead>
+            <tbody id="t-tbody">
+                </tbody>
+        </table>
+
+        <div class="t-summary" id="t-summary-text">
+            CC (TOTAL CREDITS): 00 | GPA: 0.00 | CGPA: 0.00
+        </div>
+
+        <div class="t-signatures">
+            <div class="t-sig-box">
+                <div class="t-sig-line">STUDENT SIGNATURE</div>
+            </div>
+            <div class="t-sig-box">
+                <div class="t-stamp">VERIFIED</div>
+                <div class="t-sig-line">HEAD OF DEPARTMENT (HOD)</div>
+                <div style="font-size: 9pt; margin-top: 5px;" id="t-sig-date">DATE: ...</div>
+            </div>
+        </div>
+
+        <div class="t-barcode-container">
+            <img id="t-barcode-img" class="t-barcode" src="" alt="Barcode">
+            <div class="t-index" id="t-index-text">INDEX: 000000</div>
+        </div>
+    </div>
     <div class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -215,6 +343,7 @@
 
                     <form id="gpaForm" onsubmit="event.preventDefault(); calculate();">
                         <div class="course-header">
+                            <span>Course Code</span>
                             <span>Course Title</span>
                             <span>Credits</span>
                             <span>Score (0-100)</span>
@@ -257,12 +386,12 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button type="button" class="btn-save" id="syncBtn" onclick="saveToProfile()">
-                            <i class="fas fa-cloud-upload-alt"></i> Sync to National DB
+                        <button type="button" class="btn-save" id="syncBtn" onclick="saveToCloud()">
+                            <i class="fas fa-cloud-upload-alt"></i> Sync CGPA to National DB
                         </button>
                         
-                        <button type="button" class="btn-download" onclick="window.print()">
-                            <i class="fas fa-file-pdf"></i> Export Transcript
+                        <button type="button" class="btn-download" onclick="generateOfficialTranscript()">
+                            <i class="fas fa-file-pdf"></i> Export Official Transcript
                         </button>
                     </div>
 
@@ -282,38 +411,70 @@
     </div>
 
     <script>
-        // --- 1. MOBILE MENU LOGIC ---
+        // --- 1. GLOBAL STATE & FIREBASE SYNC ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        // --- 2. INITIALIZATION & DATA LOADING ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load courses from Local Storage first
-            const savedCourses = JSON.parse(localStorage.getItem('portal-courses')) || [];
-            const container = document.getElementById('course-rows');
-            container.innerHTML = ''; 
+        let userDbKey = null;
+        let globalUserProfile = {}; // Holds profile data for transcript generation
 
-            if (savedCourses.length > 0) {
-                savedCourses.forEach(c => addRow(c.name, c.credits, c.score));
-                // Automatically run calculation if data exists
-                setTimeout(calculate, 100);
-            } else {
-                for(let i=0; i<3; i++) addRow();
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            initCloudSync();
             updateScaleReference();
         });
 
+        function initCloudSync() {
+            const cachedEmail = localStorage.getItem("portal-user-email");
+            
+            if (cachedEmail) {
+                db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach(child => {
+                            userDbKey = child.key;
+                            globalUserProfile = child.val();
+                            
+                            // Load previous calculator courses if they exist
+                            const savedCourses = globalUserProfile.gpa_courses || JSON.parse(localStorage.getItem('portal-gpa-courses')) || [];
+                            loadRows(savedCourses);
+                        });
+                    } else {
+                        fallbackLocalLoad();
+                    }
+                });
+            } else {
+                fallbackLocalLoad();
+            }
+        }
+
+        function fallbackLocalLoad() {
+            const savedCourses = JSON.parse(localStorage.getItem('portal-gpa-courses')) || [];
+            loadRows(savedCourses);
+        }
+
+        function loadRows(courses) {
+            const container = document.getElementById('course-rows');
+            container.innerHTML = ''; 
+
+            if (courses.length > 0) {
+                courses.forEach(c => addRow(c.code, c.name, c.credits, c.score));
+                setTimeout(calculate, 100);
+            } else {
+                for(let i=0; i<4; i++) addRow(); // Blank default rows
+            }
+        }
+
         // --- 3. ROW MANAGEMENT ---
-        function addRow(name = '', credits = '', score = '') {
+        function addRow(code = '', name = '', credits = '', score = '') {
             const container = document.getElementById('course-rows');
             const row = document.createElement('div');
             row.className = 'course-row';
             row.innerHTML = `
-                <input type="text" placeholder="Course Name (e.g. CS 101)" value="${name}" class="c-name">
-                <input type="number" placeholder="Credits" value="${credits}" min="1" max="6" class="c-credit">
-                <input type="number" placeholder="Score (0-100)" value="${score}" min="0" max="100" class="c-score">
+                <input type="text" placeholder="Code" value="${code}" class="c-code">
+                <input type="text" placeholder="Course Title" value="${name}" class="c-name">
+                <input type="number" placeholder="Cr" value="${credits}" min="1" max="6" class="c-credit">
+                <input type="number" placeholder="Score" value="${score}" min="0" max="100" class="c-score">
                 <button type="button" class="btn-remove" onclick="this.parentElement.remove()" title="Delete Row">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -342,9 +503,7 @@
                 }
             });
 
-            if (!hasData) {
-                return; // Suppressed alert on auto-load
-            }
+            if (!hasData) return; 
 
             const gpa = (totalGradePoints / totalCredits).toFixed(2);
             
@@ -358,29 +517,49 @@
             document.getElementById('totalCredits').innerText = totalCredits;
             document.getElementById('totalPoints').innerText = totalGradePoints.toFixed(1);
 
-            // Update Badge, Colors, and Remarks instantly
             updateVisuals(parseFloat(gpa), scale);
         }
 
-        // --- 5. GRADE SCALES ---
+        // --- 5. GRADE SCALES & LETTER LOGIC ---
         function getGradePoint(score, scale) {
             if (scale === '5.0') {
-                if (score >= 80) return 5.00; // A+
-                if (score >= 70) return 4.50; // A
-                if (score >= 65) return 4.00; // B+
-                if (score >= 60) return 3.50; // B
-                if (score >= 55) return 3.00; // C+
-                if (score >= 50) return 2.50; // C
-                if (score >= 45) return 2.00; // D+
-                if (score >= 40) return 1.50; // D
-                return 0.00; // F
+                if (score >= 80) return 5.00; 
+                if (score >= 70) return 4.50; 
+                if (score >= 65) return 4.00; 
+                if (score >= 60) return 3.50; 
+                if (score >= 55) return 3.00; 
+                if (score >= 50) return 2.50; 
+                if (score >= 45) return 2.00; 
+                if (score >= 40) return 1.50; 
+                return 0.00; 
             } else {
-                if (score >= 70) return 4.00; // A
-                if (score >= 60) return 3.50; // B+
-                if (score >= 50) return 3.00; // B
-                if (score >= 45) return 2.50; // C+
-                if (score >= 40) return 2.00; // C
-                return 0.00; // F
+                if (score >= 70) return 4.00; 
+                if (score >= 60) return 3.50; 
+                if (score >= 50) return 3.00; 
+                if (score >= 45) return 2.50; 
+                if (score >= 40) return 2.00; 
+                return 0.00; 
+            }
+        }
+
+        function getGradeLetter(score, scale) {
+            if (scale === '5.0') {
+                if (score >= 80) return 'A+'; 
+                if (score >= 70) return 'A'; 
+                if (score >= 65) return 'B+'; 
+                if (score >= 60) return 'B'; 
+                if (score >= 55) return 'C+'; 
+                if (score >= 50) return 'C'; 
+                if (score >= 45) return 'D+'; 
+                if (score >= 40) return 'D'; 
+                return 'F'; 
+            } else {
+                if (score >= 70) return 'A'; 
+                if (score >= 60) return 'B+'; 
+                if (score >= 50) return 'B'; 
+                if (score >= 45) return 'C+'; 
+                if (score >= 40) return 'C'; 
+                return 'F'; 
             }
         }
 
@@ -428,7 +607,6 @@
                 }
             }
 
-            // Apply Visual Updates
             circle.style.borderColor = color;
             circle.style.color = color;
             badge.style.background = color + "15"; 
@@ -454,7 +632,6 @@
             window.requestAnimationFrame(step);
         }
 
-        // --- 7. DYNAMIC REFERENCE TABLE ---
         function updateScaleReference() {
             const scale = document.getElementById('scaleSelect').value;
             const tbody = document.getElementById('scaleTableBody');
@@ -489,8 +666,8 @@
             });
         }
 
-        // --- 8. DATABASE SYNC (Dashboard Integration) ---
-        async function saveToProfile() {
+        // --- 8. DATABASE CLOUD SYNC ---
+        function saveToCloud() {
             const gpaValue = document.getElementById('gpaValue').innerText;
             const btn = document.getElementById('syncBtn');
             
@@ -499,65 +676,127 @@
                 return;
             }
 
-            // Extract course data from current rows
             const rows = document.querySelectorAll('.course-row');
             let courseData = [];
             rows.forEach(row => {
+                const code = row.querySelector('.c-code').value.trim();
                 const name = row.querySelector('.c-name').value.trim();
                 const cred = row.querySelector('.c-credit').value;
                 const score = row.querySelector('.c-score').value;
-                if(name && cred) {
-                    courseData.push({ name: name, credits: cred, score: score });
+                if(name && cred && score) {
+                    courseData.push({ code: code, name: name, credits: cred, score: score });
                 }
             });
 
-            // INSTANT LOCAL SAVE: Ensures data is never lost even if DB fails
+            // Instant Local Backup
             localStorage.setItem('portal-gpa', gpaValue);
-            localStorage.setItem('portal-courses', JSON.stringify(courseData));
+            localStorage.setItem('portal-gpa-courses', JSON.stringify(courseData));
 
             // UI Feedback
             const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Syncing to National DB...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...`;
             btn.disabled = true;
 
-            try {
-                // Post current GPA and Courses to PostgreSQL Backend
-                const res = await fetch('/api/user/save-gpa', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        gpa: gpaValue,
-                        courses: courseData
-                    })
-                });
-
-                if (res.ok) {
+            if (userDbKey) {
+                db.ref('users/' + userDbKey).update({ 
+                    gpa: gpaValue,
+                    gpa_courses: courseData
+                })
+                .then(() => {
                     btn.innerHTML = `<i class="fas fa-check-circle"></i> Successfully Synced!`;
                     btn.style.background = "#10b981";
-                    btn.style.color = "white";
-                    
                     setTimeout(() => {
                         btn.innerHTML = originalText;
-                        btn.style.background = "var(--text-color)";
-                        btn.style.color = "var(--bg-color)";
+                        btn.style.background = "#10b981";
                         btn.disabled = false;
                     }, 2500);
-                } else { 
-                    throw new Error("Server rejected request"); 
-                }
-            } catch (err) {
-                // Failsafe execution: The data is already in localStorage. We just update the UI.
-                btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally (Offline Mode)`;
-                btn.style.background = "#f59e0b"; // Warning Orange
-                btn.style.color = "white";
-                
+                })
+                .catch(err => {
+                    btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
+                    btn.style.background = "#f59e0b"; 
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = "#10b981";
+                        btn.disabled = false;
+                    }, 3000);
+                });
+            } else {
+                btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
+                btn.style.background = "#f59e0b"; 
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                    btn.style.background = "var(--text-color)";
-                    btn.style.color = "var(--bg-color)";
+                    btn.style.background = "#10b981";
                     btn.disabled = false;
-                }, 3500);
+                }, 3000);
             }
+        }
+
+        // --- 9. PREMIUM TRANSCRIPT GENERATOR ---
+        function generateOfficialTranscript() {
+            // Check if calculation was run
+            const gpaValue = document.getElementById('gpaValue').innerText;
+            if (gpaValue === "0.00") {
+                alert("Please enter scores and calculate before exporting.");
+                return;
+            }
+
+            // 1. Populate Header Bio Data
+            const id = globalUserProfile.id ? `102${globalUserProfile.id.toString().substring(0,4)}09` : (localStorage.getItem('portal-user-id') || 'PENDING');
+            const inst = globalUserProfile.institution || localStorage.getItem('portal-institution') || 'NATIONAL TERTIARY PORTAL';
+            
+            document.getElementById('t-name').innerText = (globalUserProfile.name || localStorage.getItem('portal-user-name') || 'Student User');
+            document.getElementById('t-id').innerText = id;
+            document.getElementById('t-prog').innerText = globalUserProfile.program || 'DEGREE PROGRAMME';
+            document.getElementById('t-inst').innerText = inst;
+            document.getElementById('t-dept').innerText = "DEPARTMENT OF " + (globalUserProfile.department || 'GENERAL ACADEMICS').toUpperCase();
+            document.getElementById('t-fee').innerText = (globalUserProfile.financial_status || 'REGULAR').toUpperCase();
+            document.getElementById('t-level').innerText = globalUserProfile.level ? `LEVEL ${globalUserProfile.level}` : 'LEVEL 100';
+            document.getElementById('t-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('t-sig-date').innerText = "DATE: " + new Date().toLocaleDateString();
+
+            // Setup Logo & Avatar
+            const initials = inst.split(' ').map(n=>n[0]).join('').substring(0,3).toUpperCase();
+            document.getElementById('t-logo').src = `https://ui-avatars.com/api/?name=${initials}&background=fff&color=000&size=200&font-size=0.4&bold=true`;
+            
+            const avatar = globalUserProfile.avatar || localStorage.getItem('portal-avatar') || 'https://via.placeholder.com/150';
+            document.getElementById('t-avatar').src = avatar;
+
+            // Generate Barcode
+            document.getElementById('t-index-text').innerText = "INDEX: " + id;
+            document.getElementById('t-barcode-img').src = `https://barcode.tec-it.com/barcode.ashx?data=${id}&code=Code128&dpi=96`;
+
+            // 2. Populate Table
+            const scale = document.getElementById('scaleSelect').value;
+            const rows = document.querySelectorAll('.course-row');
+            const tbody = document.getElementById('t-tbody');
+            tbody.innerHTML = '';
+
+            rows.forEach(row => {
+                const code = row.querySelector('.c-code').value.trim() || 'N/A';
+                const name = row.querySelector('.c-name').value.trim() || 'UNNAMED COURSE';
+                const cred = row.querySelector('.c-credit').value || '0';
+                const score = row.querySelector('.c-score').value || '0';
+                
+                if (name !== 'UNNAMED COURSE' && score !== '') {
+                    const grade = getGradeLetter(parseFloat(score), scale);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${code}</td>
+                            <td>${name}</td>
+                            <td>${cred}</td>
+                            <td>${score}</td>
+                            <td><strong style="font-size:11pt;">${grade}</strong></td>
+                        </tr>
+                    `;
+                }
+            });
+
+            // 3. Populate Summary
+            const totalCr = document.getElementById('totalCredits').innerText;
+            document.getElementById('t-summary-text').innerText = `CC (TOTAL CREDITS): ${totalCr} | GPA: ${gpaValue} | CGPA: ${gpaValue}`;
+
+            // 4. Execute Print Dialog
+            window.print();
         }
     </script>
 </body>

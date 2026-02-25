@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <link rel="apple-touch-icon" href="icon.png?v=v2">
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <link rel="apple-touch-icon" href="icon.png?v=v2">
     <link rel="icon" type="image/png" href="icon.png?v=v2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -36,7 +38,7 @@
         p.sub-text { color: var(--text-muted); margin-bottom: 20px; font-size: 0.95rem; }
 
         /* Professional Error & Success Banners */
-        .error-message { display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; }
+        .error-message { display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: left; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; }
         .success-message { display: none; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; }
 
         /* INPUT STYLING */
@@ -187,54 +189,49 @@
                 // 4. Loading State
                 const originalHtml = submitBtn.innerHTML;
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating...';
+                submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Securing to Cloud...';
 
                 try {
-                    // Attempt Live Server Connection
-                    const response = await fetch('/api/auth/signup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: fullName, email, password, phone })
-                    });
-
-                    if (!response.ok) throw new Error("Offline");
-
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error);
-
-                    executeSignupSuccess(fullName, email, data.user.id);
-
-                } catch (err) {
-                    console.log("Live server unreachable. Engaging Offline Registration Bridge...");
-
-                    // Check if email already exists locally
-                    const localUsers = JSON.parse(localStorage.getItem('portal-registered-users')) || [];
-                    if (localUsers.find(u => u.email === email)) {
-                        errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Email already registered.';
+                    // 5. Query Firebase to check if email already exists
+                    const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
+                    
+                    if (snapshot.exists()) {
+                        errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Email is already registered in the National Database.';
                         errorMessage.style.display = 'block';
                         submitBtn.disabled = false;
                         submitBtn.innerHTML = originalHtml;
                         return;
                     }
 
-                    // Save new user locally
+                    // 6. Push New User to Firebase
                     const newId = Math.floor(Math.random() * 90000) + 10000;
-                    localUsers.push({
+                    const userData = {
                         id: newId,
                         name: fullName,
                         email: email,
-                        password: password, // In a real DB this is hashed. Fine for offline demo.
+                        password: password, 
                         phone: phone,
-                        role: 'STUDENT'
-                    });
-                    localStorage.setItem('portal-registered-users', JSON.stringify(localUsers));
+                        role: 'STUDENT',
+                        institution: 'National DB',
+                        date_registered: new Date().toISOString()
+                    };
 
+                    await db.ref('users').push(userData);
+
+                    // 7. Execute Local Login Sequence
                     executeSignupSuccess(fullName, email, newId);
+
+                } catch (err) {
+                    console.error("Cloud Error:", err);
+                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Database Connection Error. Please try again.';
+                    errorMessage.style.display = 'block';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalHtml;
                 }
             });
 
             function executeSignupSuccess(name, email, id) {
-                // Auto-login the user into local storage
+                // Auto-login the user into local session storage so the dashboard knows who is logged in
                 localStorage.setItem('portal-user-role', 'STUDENT');
                 localStorage.setItem('portal-user-name', name);
                 localStorage.setItem('portal-user-email', email);

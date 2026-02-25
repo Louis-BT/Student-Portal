@@ -14,7 +14,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- 1. CORE LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
@@ -149,7 +151,7 @@
                 <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
                 <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li style="margin-top: 20px;"><a href="index.html" style="color: #ef4444; border-left-color: transparent;" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </aside>
 
@@ -188,9 +190,9 @@
                         <input type="file" id="img-input" style="display:none" accept="image/*">
                     </div>
                     <div class="profile-info">
-                        <h1 id="student-name">Loading...</h1>
+                        <h1 id="student-name"><i class="fas fa-circle-notch fa-spin"></i> Syncing...</h1>
                         <p id="student-email">student@nationalportal.edu.gh</p>
-                        <span class="badge" id="student-role"><i class="fas fa-check-circle"></i> Verified Student</span>
+                        <span class="badge" id="student-role"><i class="fas fa-check-circle"></i> Cloud Verified</span>
                     </div>
                 </div>
 
@@ -394,7 +396,7 @@
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        // --- 1. DATA: GHANA UNIVERSITIES, COLLEGES OF EDUCATION, AND COLLEGES OF HEALTH ---
+        // --- 1. DATA: GHANA UNIVERSITIES & COLLEGES ---
         const ghanaInstitutions = [
             "University of Ghana, Legon (UG)", "Kwame Nkrumah University of Science and Technology (KNUST)", "SDA College of Education (SEDACOE), Koforidua-Asokore", "Kintampo College of Health and Well-being",
             "University of Cape Coast (UCC)", "University for Development Studies (UDS)",
@@ -408,42 +410,60 @@
             "Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)", "Ghana Communication Technology University (GCTU)"
         ];
 
-        // --- 2. INITIALIZATION & SERVER LOAD ---
-        document.addEventListener("DOMContentLoaded", async () => {
+        // --- 2. FIREBASE INITIALIZATION & SYNC ---
+        let userDbKey = null; // Store the unique Firebase ID for this user
+
+        document.addEventListener("DOMContentLoaded", () => {
             const role = localStorage.getItem("portal-user-role") || "Student";
-            const pic = localStorage.getItem("portal-avatar");
-            
-            if(role === 'ADMIN') document.getElementById("student-role").innerHTML = '<i class="fas fa-shield-alt"></i> System Admin';
-            if(pic) document.getElementById("profile-display").src = pic;
-
-            try {
-                const res = await fetch('/api/user/profile');
-                if(!res.ok) throw new Error("Offline");
-                const data = await res.json();
-                
-                document.getElementById("student-name").innerText = data.name || "Student User";
-                document.getElementById("student-email").innerText = data.email || "student@nationalportal.edu.gh";
-
-                if(data.name) document.getElementById("name").value = data.name;
-                if(data.institution) document.getElementById("schoolSearch").value = data.institution;
-                if(data.faculty) document.getElementById("faculty").value = data.faculty;
-                if(data.department) document.getElementById("department").value = data.department;
-                if(data.program) document.getElementById("program").value = data.program;
-                if(data.level) document.getElementById("level").value = data.level;
-                if(data.financial_status) document.getElementById("financial").value = data.financial_status;
-                if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
-                if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
-                
-                // Fetch Career Aspirations if it exists in DB, otherwise check local cache
-                document.getElementById("career").value = data.career || localStorage.getItem('portal-career') || "";
-                
-            } catch (e) {
-                console.log("Using cached profile data");
-                document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
-                document.getElementById("name").value = localStorage.getItem("portal-user-name") || "";
-                document.getElementById("schoolSearch").value = localStorage.getItem("portal-institution") || "";
-                document.getElementById("career").value = localStorage.getItem("portal-career") || "";
+            if(role === 'ADMIN') {
+                document.getElementById("student-role").innerHTML = '<i class="fas fa-shield-alt"></i> System Admin';
+                document.getElementById("student-email").innerText = "admin@nationalportal.edu.gh";
+                document.getElementById("student-name").innerText = "Directorate Admin";
+                document.getElementById("name").value = "Directorate Admin";
+                return;
             }
+
+            const cachedEmail = localStorage.getItem("portal-user-email");
+            if (!cachedEmail) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Pull live data from Firebase
+            db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        userDbKey = child.key; // Crucial for updating later
+                        const data = child.val();
+                        
+                        document.getElementById("student-name").innerText = data.name || "Student User";
+                        document.getElementById("student-email").innerText = data.email;
+
+                        if(data.name) document.getElementById("name").value = data.name;
+                        if(data.institution) document.getElementById("schoolSearch").value = data.institution;
+                        if(data.faculty) document.getElementById("faculty").value = data.faculty;
+                        if(data.department) document.getElementById("department").value = data.department;
+                        if(data.program) document.getElementById("program").value = data.program;
+                        if(data.level) document.getElementById("level").value = data.level;
+                        if(data.financial_status) document.getElementById("financial").value = data.financial_status;
+                        if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
+                        if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
+                        if(data.career) document.getElementById("career").value = data.career;
+                        
+                        // Load cloud avatar if it exists, else load local fallback
+                        if(data.avatar) {
+                            document.getElementById("profile-display").src = data.avatar;
+                            localStorage.setItem("portal-avatar", data.avatar); // keep cache synced
+                        } else {
+                            const localPic = localStorage.getItem("portal-avatar");
+                            if(localPic) document.getElementById("profile-display").src = localPic;
+                        }
+                    });
+                } else {
+                    // Fail-safe if somehow deleted from DB while logged in
+                    document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
+                }
+            });
         });
 
         // --- 3. TAB LOGIC ---
@@ -484,11 +504,11 @@
             if (!schoolInput.contains(e.target)) suggestionBox.style.display = 'none';
         });
 
-        // --- 5. SAVE PROFILE (POSTGRES SYNC + LOCAL FALLBACK) ---
-        async function saveProfile() {
+        // --- 5. SAVE PROFILE TO FIREBASE ---
+        function saveProfile() {
             const btn = document.getElementById('saveBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...';
             btn.disabled = true;
             
             const payload = {
@@ -498,25 +518,21 @@
                 department: document.getElementById("department").value,
                 program: document.getElementById("program").value,
                 level: document.getElementById("level").value,
-                financial: document.getElementById("financial").value,
-                entry: document.getElementById("entry-year").value,
-                completion: document.getElementById("grad-year").value,
-                career: document.getElementById("career").value // Save Career Aspiration
+                financial_status: document.getElementById("financial").value,
+                year_entry: document.getElementById("entry-year").value,
+                year_completion: document.getElementById("grad-year").value,
+                career: document.getElementById("career").value
             };
 
-            // 🔥 ALWAYS CACHE LOCALLY FIRST (Prevents data loss on reload)
+            // Keep local cache synced for instant loading on other pages
             localStorage.setItem("portal-user-name", payload.name);
             localStorage.setItem("portal-institution", payload.institution);
             localStorage.setItem("portal-career", payload.career);
 
-            try {
-                const res = await fetch('/api/user/update-profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if(res.ok) {
+            if (userDbKey) {
+                // Update specific user node in Firebase
+                db.ref('users/' + userDbKey).update(payload)
+                .then(() => {
                     const msg = document.getElementById("save-status");
                     msg.style.opacity = 1;
                     setTimeout(() => { msg.style.opacity = 0; }, 3000);
@@ -524,22 +540,27 @@
                     document.getElementById("student-name").innerText = payload.name;
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                } else { throw new Error(); }
-            } catch (err) {
-                // FALLBACK UX
-                document.getElementById("student-name").innerText = payload.name;
-                btn.innerHTML = '<i class="fas fa-hdd"></i> Saved Locally (Offline)';
-                btn.style.background = '#f59e0b'; // Orange warning
-                
-                setTimeout(() => {
+                })
+                .catch((err) => {
+                    alert("Cloud Sync Failed: " + err.message);
                     btn.innerHTML = originalText;
-                    btn.style.background = 'var(--primary-color)';
                     btn.disabled = false;
-                }, 3000);
+                });
+            } else {
+                // Admin bypass scenario
+                const msg = document.getElementById("save-status");
+                msg.innerText = "Saved Locally (Admin Mode)";
+                msg.style.color = "#f59e0b";
+                msg.style.opacity = 1;
+                setTimeout(() => { msg.style.opacity = 0; }, 3000);
+                
+                document.getElementById("student-name").innerText = payload.name;
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
-        // --- 6. IMAGE CROPPER LOGIC ---
+        // --- 6. IMAGE CROPPER LOGIC (Cloud Wired) ---
         let cropper;
         const imgInput = document.getElementById('img-input');
         const cropTarget = document.getElementById('crop-target');
@@ -566,20 +587,29 @@
 
         function saveCroppedImage() {
             const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-            const url = canvas.toDataURL('image/jpeg', 0.8);
+            // Compress heavily for real-time DB limits
+            const url = canvas.toDataURL('image/jpeg', 0.6); 
+            
             document.getElementById("profile-display").src = url;
             localStorage.setItem("portal-avatar", url); 
+
+            // Push avatar string to Firebase
+            if (userDbKey) {
+                db.ref('users/' + userDbKey).update({ avatar: url })
+                .then(() => { console.log("Avatar synced to cloud."); })
+                .catch(err => { console.error("Avatar sync failed.", err); });
+            }
+
             closeCropper();
         }
 
-        // --- 7. 🔥 PREMIUM PDF EXPORT ENGINE (Fixed Blank Output) ---
+        // --- 7. PREMIUM PDF EXPORT ENGINE ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             btn.disabled = true;
 
-            // Populate the hidden formal template
             document.getElementById('print-date').innerText = new Date().toLocaleDateString();
             document.getElementById('print-name').innerText = document.getElementById('name').value || "N/A";
             document.getElementById('print-inst').innerText = document.getElementById('schoolSearch').value || "N/A";
@@ -587,11 +617,8 @@
             document.getElementById('print-level').innerText = "Level " + document.getElementById('level').value;
             document.getElementById('print-career').innerText = document.getElementById('career').value || "N/A";
 
-            // html2canvas cannot render elements with display:none or off-screen reliably.
-            // We must temporarily display it in the viewport, render, then hide it instantly.
             const element = document.getElementById('official-print-template');
             
-            // Temporarily make it visible but cover it with the preloader so user doesn't see it flash
             element.style.display = 'block';
             element.style.zIndex = '999999';
             element.style.background = 'white';
@@ -604,10 +631,8 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            // Small timeout allows the DOM to repaint the visible element before capturing
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Hide it back completely
                     element.style.display = 'none'; 
                     element.style.zIndex = '-1';
                     btn.innerHTML = originalText;

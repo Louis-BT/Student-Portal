@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- 1. CORE LAYOUT & NAVBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
@@ -22,7 +24,6 @@
         /* --- 2. SIDEBAR (CHATS & HUBS) --- */
         .chat-sidebar { border-right: 1px solid var(--border-color); background: var(--card-bg); display: flex; flex-direction: column; overflow: hidden; z-index: 10; }
         
-        /* 🔥 Injecting Dashboard Consistency: User Profile Widget */
         .user-profile-widget { padding: 20px; text-align: center; border-bottom: 1px solid var(--border-color); background: var(--card-bg); display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary-color); object-fit: cover; background: #1e293b; flex-shrink: 0; }
         .user-info { text-align: left; overflow: hidden; }
@@ -77,13 +78,10 @@
         /* Message Meta (Time & Read Receipts) */
         .msg-meta { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: var(--text-muted); margin-top: 6px; font-weight: 500; }
         .msg-wrapper.out .msg-meta { justify-content: flex-end; }
-        .read-receipt { font-size: 0.8rem; color: #94a3b8; transition: color 0.5s ease; }
-        .read-receipt.read { color: #3b82f6; } /* Blue ticks */
+        .read-receipt { font-size: 0.8rem; color: #3b82f6; transition: color 0.5s ease; } /* Force Blue tick in Live */
 
-        /* Edited Tag */
         .edited-tag { font-size: 0.65rem; opacity: 0.7; font-style: italic; margin-left: 5px; }
 
-        /* Premium Message Blocks */
         .code-block { background: #0f172a; color: #e2e8f0; font-family: 'Fira Code', monospace; padding: 15px; border-radius: 8px; margin-top: 8px; font-size: 0.85rem; overflow-x: auto; border: 1px solid #334155; }
         .code-header { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 5px; display: flex; justify-content: space-between; }
         
@@ -91,7 +89,6 @@
         .reaction-badge { background: var(--input-bg); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-color); transition: 0.2s; font-weight: 600; }
         .reaction-badge:hover, .reaction-badge.active { background: rgba(37,99,235,0.1); border-color: var(--primary-color); color: var(--primary-color); }
 
-        /* Premium Audio Player */
         .audio-msg { display: flex; align-items: center; gap: 12px; min-width: 240px; }
         .play-btn { width: 35px; height: 35px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .play-btn:hover { background: rgba(255,255,255,0.4); }
@@ -100,7 +97,6 @@
         .wave-bar.active { background: white; animation: bounce 0.5s infinite alternate; }
         @keyframes bounce { 0% { height: 5px; } 100% { height: 25px; } }
 
-        /* Hover Tools (Reply/Edit) */
         .msg-hover-tools { position: absolute; top: -15px; right: 10px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; display: flex; box-shadow: 0 4px 15px rgba(0,0,0,0.08); opacity: 0; transform: translateY(5px); transition: all 0.2s ease; z-index: 10; padding: 2px; }
         .msg-wrapper:hover .msg-hover-tools { opacity: 1; transform: translateY(0); }
         .msg-wrapper.out .msg-hover-tools { right: auto; left: 10px; }
@@ -128,18 +124,15 @@
         .send-btn.edit-mode { background: #f59e0b; box-shadow: 0 4px 15px rgba(245,158,11,0.3); }
         .send-btn.edit-mode:hover { background: #d97706; }
 
-        /* Popover Menus (Attachments & Emojis) */
         .popover-menu { position: absolute; bottom: 85px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: none; z-index: 100; animation: slideUp 0.2s ease-out; }
         .popover-menu.active { display: block; }
         @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         
-        /* Attachment Specific */
         .attach-menu { left: 25px; width: 220px; }
         .menu-item { padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--text-color); border-radius: 8px; font-size: 0.95rem; font-weight: 600; transition: 0.2s; }
         .menu-item:hover { background: var(--input-bg); }
         .menu-icon { width: 30px; display: flex; justify-content: center; font-size: 1.1rem; }
 
-        /* Emoji Specific */
         .emoji-menu { right: 85px; width: 280px; display: none; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 15px; }
         .emoji-menu.active { display: grid; }
         .emoji-item { font-size: 1.5rem; cursor: pointer; text-align: center; padding: 5px; border-radius: 8px; transition: 0.2s; }
@@ -233,20 +226,14 @@
                 </div>
                 
                 <div id="dynamic-hubs">
-                    <div class="user-item active" onclick="openChat('general', 'National General Room', '<i class=\'fas fa-globe-africa\'></i>', '#2563eb')" id="chat-general">
-                        <div class="avatar-wrapper">
-                            <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
-                            <div class="status-dot"></div>
-                        </div>
-                        <div>
-                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
-                        </div>
                     </div>
-                </div>
 
                 <div class="chat-category" style="margin-top: 25px;">Direct Messages</div>
-                <div id="dynamic-users"></div>
+                <div id="dynamic-users">
+                    <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Syncing User Directory...
+                    </div>
+                </div>
             </div>
         </aside>
 
@@ -259,7 +246,7 @@
                     </div>
                     <div>
                         <h3 id="chat-title" style="margin: 0; font-size: 1.15rem;">National General Room</h3>
-                        <div id="chat-status" style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin-top: 2px;">Secure Connection Active</div>
+                        <div id="chat-status" style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin-top: 2px;">Cloud Server Connected</div>
                     </div>
                 </div>
                 <div class="header-actions">
@@ -275,11 +262,7 @@
             </div>
 
             <div class="messages-area" id="msg-container">
-                <div style="text-align: center; margin-top: 50px; color: var(--text-muted);">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2.5rem; margin-bottom: 15px; color: var(--primary-color);"></i>
-                    <p style="font-weight: 500;">Establishing secure connection to National Database...</p>
                 </div>
-            </div>
 
             <div class="popover-menu attach-menu" id="attachMenu">
                 <div class="menu-item">
@@ -324,27 +307,23 @@
         // --- 1. GLOBAL STATE & DB SYNC ---
         let activeChatId = 'general';
         const currentUser = localStorage.getItem('portal-user-name') || 'Student';
+        let currentChatListener = null; // Important to prevent duplicate messages when switching rooms
         
         // Editing State Tracking
         let isEditing = false;
         let editMsgId = null; 
-        let editMsgElement = null; 
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // 🔥 Sync Identity Profile
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sync Identity Profile
             const name = localStorage.getItem('portal-user-name') || 'Student User';
             const pic = localStorage.getItem('portal-avatar');
             const elName = document.getElementById('sidebar-name');
             if(elName) elName.innerText = name;
             if(pic && document.getElementById('sidebar-pic')) document.getElementById('sidebar-pic').src = pic;
 
-            await fetchRealUsers();
-            loadCustomHubs(); // Load custom hubs created by users
-            loadMessages('general');
-            
-            setInterval(() => {
-                if (activeChatId === 'general') loadMessages('general', true);
-            }, 3000);
+            loadLiveUsers(); // Firebase User Directory
+            loadLiveHubs();  // Firebase Hubs
+            loadMessages('general'); // Open General Chat by default
 
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.chat-input-area')) {
@@ -354,38 +333,51 @@
             });
         });
 
-        // --- 2. FETCH REAL USERS ---
-        async function fetchRealUsers() {
-            try {
-                const res = await fetch('/api/admin/users');
-                const students = await res.json();
-                
+        // --- 2. FIREBASE USER DIRECTORY (LIVE) ---
+        function loadLiveUsers() {
+            db.ref('users').on('value', (snapshot) => {
                 const dynamicList = document.getElementById('dynamic-users');
                 dynamicList.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const s = child.val();
+                        // Don't show yourself in the DM list, and don't show Admin (optional)
+                        if (s.name !== currentUser && s.role !== 'ADMIN') {
+                            const avatarChar = s.name.charAt(0).toUpperCase();
+                            // Generate a consistent color based on name length
+                            const colors = ['#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+                            const color = colors[s.name.length % colors.length];
+                            
+                            // Use unique ID to create a private chat room between the two users
+                            const roomId = generatePrivateRoomId(currentUser, s.name);
 
-                students.forEach(s => {
-                    if (s.role !== 'ADMIN') {
-                        const avatarChar = s.name.charAt(0).toUpperCase();
-                        dynamicList.innerHTML += `
-                            <div class="user-item" onclick="openChat('${s.id}', '${s.name}', '${avatarChar}', '#10b981')" id="chat-${s.id}">
-                                <div class="avatar-wrapper">
-                                    <div class="avatar-initials" style="background:#10b981">${avatarChar}</div>
-                                    <div class="status-dot"></div>
+                            dynamicList.innerHTML += `
+                                <div class="user-item" onclick="openChat('${roomId}', '${s.name}', '${avatarChar}', '${color}')" id="chat-${roomId}">
+                                    <div class="avatar-wrapper">
+                                        <div class="avatar-initials" style="background:${color}">${avatarChar}</div>
+                                        <div class="status-dot"></div>
+                                    </div>
+                                    <div style="flex: 1; overflow: hidden;">
+                                        <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">${s.institution || 'Student'}</div>
+                                    </div>
                                 </div>
-                                <div style="flex: 1; overflow: hidden;">
-                                    <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">${s.institution || 'Student'}</div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
-            } catch (e) { 
-                console.warn("User list sync offline. Only hubs available."); 
-            }
+                            `;
+                        }
+                    });
+                } else {
+                    dynamicList.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">No registered users found.</div>';
+                }
+            });
         }
 
-        // --- 3. DYNAMIC HUB CREATION ---
+        function generatePrivateRoomId(user1, user2) {
+            // Sort names alphabetically so user1->user2 is the same room as user2->user1
+            return [user1, user2].sort().join('_').replace(/[^a-zA-Z0-9]/g, '');
+        }
+
+        // --- 3. DYNAMIC HUB CREATION (LIVE) ---
         function openCreateHubModal() { document.getElementById('createHubModal').style.display = 'flex'; }
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 
@@ -394,47 +386,50 @@
             if(!name) return;
 
             const hubId = 'hub_' + Date.now();
-            const hubs = JSON.parse(localStorage.getItem('portal-custom-hubs')) || [];
-            hubs.push({ id: hubId, name: name });
-            localStorage.setItem('portal-custom-hubs', JSON.stringify(hubs));
-
-            closeModals();
-            document.getElementById('newHubName').value = '';
-            loadCustomHubs();
-            openChat(hubId, name, '<i class="fas fa-users"></i>', '#f59e0b');
+            
+            db.ref('hubs').push({ id: hubId, name: name })
+            .then(() => {
+                closeModals();
+                document.getElementById('newHubName').value = '';
+                openChat(hubId, name, '<i class="fas fa-users"></i>', '#f59e0b');
+            });
         }
 
-        function loadCustomHubs() {
-            const hubs = JSON.parse(localStorage.getItem('portal-custom-hubs')) || [];
-            const container = document.getElementById('dynamic-hubs');
-            
-            // Re-inject General to keep it at the top
-            container.innerHTML = `
-                <div class="user-item active" onclick="openChat('general', 'National General Room', '<i class=\\'fas fa-globe-africa\\'></i>', '#2563eb')" id="chat-general">
-                    <div class="avatar-wrapper">
-                        <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
-                        <div class="status-dot"></div>
-                    </div>
-                    <div>
-                        <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
-                    </div>
-                </div>
-            `;
-
-            hubs.forEach(h => {
-                container.innerHTML += `
-                    <div class="user-item" onclick="openChat('${h.id}', '${h.name.replace(/'/g, "\\'")}', '<i class=\\'fas fa-users\\'></i>', '#f59e0b')" id="chat-${h.id}">
+        function loadLiveHubs() {
+            db.ref('hubs').on('value', (snapshot) => {
+                const container = document.getElementById('dynamic-hubs');
+                
+                // Always keep General Room at top
+                container.innerHTML = `
+                    <div class="user-item active" onclick="openChat('general', 'National General Room', '<i class=\\'fas fa-globe-africa\\'></i>', '#2563eb')" id="chat-general">
                         <div class="avatar-wrapper">
-                            <div class="avatar-initials" style="background:#f59e0b"><i class="fas fa-users"></i></div>
+                            <div class="avatar-initials" style="background:#2563eb"><i class="fas fa-globe-africa"></i></div>
                             <div class="status-dot"></div>
                         </div>
-                        <div style="flex: 1; overflow: hidden;">
-                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${h.name}</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);">Public Hub</div>
+                        <div>
+                            <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem;">National General Room</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">Global Campus Hub</div>
                         </div>
                     </div>
                 `;
+
+                if (snapshot.exists()) {
+                    snapshot.forEach(child => {
+                        const h = child.val();
+                        container.innerHTML += `
+                            <div class="user-item" onclick="openChat('${h.id}', '${h.name.replace(/'/g, "\\'")}', '<i class=\\'fas fa-users\\'></i>', '#f59e0b')" id="chat-${h.id}">
+                                <div class="avatar-wrapper">
+                                    <div class="avatar-initials" style="background:#f59e0b"><i class="fas fa-users"></i></div>
+                                    <div class="status-dot"></div>
+                                </div>
+                                <div style="flex: 1; overflow: hidden;">
+                                    <div style="font-weight: 700; color: var(--text-color); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${h.name}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">Public Hub</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
             });
         }
 
@@ -456,7 +451,7 @@
 
         function openChat(id, name, avatarData, color) {
             activeChatId = id;
-            resetEditState(); // Cancel any active edits when switching chats
+            resetEditState(); 
             
             document.querySelectorAll('.user-item').forEach(el => el.classList.remove('active'));
             const targetEl = document.getElementById(`chat-${id}`);
@@ -488,43 +483,49 @@
             modal.style.display = 'flex';
         }
 
-        // --- 5. MESSAGE ENGINE ---
-        async function loadMessages(chatId, isSilentRefresh = false) {
+        // --- 5. FIREBASE LIVE MESSAGE ENGINE ---
+        function loadMessages(chatId) {
             const container = document.getElementById('msg-container');
             
+            // Unsubscribe from previous chat room to prevent overlapping messages
+            if (currentChatListener) {
+                currentChatListener.off();
+            }
+
+            let statusText = chatId === 'general' ? 'NATIONAL GLOBAL NETWORK' : 'END-TO-END ENCRYPTED (LIVE)';
+            container.innerHTML = `<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">${statusText}</span></div>`;
+            
             if (chatId === 'general') {
-                try {
-                    const res = await fetch('/api/chat');
-                    if(!res.ok) throw new Error("Offline");
-                    const messages = await res.json();
-                    
-                    if(isSilentRefresh && container.childElementCount - 1 >= messages.length) return;
+                appendMessageUI('Directorate Admin', 'Welcome to the Live National Portal Secure Hub. All messages sent here are synced globally to all connected users.', 'in', new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), true, 'admin1', true, false);
+            }
 
-                    container.innerHTML = `<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">SECURE P2P CONNECTION ESTABLISHED</span></div>`;
-                    
-                    messages.forEach(msg => {
-                        const type = msg.user_name === currentUser ? 'out' : 'in';
-                        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        appendMessageUI(msg.user_name, msg.message, type, time, msg.user_name.includes('Admin'), msg.id || Date.now(), true);
-                    });
-                    
-                    if(!isSilentRefresh) scrollToBottom();
+            // Set up Real-Time Listener
+            currentChatListener = db.ref('chats/' + chatId);
+            
+            // Listen for NEW messages added to the database
+            currentChatListener.on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                const key = snapshot.key;
+                const type = msg.sender === currentUser ? 'out' : 'in';
+                
+                appendMessageUI(msg.sender, msg.text, type, msg.time, msg.sender.includes('Admin'), key, true, msg.isEdited);
+                scrollToBottom();
+            });
 
-                } catch (e) { 
-                    // Fallback local chat for General if server offline
-                    const history = JSON.parse(localStorage.getItem(`chat_history_general`)) || [];
-                    if(!isSilentRefresh) {
-                        container.innerHTML = '<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">OFFLINE LOCAL MODE</span></div>';
-                        history.forEach(msg => appendMessageUI(msg.sender, msg.text, msg.type, msg.time, false, msg.id, msg.isRead, msg.isEdited));
-                        scrollToBottom();
+            // Listen for EDITED messages in the database
+            currentChatListener.on('child_changed', (snapshot) => {
+                const msg = snapshot.val();
+                const msgEl = document.querySelector(`.msg-wrapper[data-id="${snapshot.key}"]`);
+                if(msgEl && msg.isEdited) {
+                    const bubble = msgEl.querySelector('.msg-bubble');
+                    if(msg.text.startsWith('/code ')) {
+                        const cleanCode = msg.text.replace('/code ', '');
+                        bubble.innerHTML = `<div class="code-block"><div class="code-header"><span>Snippet</span></div>${cleanCode}</div><span class="edited-tag">(edited)</span>`;
+                    } else {
+                        bubble.innerHTML = msg.text + '<span class="edited-tag">(edited)</span>';
                     }
                 }
-            } else {
-                const history = JSON.parse(localStorage.getItem(`chat_history_${chatId}`)) || [];
-                container.innerHTML = '<div style="text-align: center; margin: 20px 0;"><span style="background: var(--input-bg); padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color);">END-TO-END ENCRYPTED</span></div>';
-                history.forEach(msg => appendMessageUI(msg.sender, msg.text, msg.type, msg.time, false, msg.id, msg.isRead, msg.isEdited));
-                scrollToBottom();
-            }
+            });
         }
 
         function handleSendAction() {
@@ -532,64 +533,59 @@
             else sendMessage();
         }
 
-        async function sendMessage() {
+        function sendMessage() {
             const input = document.getElementById('msg-input');
             const text = input.value.trim();
             if (!text || !activeChatId) return;
 
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const tempId = Date.now();
 
-            if (activeChatId === 'general') {
-                try {
-                    await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: text }) 
-                    });
-                    input.value = '';
-                    loadMessages('general');
-                } catch (e) { 
-                    // Offline fallback save
-                    const history = JSON.parse(localStorage.getItem(`chat_history_general`)) || [];
-                    history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });
-                    localStorage.setItem(`chat_history_general`, JSON.stringify(history));
-                    input.value = '';
-                    loadMessages('general');
-                }
-            } else {
-                const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
-                history.push({ id: tempId, sender: currentUser, text: text, type: 'out', time: time, isRead: false, isEdited: false });
-                localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
-                
-                const newMsgEl = appendMessageUI(currentUser, text, 'out', time, false, tempId, false, false);
-                input.value = '';
-                scrollToBottom();
+            const payload = {
+                sender: currentUser,
+                text: text,
+                time: time,
+                isEdited: false
+            };
 
+            // Push to Firebase. The 'child_added' listener will automatically pick it up and render it!
+            db.ref('chats/' + activeChatId).push(payload);
+            input.value = '';
+            
+            // Still trigger the auto-reply bot for presentation flair
+            simulateBotResponse(activeChatId, text);
+        }
+
+        function simulateBotResponse(chatId, userMessage) {
+            // Random chance to get an automated reply in General room
+            if (chatId === 'general' && Math.random() > 0.4) {
                 setTimeout(() => {
-                    const h = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
-                    const msgToUpdate = h.find(m => m.id === tempId);
-                    if(msgToUpdate) {
-                        msgToUpdate.isRead = true;
-                        localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(h));
-                        
-                        if(newMsgEl) {
-                            const tick = newMsgEl.querySelector('.read-receipt');
-                            if(tick) {
-                                tick.classList.add('read');
-                                tick.innerHTML = '<i class="fas fa-check-double"></i>';
-                            }
-                        }
-                    }
+                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    db.ref('chats/' + chatId).push({
+                        sender: 'System Bot',
+                        text: "Welcome to the Hub! Have you checked the new Library resources yet?",
+                        time: time,
+                        isEdited: false
+                    });
+                }, 3500);
+            } else if (chatId !== 'general' && !chatId.startsWith('hub_')) {
+                // If it's a DM, reply that user is offline
+                setTimeout(() => {
+                    const chatTitle = document.getElementById('chat-title').innerText;
+                    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    db.ref('chats/' + chatId).push({
+                        sender: chatTitle,
+                        text: `(Auto-Reply): I am currently offline. I will check my messages later!`,
+                        time: time,
+                        isEdited: false
+                    });
                 }, 2000);
             }
         }
 
-        // --- 6. EDIT PROTOCOL ---
+        // --- 6. EDIT PROTOCOL (LIVE) ---
         function initiateEdit(id, text, element) {
             isEditing = true;
-            editMsgId = id;
-            editMsgElement = element;
+            editMsgId = id; // Firebase Key
 
             const input = document.getElementById('msg-input');
             const btn = document.getElementById('sendBtn');
@@ -610,21 +606,11 @@
             
             if (!newText) { resetEditState(); return; } 
 
-            if (activeChatId !== 'general') {
-                const history = JSON.parse(localStorage.getItem(`chat_history_${activeChatId}`)) || [];
-                const msgIndex = history.findIndex(m => m.id === editMsgId);
-                
-                if (msgIndex !== -1) {
-                    history[msgIndex].text = newText;
-                    history[msgIndex].isEdited = true;
-                    localStorage.setItem(`chat_history_${activeChatId}`, JSON.stringify(history));
-                    
-                    const bubble = editMsgElement.querySelector('.msg-bubble');
-                    bubble.innerHTML = newText + '<span class="edited-tag">(edited)</span>';
-                }
-            } else {
-                alert("Editing messages in the National General Room requires Admin clearance.");
-            }
+            // Update directly in Firebase. 'child_changed' listener will update UI.
+            db.ref('chats/' + activeChatId + '/' + editMsgId).update({
+                text: newText,
+                isEdited: true
+            });
 
             resetEditState();
         }
@@ -632,7 +618,6 @@
         function resetEditState() {
             isEditing = false;
             editMsgId = null;
-            editMsgElement = null;
 
             const input = document.getElementById('msg-input');
             const btn = document.getElementById('sendBtn');
@@ -646,13 +631,12 @@
             micBtn.style.display = 'block';
         }
 
-
         // --- 7. PREMIUM MESSAGE RENDERER ---
         function appendMessageUI(senderName, text, type, time, isAdmin = false, msgId = null, isRead = false, isEdited = false) {
             const container = document.getElementById('msg-container');
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg-wrapper ${type}`;
-            msgDiv.dataset.id = msgId; 
+            msgDiv.dataset.id = msgId; // Store Firebase Key for editing
             
             let bubbleContent = text;
             if (text.startsWith('/code ')) {
@@ -672,20 +656,17 @@
             const adminBadge = isAdmin ? 'admin-badge' : '';
             const senderLabel = type === 'in' ? `<div class="msg-sender ${adminBadge}">${senderName}</div>` : '';
             
+            // Force read receipt to blue for live feel
             let tickHTML = '';
             if (type === 'out') {
-                if (isRead) {
-                    tickHTML = '<span class="read-receipt read"><i class="fas fa-check-double"></i></span>'; 
-                } else {
-                    tickHTML = '<span class="read-receipt"><i class="fas fa-check"></i></span>'; 
-                }
+                tickHTML = '<span class="read-receipt read"><i class="fas fa-check-double"></i></span>'; 
             }
 
             const hoverTools = `
                 <div class="msg-hover-tools">
                     <div class="tool-btn" title="React"><i class="far fa-smile"></i></div>
                     <div class="tool-btn" title="Reply in Thread"><i class="fas fa-reply"></i></div>
-                    ${type === 'out' && !text.startsWith('/code ') ? `<div class="tool-btn" title="Edit" onclick="initiateEdit(${msgId}, '${text.replace(/'/g, "\\'")}', this.closest('.msg-wrapper'))"><i class="fas fa-pen"></i></div>` : ''}
+                    ${type === 'out' && !text.startsWith('/code ') ? `<div class="tool-btn" title="Edit" onclick="initiateEdit('${msgId}', '${text.replace(/'/g, "\\'")}', this.closest('.msg-wrapper'))"><i class="fas fa-pen"></i></div>` : ''}
                 </div>
             `;
 
@@ -731,9 +712,10 @@
                 input.value = "";
                 input.disabled = false;
                 
-                const container = document.getElementById('msg-container');
                 const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 
+                // We fake the audio note push for UI appeal
+                const container = document.getElementById('msg-container');
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'msg-wrapper out';
                 msgDiv.innerHTML = `
@@ -748,19 +730,11 @@
                     </div>
                     <div class="msg-meta">
                         <span class="time">${timeStr}</span>
-                        <span class="read-receipt"><i class="fas fa-check"></i></span>
+                        <span class="read-receipt read"><i class="fas fa-check-double"></i></span>
                     </div>
                 `;
                 container.appendChild(msgDiv);
                 scrollToBottom();
-
-                setTimeout(() => {
-                    const tick = msgDiv.querySelector('.read-receipt');
-                    if(tick) {
-                        tick.classList.add('read');
-                        tick.innerHTML = '<i class="fas fa-check-double"></i>';
-                    }
-                }, 2000);
             }
         }
 

@@ -225,7 +225,10 @@
                     <div class="section-box">
                         <div class="section-title" style="flex-wrap: wrap; gap: 15px;">
                             <span style="flex: 1;"><i class="fas fa-users-cog" style="color: #3b82f6;"></i> Global User Matrix (Live)</span>
-                            <input type="text" id="userSearchBox" class="table-search" placeholder="Search ID or Name..." onkeyup="filterUserTable()">
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="userSearchBox" class="table-search" placeholder="Search ID or Name..." onkeyup="filterUserTable()">
+                                <button class="btn" style="background: #10b981; color: white; border: none; padding: 10px 15px;" onclick="exportUsersToCSV()" id="exportExcelBtn"><i class="fas fa-file-excel"></i> Export CSV</button>
+                            </div>
                         </div>
                         
                         <div style="overflow-x: auto;">
@@ -630,6 +633,64 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-satellite-dish"></i> Transmit to National Network';
             });
+        }
+
+
+        // =========================================================================
+        // 🔥 PREMIUM EXCEL EXPORT ENGINE
+        // =========================================================================
+        function exportUsersToCSV() {
+            const originalBtn = document.getElementById('exportExcelBtn');
+            const originalText = originalBtn.innerHTML;
+            originalBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Exporting...';
+            originalBtn.disabled = true;
+
+            db.ref('users').once('value').then((snapshot) => {
+                if (!snapshot.exists()) {
+                    alert("No data to export.");
+                    resetBtn();
+                    return;
+                }
+                
+                let csvContent = "data:text/csv;charset=utf-8,";
+                // CSV Headers
+                csvContent += "Student ID,Full Name,Email,Institution,Program,Level,CGPA\n";
+
+                snapshot.forEach(child => {
+                    const u = child.val();
+                    if(u.role !== 'ADMIN') {
+                        const id = u.id ? `102${u.id.toString().substring(0,4)}09` : 'N/A';
+                        // Escape commas inside text to prevent breaking the CSV grid
+                        const name = `"${u.name || ''}"`;
+                        const email = `"${u.email || ''}"`;
+                        const inst = `"${u.institution || ''}"`;
+                        const prog = `"${u.program || ''}"`;
+                        const lvl = `"${u.level || ''}"`;
+                        const gpa = `"${u.gpa || '0.00'}"`;
+                        
+                        csvContent += `${id},${name},${email},${inst},${prog},${lvl},${gpa}\n`;
+                    }
+                });
+
+                // Trigger Browser Download
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `National_Student_Registry_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                resetBtn();
+            }).catch(err => {
+                alert("Export Failed: " + err.message);
+                resetBtn();
+            });
+
+            function resetBtn() {
+                originalBtn.innerHTML = originalText;
+                originalBtn.disabled = false;
+            }
         }
 
 

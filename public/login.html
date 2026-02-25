@@ -9,8 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
-    
-    <link rel="apple-touch-icon" href="icon.png?v=v2">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <link rel="apple-touch-icon" href="icon.png?v=v2">
     <link rel="icon" type="image/png" href="icon.png?v=v2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -142,7 +144,7 @@
                 togglePassBtn.classList.toggle('fa-eye-slash');
             });
 
-            // --- THE OFFLINE-RESILIENT AUTH ENGINE ---
+            // --- THE LIVE CLOUD AUTH ENGINE ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 errorMessage.style.display = 'none';
@@ -155,45 +157,43 @@
                 submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...';
 
                 try {
-                    // Attempt Live Server Connection
-                    const response = await fetch('/api/auth/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, password })
-                    });
-
-                    if (!response.ok) throw new Error("Offline");
-
-                    const data = await response.json();
-                    if (data.error) throw new Error(data.error);
-
-                    executeLoginSuccess(data.user);
-
-                } catch (err) {
-                    console.log("Live server unreachable. Engaging Offline Auth Bridge...");
-
-                    // 1. MASTER ADMIN BYPASS
+                    // 1. MASTER ADMIN BYPASS (Kept for easy demo access)
                     if ((email === 'admin' || email === 'admin@portal.com') && password === 'admin') {
                         executeLoginSuccess({ role: 'ADMIN', name: 'Directorate Admin', email: email, id: '000000' });
                         return;
                     }
 
-                    // 2. MASTER STUDENT BYPASS (Demo Mode)
+                    // 2. MASTER STUDENT BYPASS (Kept for easy demo access)
                     if ((email === 'student' || email === 'student@portal.com') && password === 'student') {
                         executeLoginSuccess({ role: 'STUDENT', name: 'Demo Student', email: email, id: '10284909' });
                         return;
                     }
 
-                    // 3. CHECK LOCAL STORAGE FOR REGISTERED USERS
-                    const localUsers = JSON.parse(localStorage.getItem('portal-registered-users')) || [];
-                    const foundUser = localUsers.find(u => u.email.toLowerCase() === email && u.password === password);
+                    // 3. QUERY FIREBASE CLOUD DATABASE
+                    const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
+                    
+                    if (snapshot.exists()) {
+                        let userFound = null;
+                        
+                        // Loop through results (should only be one match)
+                        snapshot.forEach((childSnapshot) => {
+                            const userData = childSnapshot.val();
+                            if (userData.password === password) {
+                                userFound = userData;
+                            }
+                        });
 
-                    if (foundUser) {
-                        executeLoginSuccess({ role: 'STUDENT', name: foundUser.name, email: foundUser.email, id: foundUser.id || Math.floor(Math.random() * 90000) + 10000 });
-                        return;
+                        if (userFound) {
+                            executeLoginSuccess(userFound);
+                            return;
+                        }
                     }
 
-                    // Failure State
+                    // Failure State: Email not found or password incorrect
+                    throw new Error("Invalid Credentials");
+
+                } catch (err) {
+                    console.error("Login Error:", err);
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHtml;
                     errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Invalid Credentials. Please try again.';
@@ -202,6 +202,7 @@
             });
 
             function executeLoginSuccess(user) {
+                // Save session securely to browser storage
                 localStorage.setItem('portal-user-role', user.role);
                 localStorage.setItem('portal-user-name', user.name);
                 localStorage.setItem('portal-user-email', user.email);

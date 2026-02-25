@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- LAYOUT & SIDEBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
@@ -46,7 +48,7 @@
         .resource-card {
             background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
             padding: 25px; transition: all 0.3s ease; position: relative;
-            display: flex; flex-direction: column; height: 100%; box-sizing: border-box;
+            display: flex; flex-direction: column; height: 100%; box-sizing: border-box; overflow: hidden;
         }
         .resource-card:hover { transform: translateY(-6px); border-color: rgba(37, 99, 235, 0.5); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.1); }
         
@@ -141,7 +143,7 @@
                     <i class="fas fa-file-upload" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 10px;"></i>
                     <p id="fileNameDisplay" style="margin: 0; color: var(--text-color); font-weight: 600;">Drag & Drop or Click to Browse</p>
                 </div>
-                <button type="submit" id="uploadBtn" style="width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.05rem; transition: 0.2s;">Submit for Moderation</button>
+                <button type="submit" id="uploadBtn" style="width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.05rem; transition: 0.2s;">Submit to Cloud Quarantine</button>
             </form>
         </div>
     </div>
@@ -193,7 +195,7 @@
                         <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
                         <div>
                             <h1 style="margin: 0; font-size: 1.8rem;">National Digital Library</h1>
-                            <p style="color: var(--text-muted); margin: 5px 0 0;">Holistic Development & Academic Repository.</p>
+                            <p style="color: var(--text-muted); margin: 5px 0 0;">Holistic Development & Cloud Sync Active.</p>
                         </div>
                     </div>
                     <div class="theme-wrapper">
@@ -261,28 +263,28 @@
                             <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-coins"></i></div>
                             <div class="res-title">Rich Dad Poor Dad</div>
                             <div class="res-desc">What the rich teach their kids about money and investing.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Rich Dad Poor Dad', '/books/Rich-Dad-Poor-Dad-eBook.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Rich Dad Poor Dad', 'books/Rich-Dad-Poor-Dad-eBook.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-rocket"></i></div>
                             <div class="res-title">The Lean Startup</div>
                             <div class="res-desc">How today's entrepreneurs use continuous innovation.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Lean Startup', '/books/the-lean-startup.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Lean Startup', 'books/the-lean-startup.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-lightbulb"></i></div>
                             <div class="res-title">Zero To One</div>
                             <div class="res-desc">Notes on startups, or how to build the future by Peter Thiel.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Zero To One', '/books/zero-to-one-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Zero To One', 'books/zero-to-one-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-handshake"></i></div>
                             <div class="res-title">$100M Offers</div>
                             <div class="res-desc">How to make offers so good people feel stupid saying no.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('$100M Offers', '/books/100m-Offers.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('$100M Offers', 'books/100m-Offers.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
                     </div>
                 </div>
@@ -294,28 +296,28 @@
                             <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-check-double"></i></div>
                             <div class="res-title">Getting Things Done</div>
                             <div class="res-desc">The art of stress-free productivity and time management.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Getting Things Done', '/books/getting-things-done-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Getting Things Done', 'books/getting-things-done-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-filter"></i></div>
                             <div class="res-title">Essentialism</div>
                             <div class="res-desc">The disciplined pursuit of less. Do only what matters.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Essentialism', '/books/essentialism-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Essentialism', 'books/essentialism-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-cogs"></i></div>
                             <div class="res-title">Mindset: The New Psychology</div>
                             <div class="res-desc">How we can learn to fulfill our potential by Carol Dweck.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mindset', '/books/mindset-the-new-psychology-of-success-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mindset', 'books/mindset-the-new-psychology-of-success-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-monument"></i></div>
                             <div class="res-title">Meditations</div>
                             <div class="res-desc">The ancient stoic philosophy of Roman Emperor Marcus Aurelius.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Meditations', '/books/meditations-by-marcus-aurelius.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Meditations', 'books/meditations-by-marcus-aurelius.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
                     </div>
                 </div>
@@ -327,28 +329,28 @@
                             <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-eye"></i></div>
                             <div class="res-title">The Laws of Human Nature</div>
                             <div class="res-desc">Master the ultimate psychological toolkit by Robert Greene.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Laws of Human Nature', '/books/the-laws-of-human-nature.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Laws of Human Nature', 'books/the-laws-of-human-nature.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-user-secret"></i></div>
                             <div class="res-title">Dark Psychology Secrets</div>
                             <div class="res-desc">Defend your mind against manipulation and deception.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Dark Psychology Secrets', '/books/dark-psychology-secrets.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Dark Psychology Secrets', 'books/dark-psychology-secrets.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-book-open"></i></div>
                             <div class="res-title">Read People Like a Book</div>
                             <div class="res-desc">Analyze body language and understand human psychology.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Read People Like a Book', '/books/how-to-read-people-like-a-book-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Read People Like a Book', 'books/how-to-read-people-like-a-book-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-comments"></i></div>
                             <div class="res-title">How To Win Friends</div>
                             <div class="res-desc">The most famous networking and communication book ever published.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('How to Win Friends', '/books/how-to-win-friends-and-influence-people-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('How to Win Friends', 'books/how-to-win-friends-and-influence-people-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
                     </div>
                 </div>
@@ -360,28 +362,28 @@
                             <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-crown"></i></div>
                             <div class="res-title">Mastery</div>
                             <div class="res-desc">The ultimate guide to becoming a master in any field.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mastery', '/books/Mastery-Robert-Greene.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mastery', 'books/Mastery-Robert-Greene.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-layer-group"></i></div>
                             <div class="res-title">The 5 Levels of Leadership</div>
                             <div class="res-desc">Proven steps to maximize your potential by John C. Maxwell.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('5 Levels of Leadership', '/books/the-5-levels-of-leadership.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('5 Levels of Leadership', 'books/the-5-levels-of-leadership.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-shield-alt"></i></div>
                             <div class="res-title">The 50th Law</div>
                             <div class="res-desc">Fear nothing. A collaboration by 50 Cent and Robert Greene.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The 50th Law', '/books/the-50th-law.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('The 50th Law', 'books/the-50th-law.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
 
                         <div class="resource-card">
                             <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-fire"></i></div>
                             <div class="res-title">Ego is the Enemy</div>
                             <div class="res-desc">The fight to master our greatest internal opponent.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Ego is the Enemy', '/books/ego-is-the-enemy-by-ryan-holiday-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Ego is the Enemy', 'books/ego-is-the-enemy-by-ryan-holiday-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
                         </div>
                     </div>
                 </div>
@@ -568,8 +570,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            switchTab('academic'); // Default to academic
-            fetchLibrary(); // Auto-sync on load
+            switchTab('academic'); 
+            fetchLibrary(); // Initialize Cloud Sync
         });
 
         // --- UI & TABS ---
@@ -615,21 +617,17 @@
             titleEl.innerText = topic;
 
             if (fileUrl) {
-                // Enterprise PDF Embed Mode
                 smartReader.style.display = 'none';
                 iframe.style.display = 'block';
                 iframe.src = fileUrl + "#toolbar=0&navpanes=0";
                 
-                // Allow standard download link
                 downloadBtn.href = fileUrl;
-                downloadBtn.onclick = null; // Remove any alert overrides
+                downloadBtn.onclick = null; 
             } else {
-                // Simulated Text Mode for existing mock cards
                 iframe.style.display = 'none';
                 iframe.src = "";
                 smartReader.style.display = 'block';
                 
-                // Prevent downloading of simulated web text
                 downloadBtn.href = "#"; 
                 downloadBtn.onclick = (e) => {
                     e.preventDefault();
@@ -670,10 +668,10 @@
 
         function closeViewer() {
             document.getElementById('viewerModal').style.display = 'none';
-            document.getElementById('viewerFrame').src = ""; // Stops PDF from loading in background
+            document.getElementById('viewerFrame').src = ""; 
         }
 
-        // --- DATABASE SYNC & UPLOAD LOGIC ---
+        // --- FIREBASE UPLOAD BRIDGE ---
         function toggleUploadModal() {
             const modal = document.getElementById('uploadModal');
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
@@ -690,71 +688,106 @@
             }
         }
 
-        async function handleUpload() {
+        function handleUpload() {
             const btn = document.getElementById('uploadBtn');
             const originalText = btn.innerText;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securely Uploading...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securing to Cloud...';
             btn.disabled = true;
 
-            const formData = new FormData();
-            formData.append('title', document.getElementById('resTitle').value);
-            formData.append('category', document.getElementById('resCategory').value);
-            formData.append('file', document.getElementById('resFile').files[0]);
+            const title = document.getElementById('resTitle').value;
+            const category = document.getElementById('resCategory').value;
+            const fileInput = document.getElementById('resFile');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'document.pdf';
+            const uploaderName = localStorage.getItem('portal-user-name') || 'Student User';
 
-            try {
-                // Real DB Connection
-                const res = await fetch('/api/library/upload', { method: 'POST', body: formData });
-                if(res.ok) {
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Sent to Admin Quarantine';
-                    btn.style.background = '#10b981';
-                    setTimeout(() => {
-                        toggleUploadModal();
-                        btn.innerHTML = originalText;
-                        btn.style.background = 'var(--primary-color)';
-                        btn.disabled = false;
-                        document.getElementById('uploadForm').reset();
-                        document.getElementById('fileNameDisplay').innerText = "Drag & Drop or Click to Browse";
-                        document.getElementById('fileNameDisplay').style.color = 'var(--text-color)';
-                    }, 2000);
-                } else { throw new Error(); }
-            } catch (err) {
-                alert("Upload successfully recorded locally (Offline Database Mode).");
-                toggleUploadModal();
+            const payload = {
+                title: title,
+                category: category,
+                fileName: fileName,
+                uploaded_by: uploaderName,
+                status: 'PENDING',
+                date: new Date().toISOString()
+            };
+
+            // Push directly to Firebase
+            db.ref('library_quarantine').push(payload)
+            .then(() => {
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Sent to Admin Quarantine';
+                btn.style.background = '#10b981';
+
+                setTimeout(() => {
+                    toggleUploadModal();
+                    btn.innerHTML = originalText;
+                    btn.style.background = 'var(--primary-color)';
+                    btn.disabled = false;
+                    document.getElementById('uploadForm').reset();
+                    document.getElementById('fileNameDisplay').innerText = "Drag & Drop or Click to Browse";
+                    document.getElementById('fileNameDisplay').style.color = 'var(--text-color)';
+                }, 1500);
+            })
+            .catch(err => {
+                alert("Upload failed: " + err.message);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }
+            });
         }
 
-        async function fetchLibrary() {
-            try {
-                // Pull active approved resources from DB
-                const res = await fetch('/api/library/resources');
-                if(!res.ok) return;
+        // --- FIREBASE LIVE SYNC ---
+        function fetchLibrary() {
+            const currentUser = localStorage.getItem('portal-user-name') || 'Student User';
+            const grid = document.getElementById('academic-grid');
 
-                const files = await res.json();
-                const grid = document.getElementById('academic-grid');
+            db.ref('library_quarantine').on('value', (snapshot) => {
+                // Clear previously injected cloud cards to avoid duplicates on update
+                document.querySelectorAll('.cloud-injected-card').forEach(el => el.remove());
                 
-                if(files.length > 0) {
-                    // Prepend real DB files to the top of the academic grid
-                    files.forEach(f => {
-                        let icon = 'fa-file-pdf'; let color = '#ef4444'; let bg = 'rgba(239, 68, 68, 0.1)';
-                        if(f.category === 'PAST_QUESTION') { icon = 'fa-file-alt'; color = '#10b981'; bg = 'rgba(16, 185, 129, 0.1)'; }
-                        if(f.category === 'NOTES') { icon = 'fa-file-powerpoint'; color = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
-                        
-                        const newCard = `
-                            <div class="resource-card">
-                                <div class="card-icon" style="background: ${bg}; color: ${color};"><i class="fas ${icon}"></i></div>
-                                <div class="res-title">${f.title}</div>
-                                <div class="res-desc">Uploaded by: <strong>${f.uploaded_by || 'System'}</strong></div>
-                                <button class="btn-action read-btn" onclick="openSimulatedReader('${f.title}', '/uploads/${f.file_path}')"><i class="fas fa-book-reader"></i> Open Document</button>
-                            </div>
-                        `;
-                        grid.insertAdjacentHTML('afterbegin', newCard);
+                if (snapshot.exists()) {
+                    let items = [];
+                    snapshot.forEach(child => {
+                        items.push({ key: child.key, ...child.val() });
+                    });
+                    
+                    // Sort to show newest first
+                    items.reverse();
+
+                    items.forEach(fileObj => {
+                        // Only show globally APPROVED items, OR items uploaded by this specific user that are still PENDING
+                        if (fileObj.status === 'APPROVED' || (fileObj.status === 'PENDING' && fileObj.uploaded_by === currentUser)) {
+                            renderCloudFile(fileObj, grid);
+                        }
                     });
                 }
-            } catch (e) {
-                console.log("Using local offline library items.");
+            });
+        }
+
+        function renderCloudFile(fileObj, grid) {
+            let icon = 'fa-file-pdf'; let color = '#ef4444'; let bg = 'rgba(239, 68, 68, 0.1)';
+            if(fileObj.category === 'PAST_QUESTION') { icon = 'fa-file-alt'; color = '#10b981'; bg = 'rgba(16, 185, 129, 0.1)'; }
+            if(fileObj.category === 'NOTES') { icon = 'fa-file-powerpoint'; color = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
+            
+            let badgeHtml = '';
+            let actionHtml = '';
+            let borderStyle = '';
+
+            if (fileObj.status === 'PENDING') {
+                borderStyle = 'border-color: #f59e0b; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.1);';
+                badgeHtml = `<div style="position:absolute; top:15px; right:15px; background:#f59e0b; color:white; font-size:0.65rem; padding:4px 8px; border-radius:12px; font-weight:800; letter-spacing:0.5px;">PENDING QUARANTINE</div>`;
+                actionHtml = `<button class="btn-action read-btn" onclick="alert('File is currently locked in quarantine awaiting Directorate Admin approval.')" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-shield-alt"></i> Locked</button>`;
+            } else {
+                badgeHtml = `<div style="position:absolute; top:15px; right:15px; background:#10b981; color:white; font-size:0.65rem; padding:4px 8px; border-radius:12px; font-weight:800; letter-spacing:0.5px;">VERIFIED</div>`;
+                actionHtml = `<button class="btn-action read-btn" onclick="openSimulatedReader('${fileObj.title.replace(/'/g, "\\'")}')"><i class="fas fa-book-reader"></i> Open Document</button>`;
             }
+
+            const newCard = `
+                <div class="resource-card cloud-injected-card" style="${borderStyle}">
+                    ${badgeHtml}
+                    <div class="card-icon" style="background: ${bg}; color: ${color};"><i class="fas ${icon}"></i></div>
+                    <div class="res-title">${fileObj.title}</div>
+                    <div class="res-desc">Uploaded by: <strong>${fileObj.uploaded_by}</strong><br><span style="font-size:0.75rem; color:#94a3b8;">${fileObj.fileName}</span></div>
+                    ${actionHtml}
+                </div>
+            `;
+            grid.insertAdjacentHTML('afterbegin', newCard);
         }
 
         // --- PREMIUM AI DICTIONARY LOGIC ---

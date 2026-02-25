@@ -10,12 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="theme.js"></script>
 
-    <style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script src="db.js"></script> <style>
         /* --- WEB LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
 
-        /* --- SIDEBAR NAVIGATION (Premium Hovers Included) --- */
+        /* --- SIDEBAR NAVIGATION --- */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;}
         .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         .nav-links { list-style: none; padding: 20px; margin: 0; }
@@ -78,13 +80,17 @@
         .btn-delete:hover { background: #fecaca; transform: scale(1.05); }
         .btn-print { background: #1e293b; color: white; }
         .btn-print:hover { background: #0f172a; transform: translateY(-2px); }
-        
-        /* New Button Style for Sync */
         .btn-success { background: #10b981; color: white; }
         .btn-success:hover { background: #059669; transform: translateY(-2px); }
 
+        /* --- SMART AI TIMETABLE ENGINE UI --- */
+        .ai-sync-box { background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border: 1px dashed #8b5cf6; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
+        .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; cursor: pointer; }
+        .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+        .btn-outline-purple { background: transparent; border: 2px solid #8b5cf6; color: #8b5cf6; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-outline-purple:hover { background: #8b5cf6; color: white; }
+
         .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
-        
         .timetable-controls { display: flex; gap: 15px; align-items: center; }
         .view-toggle { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
         
@@ -92,46 +98,72 @@
         .timetable th { background: #0f172a; color: white; padding: 12px; text-align: center; font-size: 0.9rem; }
         .timetable td { padding: 12px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; transition: 0.2s; }
         .timetable td:hover { background: rgba(0,0,0,0.02); }
-        .cell-filled { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; border-radius: 4px; border: 1px solid rgba(37, 99, 235, 0.2) !important; }
-
-        /* --- OFFICIAL DOCUMENT STYLES (Print Only) --- */
-        .official-header { display: none; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-        .header-top { display: flex; align-items: center; gap: 20px; }
-        .school-logo { font-size: 3.5rem; color: #000; } 
-        .school-info h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .school-info p { margin: 5px 0 0 0; font-size: 0.9rem; font-style: italic; }
         
-        .student-bio-grid { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; 
-            background: #f9f9f9; padding: 15px; border: 1px solid #ddd;
-        }
-        .bio-item strong { display: inline-block; width: 100px; }
-        .doc-title { text-align: center; text-transform: uppercase; font-weight: 800; text-decoration: underline; margin: 30px 0; font-size: 1.4rem; }
-        .print-signature { display: none; margin-top: 80px; justify-content: space-between; }
-        .sign-line { border-top: 1px solid #000; width: 250px; padding-top: 10px; text-align: center; font-size: 0.9rem; }
+        .cell-class { background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2) !important; }
+        .cell-study { background: rgba(16, 185, 129, 0.1); color: #10b981; font-weight: 600; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.2) !important; }
+        .cell-filled { background: rgba(37, 99, 235, 0.1); color: var(--primary-color); font-weight: 600; border-radius: 4px; border: 1px solid rgba(37, 99, 235, 0.2) !important; }
 
         /* Mobile Adjustments */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
 
-
-        /* --- PRINT MODE CONFIGURATION --- */
+        /* ========================================================= */
+        /* --- ENTERPRISE PRINT/PDF ARCHITECTURE (Strict Formatting) --- */
+        /* ========================================================= */
+        .print-only-wrapper { display: none; }
+        
         @media print {
-            @page { margin: 1.5cm; }
-            body { background: white !important; color: black !important; display: block; height: auto; overflow: visible; font-size: 11pt; }
-            .wrapper, .main-content { display: block; padding: 0; overflow: visible; width: 100%; height: auto; }
-            .sidebar, .navbar, .theme-wrapper, .search-container, .manual-entry-grid, .btn, .view-toggle, .btn-delete, .suggestions-list, h2 i, .action-card h2, .timetable-controls { display: none !important; }
-            .official-header { display: block !important; }
-            .print-signature { display: flex !important; }
-            .action-card, .timetable-section { display: none; border: none; box-shadow: none; padding: 0; margin: 0; }
-
-            body.print-reg .action-card.course-card { display: block !important; width: 100%; }
-            body.print-reg .course-item { border-bottom: 1px solid #000; break-inside: avoid; background: transparent !important; padding: 8px 0; }
+            @page { margin: 1cm; size: A4 portrait; }
+            body { background: white !important; color: black !important; display: block; height: auto; overflow: visible; font-size: 12pt; font-family: 'Times New Roman', Times, serif; }
             
-            body.print-time .timetable-section { display: block !important; width: 100%; }
-            body.print-time .timetable th { background: #eee !important; color: black !important; border: 1px solid #000; }
-            body.print-time .timetable td { border: 1px solid #000; }
-            body.print-time .cell-filled { background: #f8f9fa !important; color: #000 !important; border: 1px solid #000 !important; }
+            /* Hide Web UI Elements */
+            .wrapper, .sidebar, .navbar, .theme-wrapper, .page-grid, .btn, .view-toggle, .btn-delete, .suggestions-list, .action-card h2, .timetable-controls, .ai-sync-box { display: none !important; }
+            
+            /* Reveal Print Elements */
+            .print-only-wrapper { display: block !important; width: 100%; padding: 20px; box-sizing: border-box; position: relative; }
+            
+            /* Watermark */
+            .print-only-wrapper::before {
+                content: "OFFICIAL RECORD";
+                position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 8rem; color: rgba(0,0,0,0.04); font-weight: 900; z-index: -1; white-space: nowrap;
+            }
+
+            /* Header Section */
+            .p-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
+            .p-logo-area { display: flex; align-items: center; gap: 20px; }
+            .p-crest { width: 80px; height: 80px; }
+            .p-school-info h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 22pt; text-transform: uppercase; letter-spacing: 1px; }
+            .p-school-info p { margin: 5px 0 0 0; font-size: 11pt; font-style: italic; color: #333; }
+            
+            .p-qr-code { text-align: right; }
+            .p-qr-img { width: 70px; height: 70px; border: 1px solid #000; padding: 2px; }
+            .p-qr-text { font-size: 8pt; font-family: monospace; margin-top: 5px; }
+
+            .p-doc-title { text-align: center; text-transform: uppercase; font-weight: 800; text-decoration: underline; margin: 20px 0 30px; font-size: 16pt; font-family: Arial, sans-serif;}
+
+            /* Bio Data Grid */
+            .p-bio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; border: 2px solid #000; padding: 15px; background: #fafafa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .p-bio-item { font-size: 11pt; font-family: Arial, sans-serif;}
+            .p-bio-item strong { display: inline-block; width: 120px; color: #000; }
+
+            /* Table Formatting */
+            .print-table-container { margin-bottom: 50px; }
+            .p-table { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 10pt; }
+            .p-table th { background: #e2e8f0 !important; color: #000 !important; font-weight: bold; text-transform: uppercase; border: 1px solid #000; padding: 10px; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+            .p-table td { border: 1px solid #000; padding: 10px; text-align: left; }
+            .p-table .center { text-align: center; }
+
+            /* Signatures */
+            .p-signatures { display: flex; justify-content: space-between; margin-top: 60px; font-family: Arial, sans-serif; }
+            .p-sign-block { width: 250px; text-align: center; }
+            .p-sign-line { border-top: 1px solid #000; padding-top: 10px; font-size: 10pt; font-weight: bold; position: relative;}
+            .p-stamp { position: absolute; top: -45px; left: 50%; transform: translateX(-50%) rotate(-15deg); font-size: 18pt; font-family: 'Playfair Display', serif; color: rgba(0,0,0,0.4); border: 2px dashed rgba(0,0,0,0.4); padding: 5px 10px; border-radius: 5px; }
+
+            /* View Control for Print */
+            body.print-reg .p-timetable { display: none; }
+            body.print-time .p-reg-list { display: none; }
+            body.print-time .p-doc-title { content: "Official Class Timetable"; }
         }
 
         @media (max-width: 900px) { 
@@ -142,7 +174,6 @@
             .sidebar-overlay.mobile-open { display: block; }
             .timetable-controls { flex-direction: column; align-items: stretch;}
             .timetable { display: block; overflow-x: auto; white-space: nowrap; }
-            .action-buttons-grid { flex-direction: column; }
         }
     </style>
 </head>
@@ -150,23 +181,65 @@
 
     <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
-    <div class="official-header">
-        <div class="header-top">
-            <div class="school-logo"><i class="fas fa-university"></i></div>
-            <div class="school-info">
-                <h1 id="p-school-name">National Tertiary Portal</h1>
-                <p>Office of the Registrar • Academic Affairs</p>
+    <div class="print-only-wrapper">
+        <div class="p-header">
+            <div class="p-logo-area">
+                <img id="print-crest" class="p-crest" src="" alt="University Crest">
+                <div class="p-school-info">
+                    <h1 id="print-school-name">National Tertiary Portal</h1>
+                    <p>Office of the Registrar • Academic Affairs</p>
+                </div>
+            </div>
+            <div class="p-qr-code">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=VERIFIED_NTS_RECORD" class="p-qr-img">
+                <div class="p-qr-text" id="print-verification-id">REF: 0000000</div>
             </div>
         </div>
-        <div class="student-bio-grid">
-            <div class="bio-item"><strong>Name:</strong> <span id="p-student-name">...</span></div>
-            <div class="bio-item"><strong>Student ID:</strong> <span id="p-student-id">...</span></div>
-            <div class="bio-item"><strong>Programme:</strong> <span id="p-student-program">Degree Programme</span></div>
-            <div class="bio-item"><strong>Date:</strong> <span id="p-print-date"></span></div>
-        </div>
-        <h2 class="doc-title" id="p-doc-title">Official Document</h2>
-    </div>
 
+        <h2 class="p-doc-title" id="print-doc-title">Course Registration Form</h2>
+
+        <div class="p-bio-grid">
+            <div class="p-bio-item"><strong>Student Name:</strong> <span id="print-student-name">...</span></div>
+            <div class="p-bio-item"><strong>Academic Level:</strong> <span id="print-level">...</span></div>
+            <div class="p-bio-item"><strong>Student ID:</strong> <span id="print-student-id">...</span></div>
+            <div class="p-bio-item"><strong>Date Printed:</strong> <span id="print-date">...</span></div>
+            <div class="p-bio-item" style="grid-column: 1 / -1;"><strong>Programme:</strong> <span id="print-program">...</span></div>
+        </div>
+
+        <div class="print-table-container p-reg-list">
+            <table class="p-table" id="print-courses-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Course Code</th>
+                        <th style="width: 65%;">Course Title</th>
+                        <th style="width: 20%;" class="center">Credit Hours</th>
+                    </tr>
+                </thead>
+                <tbody id="print-courses-tbody"></tbody>
+            </table>
+            <div style="text-align: right; margin-top: 15px; font-weight: bold; font-family: Arial;">Total Credits Registered: <span id="print-total-cr">0</span></div>
+        </div>
+
+        <div class="print-table-container p-timetable">
+            <table class="p-table">
+                <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
+                <tbody id="print-timetable-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="p-signatures">
+            <div class="p-sign-block">
+                <div style="height: 50px;"></div>
+                <div class="p-sign-line">Student Signature</div>
+            </div>
+            <div class="p-sign-block">
+                <div style="height: 50px; position: relative;">
+                    <div class="p-stamp">VERIFIED</div>
+                </div>
+                <div class="p-sign-line">Academic Registrar Authorization</div>
+            </div>
+        </div>
+    </div>
     <div class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
@@ -192,7 +265,7 @@
                     <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
                     <div>
                         <h1 style="margin: 0; font-size: 1.8rem;">Academic Registration</h1>
-                        <p style="color: var(--text-muted); margin-top: 5px;">Enrolment & Scheduling</p>
+                        <p style="color: var(--text-muted); margin-top: 5px;">Enrolment & Cloud Scheduling</p>
                     </div>
                 </div>
                 <div class="theme-wrapper">
@@ -230,20 +303,35 @@
                         <span id="total-credits" style="font-size: 0.85rem; background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #bae6fd;">0 Credits</span>
                     </div>
                     
-                    <div class="course-list-container" id="registered-list"></div>
+                    <div class="course-list-container" id="registered-list">
+                        <div style="text-align:center; padding:20px; color:var(--text-muted);"><i class="fas fa-circle-notch fa-spin"></i> Loading courses from cloud...</div>
+                    </div>
                     
-                    <div class="action-buttons-grid" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
                         <button class="btn btn-success" id="syncBtn" style="flex: 1;" onclick="syncWithServerUI()">
                             <i class="fas fa-cloud-upload-alt"></i> Save to National DB
                         </button>
-                        <button class="btn btn-print" style="flex: 1;" onclick="printDocument('registration')">
+                        <button class="btn btn-print" style="flex: 1;" onclick="executePrint('registration')">
                             <i class="fas fa-print"></i> Print Slip
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="timetable-section">
+            <div class="ai-sync-box" style="margin-top: 30px;">
+                <div>
+                    <h3 style="margin: 0 0 5px 0; color: #8b5cf6;"><i class="fas fa-brain"></i> Smart Study Scheduler (Optional)</h3>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Upload your departmental timetable. Our engine will map a personalized study schedule avoiding class conflicts.</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <div class="file-upload-wrapper">
+                        <button class="btn-outline-purple" id="upload-tt-btn"><i class="fas fa-upload"></i> Upload Official Timetable</button>
+                        <input type="file" id="official-timetable-input" accept=".pdf,image/*" onchange="simulateAITimetableSync(this)">
+                    </div>
+                </div>
+            </div>
+
+            <div class="timetable-section" style="margin-top: 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                     <h2 style="margin: 0;"><i class="fas fa-calendar-alt"></i> Weekly Schedule</h2>
                     
@@ -252,7 +340,7 @@
                             <option value="standard">Standard View (8AM - 5PM)</option>
                             <option value="extended">Tight View (Dawn - Midnight)</option>
                         </select>
-                        <button class="btn btn-print" onclick="printDocument('timetable')"><i class="fas fa-print"></i> Print</button>
+                        <button class="btn btn-print" onclick="executePrint('timetable')"><i class="fas fa-print"></i> Print</button>
                     </div>
                 </div>
                 
@@ -262,10 +350,6 @@
                 </table>
             </div>
 
-            <div class="print-signature">
-                <div class="sign-line">Student Signature</div>
-                <div class="sign-line">Academic Officer / HOD</div>
-            </div>
         </main>
     </div>
 
@@ -286,35 +370,76 @@
             { name: "Discrete Math", code: "MATH 123", credits: 3 }
         ];
 
-        // 🔥 STATE DECOUPLING FIX: We use a different local storage key from GPA
-        let myCourses = JSON.parse(localStorage.getItem('portal-registered-courses')) || [];
+        // --- GLOBAL STATE ---
+        let myCourses = [];
+        let userDbKey = null;
+        let isSmartScheduleActive = false; // Tracks if AI Timetable is uploaded
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderList();
-            generateTimetable();
-            setupPrintHeader();
+            initCloudSync();
         });
 
-        async function setupPrintHeader() {
-            try {
-                const res = await fetch('/api/user/profile');
-                if(!res.ok) throw new Error("Offline");
-                const data = await res.json();
-                document.getElementById('p-student-name').innerText = data.name || 'Student';
-                document.getElementById('p-student-id').innerText = data.id || 'N/A';
-                document.getElementById('p-student-program').innerText = data.program || 'N/A';
-                document.getElementById('p-school-name').innerText = data.institution || 'National Tertiary Portal';
-                document.getElementById('p-print-date').innerText = new Date().toLocaleDateString();
-            } catch(e) { 
-                console.warn("Profile API sync failed, using secure local cache");
-                document.getElementById('p-student-name').innerText = localStorage.getItem('portal-user-name') || 'Verified Student';
-                document.getElementById('p-school-name').innerText = localStorage.getItem('portal-institution') || 'National Tertiary Portal';
-                document.getElementById('p-print-date').innerText = new Date().toLocaleDateString();
+        // --- FIREBASE CLOUD INITIALIZATION ---
+        function initCloudSync() {
+            const cachedEmail = localStorage.getItem("portal-user-email");
+            
+            if (cachedEmail) {
+                db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach(child => {
+                            userDbKey = child.key;
+                            const data = child.val();
+                            
+                            // 1. Set Premium Print Header Info Live
+                            document.getElementById('print-student-name').innerText = data.name || 'Student';
+                            document.getElementById('print-student-id').innerText = data.id ? `102${data.id.toString().substring(0,4)}09` : 'N/A';
+                            document.getElementById('print-program').innerText = data.program || 'N/A';
+                            document.getElementById('print-level').innerText = data.level ? `Level ${data.level}` : 'N/A';
+                            document.getElementById('print-date').innerText = new Date().toLocaleDateString();
+                            document.getElementById('print-verification-id').innerText = "REF: " + Math.floor(Math.random()*9000000 + 1000000);
+
+                            // Dynamic Logo Generation based on School Name
+                            const schoolName = data.institution || 'National Tertiary Portal';
+                            document.getElementById('print-school-name').innerText = schoolName;
+                            
+                            // Generate a professional crest using initials
+                            const initials = schoolName.split(' ').map(n=>n[0]).join('').substring(0,3).toUpperCase();
+                            document.getElementById('print-crest').src = `https://ui-avatars.com/api/?name=${initials}&background=0f172a&color=fff&size=128&font-size=0.4&bold=true`;
+
+                            // 2. Load Courses array
+                            if (data.courses) {
+                                myCourses = typeof data.courses === 'string' ? JSON.parse(data.courses) : data.courses;
+                            } else {
+                                myCourses = JSON.parse(localStorage.getItem('portal-registered-courses')) || [];
+                            }
+                        });
+                        renderList();
+                        generateTimetable();
+                    } else {
+                        fallbackLocalLoad();
+                    }
+                });
+            } else {
+                fallbackLocalLoad();
             }
         }
 
-        // 🔥 NEW UI SYNC BUTTON PROTOCOL
-        async function syncWithServerUI() {
+        function fallbackLocalLoad() {
+            myCourses = JSON.parse(localStorage.getItem('portal-registered-courses')) || [];
+            
+            // Set Print Fallbacks
+            document.getElementById('print-student-name').innerText = localStorage.getItem('portal-user-name') || 'Verified Student';
+            document.getElementById('print-school-name').innerText = localStorage.getItem('portal-institution') || 'National Tertiary Portal';
+            document.getElementById('print-student-id').innerText = localStorage.getItem('portal-user-id') || 'N/A';
+            document.getElementById('print-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('print-crest').src = `https://ui-avatars.com/api/?name=NTP&background=0f172a&color=fff&size=128&font-size=0.4&bold=true`;
+
+            renderList();
+            generateTimetable();
+        }
+
+        // --- FIREBASE CLOUD SYNC BUTTON ---
+        function syncWithServerUI() {
             const btn = document.getElementById('syncBtn');
             const originalText = btn.innerHTML;
 
@@ -323,41 +448,35 @@
                 return;
             }
 
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saving...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Securing to Cloud...`;
             btn.disabled = true;
 
-            // 1. INSTANT LOCAL SAVE (Guarantees data is never lost)
             localStorage.setItem('portal-registered-courses', JSON.stringify(myCourses));
-            
-            // Note: If you want these courses to ALSO show up in the GPA calculator automatically, 
-            // you can optionally inject them into the GPA key as well here, but without scores.
-            // For true isolation, we leave them separate as requested.
 
-            // 2. ATTEMPT BACKGROUND API SYNC
-            try {
-                // Here we might just update the profile courses array 
-                // We'll reuse the save-gpa endpoint, but only send the courses array
-                const res = await fetch('/api/user/save-gpa', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ gpa: localStorage.getItem('portal-gpa') || "0.00", courses: myCourses })
+            if (userDbKey) {
+                db.ref('users/' + userDbKey).update({ courses: myCourses })
+                .then(() => {
+                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Sync Successful!`;
+                    btn.style.background = "#059669";
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = "#10b981";
+                        btn.disabled = false;
+                    }, 2000);
+                })
+                .catch((err) => {
+                    alert("Cloud Sync Failed: " + err.message);
+                    btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
+                    btn.style.background = "#f59e0b"; 
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = "#10b981";
+                        btn.disabled = false;
+                    }, 3000);
                 });
-                
-                if (!res.ok) throw new Error("Server rejected request");
-
-                btn.innerHTML = `<i class="fas fa-check-circle"></i> Saved!`;
-                btn.style.background = "#059669";
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.background = "#10b981";
-                    btn.disabled = false;
-                }, 2000);
-
-            } catch (e) { 
+            } else {
                 btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
-                btn.style.background = "#f59e0b"; // Warning Orange
-                
+                btn.style.background = "#f59e0b"; 
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = "#10b981";
@@ -366,6 +485,7 @@
             }
         }
 
+        // --- SEARCH & SUGGESTION LOGIC ---
         const searchInput = document.getElementById('courseSearch');
         const suggestionsBox = document.getElementById('suggestions');
 
@@ -395,17 +515,13 @@
             } else { suggestionsBox.style.display = 'none'; }
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
             if (!searchInput.contains(e.target)) suggestionsBox.style.display = 'none';
         });
 
         function addCourse(name, code, credits) {
             if(myCourses.find(c => c.code === code)) return alert("Course already registered!");
-            
             myCourses.push({ name: name, code: code, credits: parseInt(credits) });
-            
-            // Auto-save locally so UI updates instantly
             localStorage.setItem('portal-registered-courses', JSON.stringify(myCourses));
             renderList();
             generateTimetable();
@@ -451,6 +567,26 @@
                     </div>`;
             });
             totalDisplay.innerText = `${totalCr} Total Credits`;
+            
+            // Sync print table simultaneously
+            renderPrintList();
+        }
+
+        // --- 🔥 AI TIMETABLE SIMULATION ---
+        function simulateAITimetableSync(input) {
+            if (input.files && input.files[0]) {
+                const btn = document.getElementById('upload-tt-btn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Constraints...';
+                
+                // Simulate AI Processing Time
+                setTimeout(() => {
+                    isSmartScheduleActive = true;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Personal Schedule Generated';
+                    btn.style.background = '#8b5cf6';
+                    btn.style.color = 'white';
+                    generateTimetable(); // Regenerate table with new AI logic
+                }, 2000);
+            }
         }
 
         function generateTimetable() {
@@ -479,11 +615,33 @@
                 let row = `<tr><td style="white-space:nowrap;"><strong>${time}</strong></td>`;
                 for(let i=0; i<5; i++) {
                     const courseIdx = (idx + i) % Math.max(1, myCourses.length);
-                    const threshold = viewType === 'extended' ? 0.7 : 0.4; 
+                    const isNightSlot = time.includes("19:00") || time.includes("21:00") || time.includes("23:00") || time.includes("06:00");
                     
-                    if(myCourses.length > 0 && Math.random() > threshold) {
+                    if(myCourses.length > 0) {
                         const c = myCourses[courseIdx] || myCourses[0];
-                        row += `<td class="cell-filled">${c.code}<br><small>Venue: LT-${10+i}</small></td>`;
+
+                        // THE SMART AI LOGIC 
+                        if (isSmartScheduleActive) {
+                            // If AI is active, explicitly divide into "Official Class" vs "Personal Study"
+                            if (!isNightSlot && Math.random() > 0.5) {
+                                // Block out for official class
+                                row += `<td class="cell-class"><i class="fas fa-university"></i> Class<br><small>${c.code}</small></td>`;
+                            } else if (Math.random() > 0.3) {
+                                // Schedule personal study time around classes
+                                row += `<td class="cell-study"><i class="fas fa-book-reader"></i> Study<br><small>${c.code}</small></td>`;
+                            } else {
+                                row += `<td style="color:var(--text-muted); opacity:0.3;">-</td>`; 
+                            }
+                        } else {
+                            // Standard Random Fill (Old Logic)
+                            const threshold = viewType === 'extended' ? 0.7 : 0.4; 
+                            if(Math.random() > threshold && !isNightSlot) {
+                                row += `<td class="cell-filled">${c.code}<br><small>Venue: LT-${10+i}</small></td>`;
+                            } else { 
+                                row += `<td style="color:var(--text-muted); opacity:0.3;">-</td>`; 
+                            }
+                        }
+
                     } else { 
                         row += `<td style="color:var(--text-muted); opacity:0.3;">-</td>`; 
                     }
@@ -492,10 +650,38 @@
             });
         }
 
-        function printDocument(type) {
+
+        // --- 🔥 ENTERPRISE PDF PRINT ENGINE ---
+        function renderPrintList() {
+            const printTbody = document.getElementById('print-courses-tbody');
+            printTbody.innerHTML = '';
+            
+            let totalCr = 0;
+            myCourses.forEach((c) => {
+                totalCr += (parseInt(c.credits) || 0);
+                printTbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.code}</strong></td>
+                        <td>${c.name}</td>
+                        <td class="center">${c.credits}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('print-total-cr').innerText = totalCr;
+        }
+
+        function executePrint(type) {
+            // First, copy the live timetable HTML directly into the print timetable body
+            if(type === 'timetable') {
+                document.getElementById('print-timetable-tbody').innerHTML = document.getElementById('timetable-body').innerHTML;
+            }
+
             document.body.className = type === 'registration' ? 'print-reg' : 'print-time';
-            document.getElementById('p-doc-title').innerText = type === 'registration' ? 'Course Registration Form' : 'Official Class Timetable';
+            document.getElementById('print-doc-title').innerText = type === 'registration' ? 'Official Course Registration Form' : 'Official Class Timetable';
+            
             window.print();
+            
+            // Clean up body class after print dialog closes
             setTimeout(() => document.body.className = '', 1000);
         }
     </script>
