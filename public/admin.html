@@ -95,12 +95,14 @@
         .b-input, .b-select, .b-textarea { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; outline: none; transition: 0.2s; box-sizing: border-box; }
         .b-input:focus, .b-select:focus, .b-textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        /* --- 7. PREMIUM ACTION MODAL --- */
+        /* --- 7. PREMIUM MODALS --- */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .modal-content { background: var(--card-bg); padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; }
         .modal-icon { font-size: 3rem; margin-bottom: 15px; }
         .modal-title { margin: 0 0 10px; color: var(--text-color); font-weight: 800; font-size: 1.5rem; }
         .modal-desc { color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; font-size: 0.95rem; }
+        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .close-modal:hover { color: #ef4444; }
 
         /* Danger Input for Wipe */
         #dangerInput { width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; border: 2px dashed #ef4444; background: var(--input-bg); color: var(--text-color); text-align: center; font-weight: 800; font-family: monospace; display: none; }
@@ -138,6 +140,39 @@
             </div>
         </div>
     </div>
+
+    <div id="dossierModal" class="modal">
+        <div class="modal-content" style="max-width: 600px; text-align: left; padding: 40px;">
+            <span class="close-modal" onclick="document.getElementById('dossierModal').style.display='none'">&times;</span>
+            <div style="display: flex; align-items: center; gap: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+                <div style="width: 50px; height: 50px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-scroll"></i>
+                </div>
+                <div>
+                    <h2 style="margin: 0; color: var(--text-color); font-size: 1.4rem;">Official Manifesto</h2>
+                    <p style="margin: 2px 0 0; color: var(--text-muted); font-size: 0.85rem;">Candidate Dossier Review</p>
+                </div>
+            </div>
+
+            <div style="background: var(--input-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem;">
+                    <div><strong style="color: var(--text-muted);">Candidate:</strong> <span id="dosName" style="color: var(--text-color); font-weight: 600;">...</span></div>
+                    <div><strong style="color: var(--text-muted);">Institution:</strong> <span id="dosInst" style="color: var(--text-color); font-weight: 600;">...</span></div>
+                    <div><strong style="color: var(--text-muted);">Target Role:</strong> <span id="dosPos" style="color: #fbbf24; font-weight: 800;">...</span></div>
+                    <div><strong style="color: var(--text-muted);">Experience:</strong> <span id="dosExp" style="color: var(--text-color); font-weight: 600;">...</span></div>
+                </div>
+            </div>
+
+            <div style="max-height: 300px; overflow-y: auto; padding-right: 15px; color: var(--text-color); line-height: 1.7; font-size: 0.95rem; white-space: pre-wrap;" id="dosVision">
+                Loading manifesto...
+            </div>
+            
+            <div style="margin-top: 30px; text-align: right;">
+                <button class="btn" style="background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color);" onclick="document.getElementById('dossierModal').style.display='none'">Close Dossier</button>
+            </div>
+        </div>
+    </div>
+
 
     <div class="wrapper">
         <aside class="sidebar">
@@ -358,9 +393,12 @@
     </div>
 
     <script>
-        // Global variables for cloud execution modal logic
+        // Global variables
         let currentActionType = null;
         let currentActionPayload = null;
+        
+        // 🔥 GLOBAL CACHE FOR READING MANIFESTOS
+        let globalVanguardData = {};
 
         // --- AUTH & INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -442,6 +480,7 @@
             db.ref('vanguard_apps').on('value', (snapshot) => {
                 const tbody = document.getElementById('leadership-table-body');
                 tbody.innerHTML = '';
+                globalVanguardData = {}; // Clear global cache on every update
                 
                 if (!snapshot.exists()) {
                     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No vanguard applications in queue.</td></tr>`;
@@ -454,6 +493,9 @@
                 snapshot.forEach((childSnapshot) => {
                     const app = childSnapshot.val();
                     const key = childSnapshot.key;
+                    
+                    // Save to global variable so the dossier modal can read the full text
+                    globalVanguardData[key] = app;
 
                     if (app.status === 'PENDING') pendingCount++;
 
@@ -467,6 +509,7 @@
                         actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
                     }
 
+                    // 🔥 NEW: Added "Read Manifesto" button
                     tbody.innerHTML += `
                         <tr>
                             <td>
@@ -475,7 +518,9 @@
                             </td>
                             <td>
                                 <span style="color:var(--primary-color); font-weight:700;">${app.position}</span><br>
-                                <small style="font-style: italic;">"${app.vision ? app.vision.substring(0, 45) : ''}..."</small>
+                                <button class="action-btn" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); margin-top: 8px;" onmouseover="this.style.borderColor='var(--primary-color)'; this.style.color='var(--primary-color)';" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-muted)';" onclick="viewDossier('${key}')">
+                                    <i class="fas fa-book-reader"></i> Read Manifesto
+                                </button>
                             </td>
                             <td><span class="status-pill status-${app.status.toLowerCase()}">${app.status}</span></td>
                             <td style="text-align:right;">${actions}</td>
@@ -660,7 +705,6 @@
                     const u = child.val();
                     if(u.role !== 'ADMIN') {
                         const id = u.id ? `102${u.id.toString().substring(0,4)}09` : 'N/A';
-                        // Escape commas inside text to prevent breaking the CSV grid
                         const name = `"${u.name || ''}"`;
                         const email = `"${u.email || ''}"`;
                         const inst = `"${u.institution || ''}"`;
@@ -672,7 +716,6 @@
                     }
                 });
 
-                // Trigger Browser Download
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
@@ -693,6 +736,21 @@
             }
         }
 
+        // =========================================================================
+        // 🔥 READ CANDIDATE MANIFESTO FUNCTION
+        // =========================================================================
+        function viewDossier(key) {
+            const app = globalVanguardData[key];
+            if(!app) return;
+            
+            document.getElementById('dosName').innerText = app.name || 'Unknown Candidate';
+            document.getElementById('dosInst').innerText = app.institution || 'Institution Not Specified';
+            document.getElementById('dosPos').innerText = app.position || 'Unknown Position';
+            document.getElementById('dosExp').innerText = app.experience || 'Not Specified';
+            document.getElementById('dosVision').innerText = app.vision || 'No manifesto was provided by this candidate.';
+            
+            document.getElementById('dossierModal').style.display = 'flex';
+        }
 
         // =========================================================================
         // 🔥 CLOUD ACTION MODAL & EXECUTION ENGINE
@@ -734,12 +792,11 @@
             }
 
             const originalText = this.innerText;
-            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Executing in Cloud...';
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Executing...';
             this.disabled = true;
 
             const dbKey = currentActionPayload ? currentActionPayload.id : null;
 
-            // Define the specific promise based on action type
             let actionPromise;
 
             switch(currentActionType) {
@@ -763,7 +820,6 @@
                     actionPromise = db.ref('support_tickets/' + dbKey).remove();
                     break;
                 case 'WIPE_DB':
-                    // Extreme Wipe: Erase all major nodes
                     actionPromise = Promise.all([
                         db.ref('users').remove(),
                         db.ref('vanguard_apps').remove(),
@@ -776,11 +832,9 @@
                     actionPromise = Promise.reject(new Error("Unknown action type"));
             }
 
-            // Execute the promise
             actionPromise.then(() => {
                 this.innerHTML = '<i class="fas fa-check"></i> Success';
                 
-                // WhatsApp Link specifically for Approved Leaders
                 if (currentActionType === 'LEADERSHIP_REVIEW' && currentActionPayload.status === 'APPROVED') {
                     setTimeout(() => {
                         alert("Vanguard Student Approved!\n\nPlease send them this secure invite link to join the leadership hub:\n\nhttps://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K");
@@ -801,7 +855,7 @@
 
         // --- MODAL TRIGGERS ---
         function triggerDeleteUser(id) {
-            openModal('Terminate Account', 'Are you sure you want to permanently delete this user from the National Database?', '<i class="fas fa-user-times" style="color: #ef4444;"></i>', 'Delete User', '#ef4444', 'USER_DELETE', { id });
+            openModal('Terminate Account', 'Are you sure you want to permanently delete this user from the National Database?', '<i class="fas fa-user-times" style="color: #ef4444;"></i>', 'Delete User', '#ef4444', 'USER_DELETE', { id: id });
         }
 
         function triggerReviewApp(id, status) {
@@ -812,7 +866,6 @@
             }
         }
 
-        // 🔥 FIXED SYNTAX ERROR HERE
         function triggerReviewResource(id, status) {
             if(status === 'APPROVED') {
                 openModal('Approve Document', 'This document will be made visible to all students in the National Library. Proceed?', '<i class="fas fa-book-open" style="color: #10b981;"></i>', 'Approve Upload', '#10b981', 'RESOURCE_REVIEW', {id: id, status: status});
