@@ -510,59 +510,54 @@
 
         // --- 5. SAVE PROFILE TO FIREBASE ---
         function saveProfile() {
-            const btn = document.getElementById('saveBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...';
-            btn.disabled = true;
+    const user = firebase.auth().currentUser;
+    const btn = document.getElementById("sync-btn"); // Ensure your button has this ID
+    const originalText = btn.innerHTML;
+
+    if (!user) {
+        alert("Session Error: Please log in again to sync with the National Database.");
+        return;
+    }
+
+    // Capture current form values
+    const payload = {
+        institution: document.getElementById("institution-input")?.value || "N/A",
+        faculty: document.getElementById("faculty-input").value,
+        department: document.getElementById("dept-input").value,
+        program: document.getElementById("program-input").value,
+        level: document.getElementById("level-select").value,
+        gradYear: document.getElementById("grad-year").value,
+        lastUpdated: new Date().toISOString()
+    };
+
+    // UI Feedback: Start Sync
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...';
+    btn.disabled = true;
+
+    // Push directly to the user's secure cloud node
+    db.ref('users/' + user.uid).update(payload)
+        .then(() => {
+            // Success Logic
+            const msg = document.getElementById("save-status");
+            msg.innerText = "Cloud Sync Successful";
+            msg.style.color = "#10b981";
+            msg.style.opacity = 1;
+
+            btn.innerHTML = '<i class="fas fa-check"></i> Data Live';
+            btn.style.background = "#10b981";
             
-            const payload = {
-                name: document.getElementById("name").value,
-                institution: document.getElementById("schoolSearch").value,
-                faculty: document.getElementById("faculty").value,
-                department: document.getElementById("department").value,
-                program: document.getElementById("program").value,
-                level: document.getElementById("level").value,
-                financial_status: document.getElementById("financial").value,
-                year_entry: document.getElementById("entry-year").value,
-                year_completion: document.getElementById("grad-year").value,
-                career: document.getElementById("career").value
-            };
-
-            // Keep local cache synced for instant loading on other pages
-            localStorage.setItem("portal-user-name", payload.name);
-            localStorage.setItem("portal-institution", payload.institution);
-            localStorage.setItem("portal-career", payload.career);
-
-            if (userDbKey) {
-                // Update specific user node in Firebase
-                db.ref('users/' + userDbKey).update(payload)
-                .then(() => {
-                    const msg = document.getElementById("save-status");
-                    msg.style.opacity = 1;
-                    setTimeout(() => { msg.style.opacity = 0; }, 3000);
-
-                    document.getElementById("student-name").innerText = payload.name;
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                })
-                .catch((err) => {
-                    alert("Cloud Sync Failed: " + err.message);
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
-            } else {
-                // Admin bypass scenario
-                const msg = document.getElementById("save-status");
-                msg.innerText = "Saved Locally (Admin Mode)";
-                msg.style.color = "#f59e0b";
-                msg.style.opacity = 1;
-                setTimeout(() => { msg.style.opacity = 0; }, 3000);
-                
-                document.getElementById("student-name").innerText = payload.name;
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
+            setTimeout(() => { 
+                msg.style.opacity = 0;
+                window.location.href = "dashboard.html"; 
+            }, 2000);
+        })
+        .catch((err) => {
+            console.error("Cloud Sync Failed:", err);
+            alert("Database Error: " + err.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+}
 
         // --- 6. IMAGE CROPPER LOGIC (Cloud Wired) ---
         let cropper;
