@@ -157,6 +157,7 @@
             font-weight: 900;
             background: linear-gradient(135deg, #fde68a 0%, #fbbf24 50%, #d97706 100%); 
             -webkit-background-clip: text;
+background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: clamp(2rem, 4.5vw, 3.8rem);
             display: block;
@@ -315,7 +316,17 @@
             border-radius: 50px; border: 1px solid var(--border-color);
         }
         select.theme-select { background: transparent; border: none; color: var(--text-color); cursor: pointer; outline: none; font-size: 0.9rem; font-weight: 600;}
-        input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; cursor: pointer; border-radius: 50%; padding: 0; background: none; }
+        input[type="color"] { 
+    -webkit-appearance: none; 
+    appearance: none; 
+    border: none; 
+    width: 24px; 
+    height: 24px; 
+    cursor: pointer; 
+    border-radius: 50%; 
+    padding: 0; 
+    background: none; 
+}
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; border: 1px solid var(--border-color); }
 
         /* --- PWA NOTIFYING TAB --- */
