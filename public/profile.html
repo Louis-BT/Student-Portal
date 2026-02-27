@@ -509,56 +509,45 @@
         });
 
         // --- 5. SAVE PROFILE TO FIREBASE ---
-        function saveProfile() {
+       function saveProfile() {
+    // 1. Get the currently logged-in student directly from Firebase
     const user = firebase.auth().currentUser;
-    const btn = document.getElementById("sync-btn"); // Ensure your button has this ID
-    const originalText = btn.innerHTML;
-
+    const btn = document.querySelector('button[onclick="saveProfile()"]');
+    
     if (!user) {
-        alert("Session Error: Please log in again to sync with the National Database.");
+        alert("Authentication Error: Please log out and log back in.");
         return;
     }
 
-    // Capture current form values
+    // 2. Prepare the data exactly as the Dashboard expects it
     const payload = {
-        institution: document.getElementById("institution-input")?.value || "N/A",
-        faculty: document.getElementById("faculty-input").value,
-        department: document.getElementById("dept-input").value,
-        program: document.getElementById("program-input").value,
-        level: document.getElementById("level-select").value,
-        gradYear: document.getElementById("grad-year").value,
+        institution: document.getElementById('institution-input')?.value || "National University",
+        faculty: document.getElementById('faculty-input').value,
+        department: document.getElementById('dept-input').value,
+        program: document.getElementById('program-input').value,
+        level: document.getElementById('level-select').value,
+        gradYear: document.getElementById('grad-year').value,
         lastUpdated: new Date().toISOString()
     };
 
-    // UI Feedback: Start Sync
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...';
+    // 3. UI Feedback: Change button to show activity
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
     btn.disabled = true;
 
-    // Push directly to the user's secure cloud node
+    // 4. Push directly to the cloud node 'users/[UID]'
     db.ref('users/' + user.uid).update(payload)
         .then(() => {
-            // Success Logic
-            const msg = document.getElementById("save-status");
-            msg.innerText = "Cloud Sync Successful";
-            msg.style.color = "#10b981";
-            msg.style.opacity = 1;
-
-            btn.innerHTML = '<i class="fas fa-check"></i> Data Live';
-            btn.style.background = "#10b981";
-            
-            setTimeout(() => { 
-                msg.style.opacity = 0;
-                window.location.href = "dashboard.html"; 
-            }, 2000);
+            console.log("Cloud Sync Successful for UID:", user.uid);
+            alert("Success! Profile synced with National Database.");
+            window.location.href = "dashboard.html"; // Redirect to stop the 'Syncing...' spinner
         })
-        .catch((err) => {
-            console.error("Cloud Sync Failed:", err);
-            alert("Database Error: " + err.message);
-            btn.innerHTML = originalText;
+        .catch((error) => {
+            console.error("Firebase Sync Error:", error);
+            alert("Sync Failed: " + error.message);
+            btn.innerHTML = 'Sync to National DB';
             btn.disabled = false;
         });
 }
-
         // --- 6. IMAGE CROPPER LOGIC (Cloud Wired) ---
         let cropper;
         const imgInput = document.getElementById('img-input');
