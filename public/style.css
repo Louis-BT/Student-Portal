@@ -499,3 +499,22 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar-track { background: var(--bg-color); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* =========================================
+   📱 GLOBAL SMARTPHONE UI OPTIMIZATIONS 
+   ========================================= */
+@media (max-width: 768px) {
+    /* General App Sizing */
+    .scroll-area { padding: 15px !important; }
+    .header h1 { font-size: 1.3rem !important; }
+    .header p { font-size: 0.8rem !important; }
+    .theme-wrapper select { padding: 8px 12px !important; font-size: 0.85rem !important; }
+    
+    /* Sleeker Modals & Buttons */
+    .modal-content { padding: 20px !important; width: 95% !important; }
+    .btn-action { padding: 10px !important; font-size: 0.85rem !important; }
+    
+    /* Global Card Adjustments */
+    .resource-grid, .counselor-grid { grid-template-columns: 1fr !important; gap: 15px !important; margin-bottom: 30px !important; }
+    .resource-card, .counselor-card { padding: 18px !important; }
+}

@@ -11,8 +11,10 @@
     <script src="theme.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <link rel="apple-touch-icon" href="icon.png?v=v2">
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    
+    <script src="db.js"></script> 
+    <link rel="apple-touch-icon" href="icon.png?v=v2">
     <link rel="icon" type="image/png" href="icon.png?v=v2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -118,7 +120,7 @@
                     <div class="name-grid">
                         <div class="input-group">
                             <label>Password <span style="color:red">*</span></label>
-                            <input type="password" id="password" placeholder="Min. 8 chars" required>
+                            <input type="password" id="password" placeholder="Min. 6 chars" required>
                             <i class="fas fa-eye toggle-password" onclick="togglePass('password', this)"></i>
                         </div>
                         <div class="input-group">
@@ -178,8 +180,7 @@
 
                 // 2. Validate Passwords Match
                 if (password !== confirmPassword) {
-                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Passwords do not match!';
-                    errorMessage.style.display = 'block';
+                    showError('Passwords do not match!');
                     return;
                 }
 
@@ -192,43 +193,56 @@
                 submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Securing to Cloud...';
 
                 try {
-                    // 5. Query Firebase to check if email already exists
-                    const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
-                    
-                    if (snapshot.exists()) {
-                        errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Email is already registered in the National Database.';
-                        errorMessage.style.display = 'block';
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalHtml;
-                        return;
-                    }
+                    // 5. Create the User in Firebase Authentication (Creates Secure Token)
+                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                    const authUser = userCredential.user;
 
-                    // 6. Push New User to Firebase
-                    const newId = Math.floor(Math.random() * 90000) + 10000;
+                    // Update Auth Profile Display Name
+                    await authUser.updateProfile({
+                        displayName: fullName
+                    });
+
+                    // 6. Save Extra Data to Realtime Database using the Secure UID
                     const userData = {
-                        id: newId,
+                        id: authUser.uid,
                         name: fullName,
                         email: email,
-                        password: password, 
                         phone: phone,
                         role: 'STUDENT',
                         institution: 'National DB',
                         date_registered: new Date().toISOString()
+                        // Notice: We DO NOT save the password here anymore!
                     };
 
-                    await db.ref('users').push(userData);
+                    // Use .set() to map the database node directly to their Auth UID
+                    await db.ref('users/' + authUser.uid).set(userData);
 
                     // 7. Execute Local Login Sequence
-                    executeSignupSuccess(fullName, email, newId);
+                    executeSignupSuccess(fullName, email, authUser.uid);
 
                 } catch (err) {
                     console.error("Cloud Error:", err);
-                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Database Connection Error. Please try again.';
-                    errorMessage.style.display = 'block';
+                    
+                    // Format Firebase Auth Errors for the UI
+                    let msg = "Database Connection Error. Please try again.";
+                    if (err.code === 'auth/email-already-in-use') {
+                        msg = "This email is already registered. Please log in.";
+                    } else if (err.code === 'auth/weak-password') {
+                        msg = "Password is too weak. Please use at least 6 characters.";
+                    } else if (err.code === 'auth/invalid-email') {
+                        msg = "Please enter a valid email address.";
+                    }
+
+                    showError(msg);
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHtml;
                 }
             });
+
+            function showError(msg) {
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${msg}`;
+                errorMessage.style.display = 'block';
+            }
 
             function executeSignupSuccess(name, email, id) {
                 // Auto-login the user into local session storage so the dashboard knows who is logged in

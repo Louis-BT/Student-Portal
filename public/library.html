@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="theme.js"></script>
+    
+    <script src="theme.js" defer></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    <style>
         /* --- LAYOUT & SIDEBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; }
@@ -26,7 +28,7 @@
 
         .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
         .scroll-area { flex: 1; padding: 30px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         
         /* --- ENHANCED LIBRARY TABS --- */
         .lib-nav { 
@@ -106,7 +108,7 @@
         .file-upload-wrapper:hover { border-color: var(--primary-color); background: rgba(37, 99, 235, 0.05); }
         .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        /* Mobile adjustments */
+        /* --- RESPONSIVE MOBILE ENGINE --- */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
 
@@ -114,9 +116,49 @@
             .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
             .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .sidebar-overlay.mobile-open { display: block; }
-            .resource-grid { grid-template-columns: 1fr; } 
-            .viewer-mock-text { padding: 30px 5%; } 
             .mobile-menu-btn { display: block; }
+        }
+
+        /* 📱 STRICT SMARTPHONE UI OVERRIDES */
+        @media (max-width: 768px) {
+            /* General App Sizing */
+            .scroll-area { padding: 15px; }
+            .header h1 { font-size: 1.3rem !important; }
+            .header p { font-size: 0.8rem; }
+            .theme-wrapper select { padding: 8px 12px; font-size: 0.85rem; }
+            
+            /* Slimmer Search Box */
+            #librarySearch { padding: 12px 15px 12px 45px !important; font-size: 0.9rem !important; }
+            
+            /* Tighter Tabs */
+            .lib-nav { padding: 6px; margin-bottom: 20px; }
+            .lib-tab { padding: 8px 14px; font-size: 0.8rem; }
+            
+            /* Flush Resource Cards */
+            .resource-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
+            .resource-card { padding: 18px; }
+            .card-icon { width: 45px; height: 45px; font-size: 1.4rem; margin-bottom: 12px; }
+            .res-title { font-size: 0.95rem; }
+            .res-desc { font-size: 0.8rem; margin-bottom: 15px; }
+            .btn-action { padding: 10px; font-size: 0.85rem; }
+            
+            /* Smart Dictionary Form Stacking */
+            #tab-knowledge > div { padding: 25px 15px !important; }
+            #tab-knowledge h2 { font-size: 1.4rem !important; }
+            #tab-knowledge p { font-size: 0.9rem !important; margin-bottom: 20px !important; }
+            #tab-knowledge > div > div { flex-direction: column; gap: 10px; }
+            #dict-category, #dict-input, #dict-btn { width: 100% !important; padding: 12px !important; font-size: 0.9rem; }
+            
+            /* Sleeker Modals & Buttons */
+            .modal-content { padding: 20px; width: 95%; }
+            .file-upload-wrapper { padding: 20px 10px; }
+            .upload-fab { width: 55px; height: 55px; font-size: 1.4rem; bottom: 20px; right: 20px; }
+            
+            /* Viewer Tweaks */
+            .viewer-mock-text { padding: 30px 5%; font-size: 1rem; }
+            .viewer-mock-text h1 { font-size: 1.8rem; }
+            .viewer-header h3 { font-size: 1rem !important; }
+            .viewer-header a { padding: 6px 12px !important; font-size: 0.75rem !important; }
         }
     </style>
 </head>
@@ -127,12 +169,12 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: var(--text-color);"><i class="fas fa-cloud-upload-alt" style="color:var(--primary-color);"></i> Upload Resource</h2>
+                <h2 style="margin: 0; color: var(--text-color); font-size: 1.3rem;"><i class="fas fa-cloud-upload-alt" style="color:var(--primary-color);"></i> Upload Resource</h2>
                 <span onclick="toggleUploadModal()" style="cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
             </div>
             <form id="uploadForm" onsubmit="event.preventDefault(); handleUpload();">
-                <input type="text" id="resTitle" placeholder="Document Title..." style="width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;" required>
-                <select id="resCategory" style="width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px;" required>
+                <input type="text" id="resTitle" placeholder="Document Title..." style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 0.9rem;" required>
+                <select id="resCategory" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 0.9rem;" required>
                     <option value="BOOK">Academic / E-Book</option>
                     <option value="PAST_QUESTION">Past Question</option>
                     <option value="NOTES">Lecture Slides</option>
@@ -140,10 +182,10 @@
                 </select>
                 <div class="file-upload-wrapper">
                     <input type="file" id="resFile" accept=".pdf,.doc,.docx,.ppt,.pptx" required onchange="updateFileName(this)">
-                    <i class="fas fa-file-upload" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 10px;"></i>
-                    <p id="fileNameDisplay" style="margin: 0; color: var(--text-color); font-weight: 600;">Drag & Drop or Click to Browse</p>
+                    <i class="fas fa-file-upload" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 10px;"></i>
+                    <p id="fileNameDisplay" style="margin: 0; color: var(--text-color); font-weight: 600; font-size: 0.9rem;">Drag & Drop or Click to Browse</p>
                 </div>
-                <button type="submit" id="uploadBtn" style="width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.05rem; transition: 0.2s;">Submit to Cloud Quarantine</button>
+                <button type="submit" id="uploadBtn" style="width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s;">Submit to Cloud Quarantine</button>
             </form>
         </div>
     </div>
@@ -155,11 +197,11 @@
                     <h3 id="viewerTitle" style="margin: 0; font-size: 1.2rem; color: white;">Loading...</h3>
                     <span style="font-size: 0.85rem; color: #cbd5e1;">National Portal Secure Reader</span>
                 </div>
-                <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="display: flex; gap: 12px; align-items: center;">
                     <a id="viewerDownload" href="#" onclick="handleDownload(event)" class="btn-action" style="background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 15px; font-size: 0.85rem; width: auto; text-decoration: none;">
                         <i class="fas fa-download"></i> Download Copy
                     </a>
-                    <span onclick="closeViewer()" style="cursor: pointer; font-size: 2rem; line-height: 1; color: white;">&times;</span>
+                    <span onclick="closeViewer()" style="cursor: pointer; font-size: 1.8rem; line-height: 1; color: white;">&times;</span>
                 </div>
             </div>
             
@@ -569,6 +611,9 @@
     </div>
 
     <script>
+        // NEW FEATURE: Global Cache for physical file blob data
+        let globalLibraryData = {};
+
         document.addEventListener('DOMContentLoaded', () => {
             switchTab('academic'); 
             fetchLibrary(); // Initialize Cloud Sync
@@ -671,7 +716,7 @@
             document.getElementById('viewerFrame').src = ""; 
         }
 
-        // --- FIREBASE UPLOAD BRIDGE ---
+        // --- FIREBASE UPLOAD BRIDGE (UPGRADED FOR BASE64 FILE DATA) ---
         function toggleUploadModal() {
             const modal = document.getElementById('uploadModal');
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
@@ -691,45 +736,57 @@
         function handleUpload() {
             const btn = document.getElementById('uploadBtn');
             const originalText = btn.innerText;
+            const fileInput = document.getElementById('resFile');
+            
+            if (fileInput.files.length === 0) return alert("Please select a file.");
+            
+            const file = fileInput.files[0];
+            if (file.size > 5 * 1024 * 1024) return alert("File must be under 5MB.");
+
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securing to Cloud...';
             btn.disabled = true;
 
             const title = document.getElementById('resTitle').value;
             const category = document.getElementById('resCategory').value;
-            const fileInput = document.getElementById('resFile');
-            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : 'document.pdf';
+            const fileName = file.name;
             const uploaderName = localStorage.getItem('portal-user-name') || 'Student User';
 
-            const payload = {
-                title: title,
-                category: category,
-                fileName: fileName,
-                uploaded_by: uploaderName,
-                status: 'PENDING',
-                date: new Date().toISOString()
-            };
+            // NEW: Use FileReader to convert PDF to Base64 String
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                const payload = {
+                    title: title,
+                    category: category,
+                    fileName: fileName,
+                    fileData: reader.result, // THE MAGIC: Save the actual file content
+                    uploaded_by: uploaderName,
+                    status: 'PENDING',
+                    date: new Date().toISOString()
+                };
 
-            // Push directly to Firebase
-            db.ref('library_quarantine').push(payload)
-            .then(() => {
-                btn.innerHTML = '<i class="fas fa-check-circle"></i> Sent to Admin Quarantine';
-                btn.style.background = '#10b981';
+                // Push directly to Firebase
+                db.ref('library_quarantine').push(payload)
+                .then(() => {
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Sent to Admin Quarantine';
+                    btn.style.background = '#10b981';
 
-                setTimeout(() => {
-                    toggleUploadModal();
+                    setTimeout(() => {
+                        toggleUploadModal();
+                        btn.innerHTML = originalText;
+                        btn.style.background = 'var(--primary-color)';
+                        btn.disabled = false;
+                        document.getElementById('uploadForm').reset();
+                        document.getElementById('fileNameDisplay').innerText = "Drag & Drop or Click to Browse";
+                        document.getElementById('fileNameDisplay').style.color = 'var(--text-color)';
+                    }, 1500);
+                })
+                .catch(err => {
+                    alert("Upload failed: " + err.message);
                     btn.innerHTML = originalText;
-                    btn.style.background = 'var(--primary-color)';
                     btn.disabled = false;
-                    document.getElementById('uploadForm').reset();
-                    document.getElementById('fileNameDisplay').innerText = "Drag & Drop or Click to Browse";
-                    document.getElementById('fileNameDisplay').style.color = 'var(--text-color)';
-                }, 1500);
-            })
-            .catch(err => {
-                alert("Upload failed: " + err.message);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            });
+                });
+            };
         }
 
         // --- FIREBASE LIVE SYNC ---
@@ -740,11 +797,14 @@
             db.ref('library_quarantine').on('value', (snapshot) => {
                 // Clear previously injected cloud cards to avoid duplicates on update
                 document.querySelectorAll('.cloud-injected-card').forEach(el => el.remove());
+                globalLibraryData = {}; // NEW: Reset cache on update
                 
                 if (snapshot.exists()) {
                     let items = [];
                     snapshot.forEach(child => {
-                        items.push({ key: child.key, ...child.val() });
+                        const fileObj = { key: child.key, ...child.val() };
+                        items.push(fileObj);
+                        globalLibraryData[child.key] = fileObj; // NEW: Save to global dictionary
                     });
                     
                     // Sort to show newest first
@@ -775,7 +835,8 @@
                 actionHtml = `<button class="btn-action read-btn" onclick="alert('File is currently locked in quarantine awaiting Directorate Admin approval.')" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-shield-alt"></i> Locked</button>`;
             } else {
                 badgeHtml = `<div style="position:absolute; top:15px; right:15px; background:#10b981; color:white; font-size:0.65rem; padding:4px 8px; border-radius:12px; font-weight:800; letter-spacing:0.5px;">VERIFIED</div>`;
-                actionHtml = `<button class="btn-action read-btn" onclick="openSimulatedReader('${fileObj.title.replace(/'/g, "\\'")}')"><i class="fas fa-book-reader"></i> Open Document</button>`;
+                // NEW: Call the Real Document Reader instead of the mock reader!
+                actionHtml = `<button class="btn-action read-btn" onclick="openRealDocument('${fileObj.key}')"><i class="fas fa-book-reader"></i> Open Document</button>`;
             }
 
             const newCard = `
@@ -789,6 +850,74 @@
             `;
             grid.insertAdjacentHTML('afterbegin', newCard);
         }
+
+        // ==========================================
+        // 🔥 NEW FEATURE: BASE-64 PDF CONVERSION ENGINE
+        // ==========================================
+
+        // Converts the saved Firebase string back into a real PDF file
+        function base64ToBlob(base64Data, contentType='') {
+            const b64 = base64Data.indexOf(',') !== -1 ? base64Data.split(',')[1] : base64Data;
+            const sliceSize = 512;
+            const byteCharacters = atob(b64);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            return new Blob(byteArrays, {type: contentType});
+        }
+
+        // Opens the Modal with the actual generated PDF
+        function openRealDocument(dbKey) {
+            const fileObj = globalLibraryData[dbKey];
+            if(!fileObj) return alert("File data could not be retrieved from the cloud.");
+
+            const modal = document.getElementById('viewerModal');
+            const iframe = document.getElementById('viewerFrame');
+            const smartReader = document.getElementById('smartReader');
+            const titleEl = document.getElementById('viewerTitle');
+            const downloadBtn = document.getElementById('viewerDownload');
+
+            titleEl.innerText = fileObj.title;
+
+            // Failsafe for documents uploaded before you added this new base64 feature
+            if (!fileObj.fileData) {
+                alert("ERROR: This file was uploaded using the older version of the portal. It does not contain physical PDF data. Please delete it from the Admin panel and re-upload it with this new version!");
+                return;
+            }
+
+            smartReader.style.display = 'none';
+            iframe.style.display = 'block';
+            
+            try {
+                let mime = 'application/pdf';
+                if(fileObj.fileData.includes('data:')) {
+                    mime = fileObj.fileData.split(';')[0].split(':')[1];
+                }
+                const blob = base64ToBlob(fileObj.fileData, mime);
+                const blobUrl = URL.createObjectURL(blob);
+                
+                iframe.src = blobUrl + "#toolbar=0";
+                
+                // Configure Download Button to pull the real file
+                downloadBtn.href = blobUrl;
+                downloadBtn.download = fileObj.fileName || "National_Portal_Document.pdf";
+                downloadBtn.onclick = null; // Remove the preventDefault block
+                
+            } catch (e) {
+                alert("Failed to render the document. The file data may be corrupted.");
+            }
+            
+            modal.style.display = 'flex';
+        }
+
 
         // --- PREMIUM AI DICTIONARY LOGIC ---
         function searchDictionary() {

@@ -8,11 +8,14 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="theme.js"></script>
+    
+    <script src="theme.js" defer></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    
+    <style>
         /* --- 1. CORE LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
@@ -74,6 +77,8 @@
         .btn-approve:hover { background: #10b981; color: #fff; }
         .btn-reject { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
         .btn-reject:hover { background: #ef4444; color: #fff; }
+        .btn-view { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .btn-view:hover { background: #3b82f6; color: #fff; }
 
         .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent; white-space: nowrap; display: inline-block; }
         .status-pending { background: rgba(245, 158, 11, 0.1); color: #d97706; border-color: rgba(245, 158, 11, 0.3); }
@@ -397,8 +402,9 @@
         let currentActionType = null;
         let currentActionPayload = null;
         
-        // 🔥 GLOBAL CACHE FOR READING MANIFESTOS
+        // 🔥 GLOBAL CACHE FOR DATA
         let globalVanguardData = {};
+        let globalLibraryData = {}; // NEW: Needed to read PDFs before approving
 
         // --- AUTH & INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -494,7 +500,6 @@
                     const app = childSnapshot.val();
                     const key = childSnapshot.key;
                     
-                    // Save to global variable so the dossier modal can read the full text
                     globalVanguardData[key] = app;
 
                     if (app.status === 'PENDING') pendingCount++;
@@ -509,7 +514,6 @@
                         actions = `<span style="color:var(--text-muted); font-size:0.85rem; font-weight: 600;"><i class="fas fa-lock"></i> Decision Locked</span>`;
                     }
 
-                    // 🔥 NEW: Added "Read Manifesto" button
                     tbody.innerHTML += `
                         <tr>
                             <td>
@@ -531,10 +535,11 @@
                 document.getElementById('pending-count-badge').innerText = `${pendingCount} Pending`;
             });
 
-            // 3. Library Quarantine Listener
+            // 3. Library Quarantine Listener (UPGRADED FOR PDF PREVIEW)
             db.ref('library_quarantine').on('value', (snapshot) => {
                 const tbody = document.getElementById('resource-table-body');
                 tbody.innerHTML = '';
+                globalLibraryData = {}; // Clear global cache on every update
                 
                 if (!snapshot.exists()) {
                     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Database Quarantine is empty.</td></tr>`;
@@ -547,16 +552,24 @@
                     const item = childSnapshot.val();
                     const key = childSnapshot.key;
 
+                    // Cache the file data so the Admin can view it before approving
+                    globalLibraryData[key] = item;
+
                     if (item.status === 'PENDING') pendingCount++;
 
                     let actions = '';
                     if(item.status === 'PENDING') {
+                        // NEW: Added the "View File" button
                         actions = `
+                            <button class="action-btn btn-view" onclick="previewAdminDocument('${key}')" title="Preview File"><i class="fas fa-eye"></i> View File</button>
                             <button class="action-btn btn-approve" onclick="triggerReviewResource('${key}', 'APPROVED')"><i class="fas fa-check"></i> Authorize</button>
                             <button class="action-btn btn-reject" onclick="triggerReviewResource('${key}', 'REJECTED')"><i class="fas fa-times"></i> Purge</button>
                         `;
                     } else {
-                        actions = `<button class="action-btn btn-reject" onclick="triggerReviewResource('${key}', 'DELETE')"><i class="fas fa-trash"></i> Delete Record</button>`;
+                        actions = `
+                            <button class="action-btn btn-view" onclick="previewAdminDocument('${key}')"><i class="fas fa-eye"></i> View</button>
+                            <button class="action-btn btn-reject" onclick="triggerReviewResource('${key}', 'DELETE')"><i class="fas fa-trash"></i> Delete Record</button>
+                        `;
                     }
 
                     let icon = 'fa-file-alt'; let color = '#3b82f6';
@@ -577,7 +590,7 @@
                             </td>
                             <td><span class="status-pill" style="background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border-color);">${item.category}</span></td>
                             <td><span class="status-pill status-${item.status.toLowerCase()}">${item.status}</span></td>
-                            <td style="text-align:right;">${actions}</td>
+                            <td style="text-align:right; display:flex; gap:5px; justify-content:flex-end;">${actions}</td>
                         </tr>
                     `;
                 });
@@ -643,6 +656,52 @@
                 document.getElementById('kpi-reports').innerText = ticketCount;
             });
         }
+
+        // =========================================================================
+        // 🔥 NEW: SECURE ADMIN DOCUMENT PREVIEW VIEWER
+        // =========================================================================
+        
+        function base64ToBlob(base64Data, contentType='') {
+            const b64 = base64Data.indexOf(',') !== -1 ? base64Data.split(',')[1] : base64Data;
+            const sliceSize = 512;
+            const byteCharacters = atob(b64);
+            const byteArrays = [];
+
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            return new Blob(byteArrays, {type: contentType});
+        }
+
+        function previewAdminDocument(dbKey) {
+            const fileObj = globalLibraryData[dbKey];
+            
+            if(!fileObj || !fileObj.fileData) {
+                alert("This file does not contain valid physical PDF data. It was likely uploaded with an older version of the portal. It is recommended to reject/purge this file.");
+                return;
+            }
+            
+            try {
+                let mime = 'application/pdf';
+                if(fileObj.fileData.includes('data:')) {
+                    mime = fileObj.fileData.split(';')[0].split(':')[1];
+                }
+                const blob = base64ToBlob(fileObj.fileData, mime);
+                const blobUrl = URL.createObjectURL(blob);
+                
+                // Opens the PDF securely in a new browser tab for the Admin to read
+                window.open(blobUrl, '_blank'); 
+            } catch (e) {
+                alert("System could not process the file data. It may be corrupted.");
+            }
+        }
+
 
         // --- BROADCAST SUBMIT FUNCTION ---
         function sendBroadcast() {

@@ -11,8 +11,11 @@
     <script src="theme.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <link rel="apple-touch-icon" href="icon.png?v=v2">
+    
+    <script src="db.js"></script> 
+    <link rel="apple-touch-icon" href="icon.png?v=v2">
     <link rel="icon" type="image/png" href="icon.png?v=v2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,7 +46,8 @@
         p.sub-text { color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
 
         /* Professional Error Banner */
-        .error-message { display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: left; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .error-message { display: none; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: left; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; align-items: center; gap: 10px; }
+        .success-message { display: none; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; text-align: left; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; align-items: center; gap: 10px; }
 
         /* Input Engineering */
         .input-group { margin-bottom: 20px; position: relative; }
@@ -55,7 +59,7 @@
 
         .form-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; font-size: 0.9rem; }
         .remember-me { display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; font-weight: 500; }
-        .forgot-pass { color: var(--primary-color); text-decoration: none; font-weight: 600; transition: 0.2s; }
+        .forgot-pass { color: var(--primary-color); text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; }
         .forgot-pass:hover { text-decoration: underline; }
         
         .btn-auth { width: 100%; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 10px; font-size: 1.05rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2); }
@@ -95,12 +99,13 @@
                 <h2>Welcome Back</h2>
                 <p class="sub-text">Enter your credentials to securely access your portal.</p>
 
-                <div id="errorMessage" class="error-message" style="display: none;"></div>
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
 
                 <form id="masterLoginForm">
                     <div class="input-group">
-                        <label>Email Address or ID</label>
-                        <input type="text" id="email" placeholder="student@gmail.com or 'admin'" autocomplete="username" required>
+                        <label>Email Address</label>
+                        <input type="email" id="email" placeholder="student@gmail.com" autocomplete="username" required>
                     </div>
 
                     <div class="input-group">
@@ -111,7 +116,7 @@
 
                     <div class="form-actions">
                         <label class="remember-me"><input type="checkbox" id="rememberMe"> Remember me</label>
-                        <a href="#" class="forgot-pass" onclick="alert('Contact the Directorate IT Support for password recovery.')">Forgot Password?</a>
+                        <a class="forgot-pass" id="forgotPassBtn">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="btn-auth" id="submitBtn">
@@ -132,9 +137,12 @@
             const loginForm = document.getElementById('masterLoginForm');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
+            const rememberMeCheckbox = document.getElementById('rememberMe');
             const submitBtn = document.getElementById('submitBtn');
             const togglePassBtn = document.getElementById('togglePassBtn');
             const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const forgotPassBtn = document.getElementById('forgotPassBtn');
             
             // Password Toggle
             togglePassBtn.addEventListener('click', () => {
@@ -144,12 +152,33 @@
                 togglePassBtn.classList.toggle('fa-eye-slash');
             });
 
+            // Handle Password Reset
+            forgotPassBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const email = emailInput.value.trim();
+                
+                if (!email) {
+                    showError("Please enter your email address first, then click 'Forgot Password'.");
+                    return;
+                }
+
+                try {
+                    await firebase.auth().sendPasswordResetEmail(email);
+                    errorMessage.style.display = 'none';
+                    successMessage.innerHTML = '<i class="fas fa-envelope-open-text"></i> Password reset email sent! Check your inbox.';
+                    successMessage.style.display = 'flex';
+                } catch (error) {
+                    showError(error.message);
+                }
+            });
+
             // --- THE LIVE CLOUD AUTH ENGINE ---
             loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
                 
-                const email = emailInput.value.trim().toLowerCase();
+                const email = emailInput.value.trim();
                 const password = passwordInput.value.trim();
 
                 const originalHtml = submitBtn.innerHTML;
@@ -157,52 +186,63 @@
                 submitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...';
 
                 try {
-                    // 1. MASTER ADMIN BYPASS (Kept for easy demo access)
-                    if ((email === 'admin' || email === 'admin@portal.com') && password === 'admin') {
-                        executeLoginSuccess({ role: 'ADMIN', name: 'Directorate Admin', email: email, id: '000000' });
-                        return;
-                    }
+                    // 1. Set Persistence (Remember Me)
+                    const persistenceMode = rememberMeCheckbox.checked 
+                        ? firebase.auth.Auth.Persistence.LOCAL 
+                        : firebase.auth.Auth.Persistence.SESSION;
+                    
+                    await firebase.auth().setPersistence(persistenceMode);
 
-                    // 2. MASTER STUDENT BYPASS (Kept for easy demo access)
-                    if ((email === 'student' || email === 'student@portal.com') && password === 'student') {
-                        executeLoginSuccess({ role: 'STUDENT', name: 'Demo Student', email: email, id: '10284909' });
-                        return;
-                    }
+                    // 2. Authenticate with Firebase Auth
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                    const authUser = userCredential.user;
 
-                    // 3. QUERY FIREBASE CLOUD DATABASE
-                    const snapshot = await db.ref('users').orderByChild('email').equalTo(email).once('value');
+                    // 3. Fetch User Profile & Role from the secure Realtime Database
+                    const snapshot = await db.ref('users/' + authUser.uid).once('value');
                     
                     if (snapshot.exists()) {
-                        let userFound = null;
-                        
-                        // Loop through results (should only be one match)
-                        snapshot.forEach((childSnapshot) => {
-                            const userData = childSnapshot.val();
-                            if (userData.password === password) {
-                                userFound = userData;
-                            }
+                        const userData = snapshot.val();
+                        executeLoginSuccess({ 
+                            role: userData.role || 'STUDENT', 
+                            name: userData.name || 'Student', 
+                            email: authUser.email, 
+                            id: userData.id || authUser.uid 
                         });
-
-                        if (userFound) {
-                            executeLoginSuccess(userFound);
-                            return;
-                        }
+                    } else {
+                        // Edge case: User is in Auth but somehow missing from the database
+                        executeLoginSuccess({ 
+                            role: 'STUDENT', 
+                            name: 'Student', 
+                            email: authUser.email, 
+                            id: authUser.uid 
+                        });
                     }
-
-                    // Failure State: Email not found or password incorrect
-                    throw new Error("Invalid Credentials");
 
                 } catch (err) {
                     console.error("Login Error:", err);
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalHtml;
-                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Invalid Credentials. Please try again.';
-                    errorMessage.style.display = 'flex';
+                    
+                    // User-friendly error mapping
+                    let msg = "Invalid Credentials. Please try again.";
+                    if(err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                        msg = "Incorrect email or password.";
+                    } else if (err.code === 'auth/too-many-requests') {
+                        msg = "Too many failed attempts. Try again later or reset password.";
+                    }
+                    
+                    showError(msg);
                 }
             });
 
+            function showError(msg) {
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${msg}`;
+                errorMessage.style.display = 'flex';
+            }
+
             function executeLoginSuccess(user) {
-                // Save session securely to browser storage
+                // Save session securely to browser storage for UI display purposes
+                // (Firebase Auth handles the actual database security under the hood)
                 localStorage.setItem('portal-user-role', user.role);
                 localStorage.setItem('portal-user-name', user.name);
                 localStorage.setItem('portal-user-email', user.email);
