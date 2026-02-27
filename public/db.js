@@ -21,3 +21,22 @@ const db = firebase.database();
 const auth = firebase.auth(); // NEW: Activated to support secure login sessions across all pages
 
 console.log("🟢 NATIONAL DATABASE: Realtime Cloud & Auth Connections Established.");
+
+// ==========================================
+// 🔥 SECURE CLOUD LOGOUT ENGINE
+// ==========================================
+function executeSecureLogout(event) {
+    if(event) event.preventDefault(); 
+    
+    // 1. Tell Firebase to kill the secure cloud session
+    auth.signOut().then(() => {
+        // 2. Wipe the local browser memory for safety
+        localStorage.clear();
+        
+        // 3. Route securely back to the login screen
+        window.location.href = "login.html";
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+        alert("System encountered an error during logout.");
+    });
+}
