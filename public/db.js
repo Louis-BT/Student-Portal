@@ -40,3 +40,17 @@ function executeSecureLogout(event) {
         alert("System encountered an error during logout.");
     });
 }
+
+function executeSecureLogout(event) {
+    if(event) event.preventDefault(); 
+    // Use the variable 'auth' if that's what you defined at the top
+    auth.signOut().then(() => {
+        localStorage.clear();
+        window.location.href = "login.html";
+    }).catch((error) => {
+        console.error("Logout Error:", error);
+        // Force logout even if cloud fails
+        localStorage.clear();
+        window.location.href = "login.html";
+    });
+}
