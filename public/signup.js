@@ -176,3 +176,16 @@ function capitalize(str) {
     if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
+
+// --- CLOUD PROFILE CREATION ---
+function createCloudProfile(user, fullName, studentEmail) {
+    const userRef = db.ref('users/' + user.uid);
+    
+    return userRef.set({
+        name: fullName,
+        email: studentEmail,
+        role: "STUDENT", // Default role for all new signups
+        joinedDate: new Date().toISOString(),
+        status: "ACTIVE"
+    });
+}
