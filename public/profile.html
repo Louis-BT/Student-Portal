@@ -393,7 +393,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // --- MOBILE MENU LOGIC ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
@@ -414,8 +414,8 @@
             "Akenten Appiah-Menka University of Skills Training and Entrepreneurial Development (AAMUSTED)", "Ghana Communication Technology University (GCTU)"
         ];
 
-        // --- 2. FIREBASE INITIALIZATION & SYNC ---
-        let userDbKey = null; // Store the unique Firebase ID for this user
+        // --- 2. FIREBASE INITIALIZATION & SYNC (FIXED RACE CONDITION) ---
+        let userDbKey = null; 
 
         document.addEventListener("DOMContentLoaded", () => {
             const role = localStorage.getItem("portal-user-role") || "Student";
@@ -427,44 +427,51 @@
                 return;
             }
 
-            const cachedEmail = localStorage.getItem("portal-user-email");
-            if (!cachedEmail) {
-                window.location.href = 'login.html';
-                return;
-            }
+            // 🔥 THE FIX: Wait for Firebase Auth clearance before talking to the Database
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    userDbKey = user.uid; // Secure ID assigned directly from Auth
 
-            // Pull live data from Firebase
-            db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
-                if(snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        userDbKey = child.key; // Crucial for updating later
-                        const data = child.val();
-                        
-                        document.getElementById("student-name").innerText = data.name || "Student User";
-                        document.getElementById("student-email").innerText = data.email;
+                    // Pull live data exactly from this user's cloud node
+                    db.ref('users/' + user.uid).on('value', (snapshot) => {
+                        if(snapshot.exists()) {
+                            const data = snapshot.val();
+                            
+                            document.getElementById("student-name").innerText = data.name || "Student User";
+                            document.getElementById("student-email").innerText = data.email || user.email;
 
-                        if(data.name) document.getElementById("name").value = data.name;
-                        if(data.institution) document.getElementById("schoolSearch").value = data.institution;
-                        if(data.faculty) document.getElementById("faculty").value = data.faculty;
-                        if(data.department) document.getElementById("department").value = data.department;
-                        if(data.program) document.getElementById("program").value = data.program;
-                        if(data.level) document.getElementById("level").value = data.level;
-                        if(data.financial_status) document.getElementById("financial").value = data.financial_status;
-                        if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
-                        if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
-                        if(data.career) document.getElementById("career").value = data.career;
-                        
-                        // Load cloud avatar if it exists, else load local fallback
-                        if(data.avatar) {
-                            document.getElementById("profile-display").src = data.avatar;
-                            localStorage.setItem("portal-avatar", data.avatar); 
+                            if(data.name) document.getElementById("name").value = data.name;
+                            if(data.institution) document.getElementById("schoolSearch").value = data.institution;
+                            if(data.faculty) document.getElementById("faculty").value = data.faculty;
+                            if(data.department) document.getElementById("department").value = data.department;
+                            if(data.program) document.getElementById("program").value = data.program;
+                            if(data.level) document.getElementById("level").value = data.level;
+                            if(data.financial_status) document.getElementById("financial").value = data.financial_status;
+                            if(data.year_entry) document.getElementById("entry-year").value = data.year_entry;
+                            if(data.year_completion) document.getElementById("grad-year").value = data.year_completion;
+                            if(data.career) document.getElementById("career").value = data.career;
+                            
+                            // Load cloud avatar if it exists, else load local fallback
+                            if(data.avatar) {
+                                document.getElementById("profile-display").src = data.avatar;
+                                localStorage.setItem("portal-avatar", data.avatar); 
+                            } else {
+                                const localPic = localStorage.getItem("portal-avatar");
+                                if(localPic) document.getElementById("profile-display").src = localPic;
+                            }
                         } else {
-                            const localPic = localStorage.getItem("portal-avatar");
-                            if(localPic) document.getElementById("profile-display").src = localPic;
+                            // RECOVERY MODE: If Admin wiped the DB, automatically rebuild the student profile
+                            document.getElementById("student-name").innerText = "Profile Setup Required";
+                            db.ref('users/' + user.uid).set({
+                                email: user.email,
+                                role: "Student",
+                                createdAt: new Date().toISOString()
+                            });
                         }
                     });
                 } else {
-                    document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
+                    // Kick out unauthenticated users immediately
+                    window.location.href = 'login.html';
                 }
             });
         });
@@ -507,18 +514,17 @@
             if (!schoolInput.contains(e.target)) suggestionBox.style.display = 'none';
         });
 
-        // --- 5. SAVE PROFILE TO FIREBASE (FIXED MAPPING) ---
+        // --- 5. SAVE PROFILE TO FIREBASE (FIXED SYNC ENGINE) ---
         function saveProfile() {
             const user = firebase.auth().currentUser;
             const btn = document.getElementById("saveBtn");
             const statusMessage = document.getElementById("save-status");
             
-            if (!user && !userDbKey) {
+            if (!user) {
                 alert("Authorization error. Please refresh and log in again.");
                 return;
             }
 
-            // --- THE CRITICAL FIX: MAPPING TO CORRECT HTML IDs ---
             const data = {
                 name: document.getElementById('name').value,
                 career: document.getElementById('career').value,
@@ -536,8 +542,8 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to National DB...';
             btn.disabled = true;
 
-            // Use the userDbKey we got during page load for exact targeting
-            const targetRef = db.ref('users/' + userDbKey);
+            // Bulletproof write operation using the verified Auth UID
+            const targetRef = db.ref('users/' + user.uid);
             
             targetRef.update(data)
                 .then(() => {
@@ -590,8 +596,9 @@
             document.getElementById("profile-display").src = url;
             localStorage.setItem("portal-avatar", url); 
 
-            if (userDbKey) {
-                db.ref('users/' + userDbKey).update({ avatar: url })
+            const user = firebase.auth().currentUser;
+            if (user) {
+                db.ref('users/' + user.uid).update({ avatar: url })
                 .then(() => { console.log("Avatar synced to cloud."); })
                 .catch(err => { console.error("Avatar sync failed.", err); });
             }

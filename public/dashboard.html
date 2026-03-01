@@ -13,8 +13,11 @@
     <script src="theme.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    
+    <style>
         /* --- LAYOUT ARCHITECTURE --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .dashboard-wrapper { display: flex; width: 100%; height: 100%; position: relative; }
@@ -382,14 +385,20 @@
         });
     }
 
+    // 🔥 THE FIX: Wrap initialization in the Auth State Listener
     document.addEventListener("DOMContentLoaded", () => {
-        const role = localStorage.getItem('portal-user-role') || 'STUDENT';
-        
-        if (role === 'ADMIN') {
-            setupAdminView();
-        } else {
-            setupStudentView();
-        }
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                const role = localStorage.getItem('portal-user-role') || 'STUDENT';
+                if (role === 'ADMIN') {
+                    setupAdminView();
+                } else {
+                    setupStudentView(user); // Pass the authenticated user to the setup
+                }
+            } else {
+                window.location.href = 'login.html'; // Kick out if not verified
+            }
+        });
     });
 
     function setupAdminView() {
@@ -429,7 +438,7 @@
         });
     }
 
-    async function setupStudentView() {
+    async function setupStudentView(user) {
         document.getElementById('student-view').style.display = 'block';
         document.getElementById('sidebar-role').innerText = "Undergraduate Student";
 
@@ -442,17 +451,16 @@
             <li><a href="library.html"><i class="fas fa-book"></i> Library</a></li>
             <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
             <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-            <li><a href="index.html" class="logout-btn" onclick="localStorage.clear()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            <li><a href="#" class="logout-btn" onclick="executeSecureLogout(event)"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         `;
 
-        await loadStudentData(); 
+        await loadStudentData(user); 
         loadLiveNews(); 
         checkVanguardStatus();
     }
 
-    async function loadStudentData() {
+    async function loadStudentData(user) {
         const cachedName = localStorage.getItem('portal-user-name') || 'User';
-        const cachedEmail = localStorage.getItem('portal-user-email');
         const cachedPic = localStorage.getItem('portal-avatar');
         let gpaValue = localStorage.getItem('portal-gpa') || "0.00";
         
@@ -466,29 +474,26 @@
         document.getElementById('welcome-message').innerText = `${greeting}, ${cachedName.split(' ')[0]}!`;
         if(cachedPic) document.getElementById('sidebar-pic').src = cachedPic;
 
-        // Firebase User Profile Sync
-        if (cachedEmail) {
-            db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
-                if(snapshot.exists()) {
-                    snapshot.forEach(child => {
-                        const data = child.val();
-                        // Populate UI with DB data
-                        document.getElementById('stu-school').innerText = data.institution || 'Not Set';
-                        document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
-                        document.getElementById('stu-program').innerText = data.program || 'General';
-                        document.getElementById('stu-career').innerText = data.career || 'Not Set';
-                        
-                        gpaValue = data.gpa || gpaValue;
-                        updateGPAUI(gpaValue);
-                    });
-                } else {
-                    // Fallback to local
-                    document.getElementById('stu-school').innerText = localStorage.getItem('portal-institution') || 'Not Set';
-                    document.getElementById('stu-career').innerText = localStorage.getItem('portal-career') || 'Not Set';
-                    updateGPAUI(gpaValue);
-                }
-            });
-        }
+        // 🔥 THE FIX: Bulletproof direct fetch using user.uid
+        db.ref('users/' + user.uid).on('value', (snapshot) => {
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Populate UI with precise DB data
+                document.getElementById('stu-school').innerText = data.institution || 'Not Set';
+                document.getElementById('stu-level').innerText = data.level ? `Level ${data.level}` : '--';
+                document.getElementById('stu-program').innerText = data.program || 'General';
+                document.getElementById('stu-career').innerText = data.career || 'Not Set';
+                
+                gpaValue = data.gpa || gpaValue;
+                updateGPAUI(gpaValue);
+            } else {
+                // Fallback to local if node is completely empty
+                document.getElementById('stu-school').innerText = localStorage.getItem('portal-institution') || 'Not Set';
+                document.getElementById('stu-career').innerText = localStorage.getItem('portal-career') || 'Not Set';
+                updateGPAUI(gpaValue);
+            }
+        });
 
         // Pull isolated courses data
         const savedCourses = JSON.parse(localStorage.getItem('portal-registered-courses') || '[]');

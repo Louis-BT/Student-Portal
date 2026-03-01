@@ -11,8 +11,11 @@
     <script src="theme.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    
+    <style>
         /* --- LAYOUT & CORE --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
@@ -426,41 +429,39 @@
     </div>
 
     <script>
-        // --- 1. GLOBAL STATE & FIREBASE SYNC ---
+        // --- 1. GLOBAL STATE & FIREBASE SYNC (FIXED RACE CONDITION) ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        let userDbKey = null;
         let globalUserProfile = {}; // Holds profile data for transcript generation
 
+        // 🔥 THE FIX: Wait for Auth before doing anything
         document.addEventListener('DOMContentLoaded', () => {
-            initCloudSync();
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    initCloudSync(user);
+                } else {
+                    window.location.href = 'login.html'; // Kick out if not logged in
+                }
+            });
             updateScaleReference();
         });
 
-        function initCloudSync() {
-            const cachedEmail = localStorage.getItem("portal-user-email");
-            
-            if (cachedEmail) {
-                db.ref('users').orderByChild('email').equalTo(cachedEmail).once('value', (snapshot) => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach(child => {
-                            userDbKey = child.key;
-                            globalUserProfile = child.val();
-                            
-                            // Load previous calculator courses if they exist
-                            const savedCourses = globalUserProfile.gpa_courses || JSON.parse(localStorage.getItem('portal-gpa-courses')) || [];
-                            loadRows(savedCourses);
-                        });
-                    } else {
-                        fallbackLocalLoad();
-                    }
-                });
-            } else {
-                fallbackLocalLoad();
-            }
+        function initCloudSync(user) {
+            // 🔥 Bulletproof direct fetch using user.uid instead of email searching
+            db.ref('users/' + user.uid).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    globalUserProfile = snapshot.val();
+                    
+                    // Load previous calculator courses if they exist
+                    const savedCourses = globalUserProfile.gpa_courses || JSON.parse(localStorage.getItem('portal-gpa-courses')) || [];
+                    loadRows(savedCourses);
+                } else {
+                    fallbackLocalLoad();
+                }
+            });
         }
 
         function fallbackLocalLoad() {
@@ -591,34 +592,34 @@
             if (scale === '5.0') {
                 if(gpa >= 4.5) { 
                     color = "#10b981"; label = "First Class Honours"; 
-                    remarkText = "Outstanding! You are demonstrating exceptional academic mastery.";
+                    remarkText = "Outstanding! You are demonstrating exceptional academic mastery. Push harder with consistence!!";
                 } else if(gpa >= 3.5) { 
                     color = "#10b981"; label = "Second Class (Upper)"; 
-                    remarkText = "Impressive work! You are maintaining a very strong academic record.";
+                    remarkText = "Impressive work! Your hard work is reflecting in your grades. Greatness awaits you, you can get to the top!!";
                 } else if(gpa >= 2.5) { 
                     color = "#f59e0b"; label = "Second Class (Lower)"; 
-                    remarkText = "A solid performance. Consistency is key to reaching the next level.";
+                    remarkText = "A solid performance. Consistency is key, aim higher to reach the next level in the coming trimesters.";
                 } else if(gpa >= 1.5) { 
                     color = "#f97316"; label = "Third Class"; 
-                    remarkText = "You have passed, but there is significant room for improvement.";
+                    remarkText = "You are on track, but extra effort could yield much better results, there is significant room for improvement. Keep Pushing!!!";
                 } else {
-                    remarkText = "Your academic standing is at risk. Please prioritize your studies.";
+                    remarkText = "Your academic standing is at risk. Seek support and prioritize your studies. You can do it!!";
                 }
             } else {
                 if(gpa >= 3.6) { 
                     color = "#10b981"; label = "First Class Honours"; 
-                    remarkText = "Exceptional! You are currently among the top-performing students. Push harder with consistence!!";
+                    remarkText = "Outstanding! You are demonstrating exceptional academic mastery. Push harder with consistence!!";
                 } else if(gpa >= 3.0) { 
                     color = "#10b981"; label = "Second Class (Upper)"; 
-                    remarkText = "Very good! Your hard work is reflecting in your grades. Greatness awaits you, you can get to the top!!";
+                    remarkText = "Impressive work! Your hard work is reflecting in your grades. Greatness awaits you, you can get to the top!!";
                 } else if(gpa >= 2.5) { 
                     color = "#f59e0b"; label = "Second Class (Lower)"; 
-                    remarkText = "Good progress. Aim higher in the coming semesters/trimesters to reach the top.";
+                    remarkText = "Good progress. Aim higher in the coming semesters to reach the top.";
                 } else if(gpa >= 2.0) { 
                     color = "#f97316"; label = "Third Class"; 
-                    remarkText = "You are on track, but extra effort could yield much better results. Keep Pushing!!!";
+                    remarkText = "You are on track, but extra effort could yield much better results, there is significant room for improvement. Keep Pushing!!!";
                 } else {
-                    remarkText = "Urgent: Your grades are below standard. Seek academic support immediately. Do not be discouraged, but rather know that you can do it. Keep Pushing!!";
+                    remarkText = "Your academic standing is at risk. Seek support and prioritize your studies. You can do it!!";
                 }
             }
 
@@ -681,11 +682,17 @@
             });
         }
 
-        // --- 8. DATABASE CLOUD SYNC ---
+        // --- 8. DATABASE CLOUD SYNC (FIXED WRITER) ---
         function saveToCloud() {
+            const user = firebase.auth().currentUser;
             const gpaValue = document.getElementById('gpaValue').innerText;
             const btn = document.getElementById('syncBtn');
             
+            if (!user) {
+                alert("Session Expired. Please log in again.");
+                return;
+            }
+
             if (gpaValue === "0.00") {
                 alert("Please calculate your GPA before syncing to the database.");
                 return;
@@ -712,30 +719,22 @@
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Syncing to Cloud...`;
             btn.disabled = true;
 
-            if (userDbKey) {
-                db.ref('users/' + userDbKey).update({ 
-                    gpa: gpaValue,
-                    gpa_courses: courseData
-                })
-                .then(() => {
-                    btn.innerHTML = `<i class="fas fa-check-circle"></i> Successfully Synced!`;
+            // 🔥 Bulletproof Write Operation
+            db.ref('users/' + user.uid).update({ 
+                gpa: gpaValue,
+                gpa_courses: courseData
+            })
+            .then(() => {
+                btn.innerHTML = `<i class="fas fa-check-circle"></i> Successfully Synced!`;
+                btn.style.background = "#10b981";
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
                     btn.style.background = "#10b981";
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = "#10b981";
-                        btn.disabled = false;
-                    }, 2500);
-                })
-                .catch(err => {
-                    btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
-                    btn.style.background = "#f59e0b"; 
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = "#10b981";
-                        btn.disabled = false;
-                    }, 3000);
-                });
-            } else {
+                    btn.disabled = false;
+                }, 2500);
+            })
+            .catch(err => {
+                console.error("Cloud Error:", err);
                 btn.innerHTML = `<i class="fas fa-hdd"></i> Saved Locally`;
                 btn.style.background = "#f59e0b"; 
                 setTimeout(() => {
@@ -743,7 +742,7 @@
                     btn.style.background = "#10b981";
                     btn.disabled = false;
                 }, 3000);
-            }
+            });
         }
 
         // --- 9. PREMIUM TRANSCRIPT GENERATOR ---
