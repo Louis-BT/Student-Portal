@@ -152,10 +152,10 @@
                 <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
                 <li style="margin-top: 20px;">
-    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </a>
-</li>
+                    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
             </ul>
         </aside>
 
@@ -457,14 +457,13 @@
                         // Load cloud avatar if it exists, else load local fallback
                         if(data.avatar) {
                             document.getElementById("profile-display").src = data.avatar;
-                            localStorage.setItem("portal-avatar", data.avatar); // keep cache synced
+                            localStorage.setItem("portal-avatar", data.avatar); 
                         } else {
                             const localPic = localStorage.getItem("portal-avatar");
                             if(localPic) document.getElementById("profile-display").src = localPic;
                         }
                     });
                 } else {
-                    // Fail-safe if somehow deleted from DB while logged in
                     document.getElementById("student-name").innerText = localStorage.getItem("portal-user-name") || "Student User";
                 }
             });
@@ -508,46 +507,57 @@
             if (!schoolInput.contains(e.target)) suggestionBox.style.display = 'none';
         });
 
-        // --- 5. SAVE PROFILE TO FIREBASE ---
-       function saveProfile() {
-    // 1. Get the currently logged-in student directly from Firebase
-    const user = firebase.auth().currentUser;
-    const btn = document.querySelector('button[onclick="saveProfile()"]');
-    
-    if (!user) {
-        alert("Authentication Error: Please log out and log back in.");
-        return;
-    }
+        // --- 5. SAVE PROFILE TO FIREBASE (FIXED MAPPING) ---
+        function saveProfile() {
+            const user = firebase.auth().currentUser;
+            const btn = document.getElementById("saveBtn");
+            const statusMessage = document.getElementById("save-status");
+            
+            if (!user && !userDbKey) {
+                alert("Authorization error. Please refresh and log in again.");
+                return;
+            }
 
-    // 2. Prepare the data exactly as the Dashboard expects it
-    const payload = {
-        institution: document.getElementById('institution-input')?.value || "National University",
-        faculty: document.getElementById('faculty-input').value,
-        department: document.getElementById('dept-input').value,
-        program: document.getElementById('program-input').value,
-        level: document.getElementById('level-select').value,
-        gradYear: document.getElementById('grad-year').value,
-        lastUpdated: new Date().toISOString()
-    };
+            // --- THE CRITICAL FIX: MAPPING TO CORRECT HTML IDs ---
+            const data = {
+                name: document.getElementById('name').value,
+                career: document.getElementById('career').value,
+                institution: document.getElementById('schoolSearch').value,
+                faculty: document.getElementById('faculty').value,
+                department: document.getElementById('department').value,
+                program: document.getElementById('program').value,
+                level: document.getElementById('level').value,
+                financial_status: document.getElementById('financial').value,
+                year_entry: document.getElementById('entry-year').value,
+                year_completion: document.getElementById('grad-year').value,
+                lastSync: new Date().toISOString()
+            };
 
-    // 3. UI Feedback: Change button to show activity
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
-    btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing to National DB...';
+            btn.disabled = true;
 
-    // 4. Push directly to the cloud node 'users/[UID]'
-    db.ref('users/' + user.uid).update(payload)
-        .then(() => {
-            console.log("Cloud Sync Successful for UID:", user.uid);
-            alert("Success! Profile synced with National Database.");
-            window.location.href = "dashboard.html"; // Redirect to stop the 'Syncing...' spinner
-        })
-        .catch((error) => {
-            console.error("Firebase Sync Error:", error);
-            alert("Sync Failed: " + error.message);
-            btn.innerHTML = 'Sync to National DB';
-            btn.disabled = false;
-        });
-}
+            // Use the userDbKey we got during page load for exact targeting
+            const targetRef = db.ref('users/' + userDbKey);
+            
+            targetRef.update(data)
+                .then(() => {
+                    statusMessage.style.opacity = 1;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Cloud Synced';
+                    btn.style.background = '#10b981';
+                    
+                    setTimeout(() => { 
+                        statusMessage.style.opacity = 0;
+                        window.location.href = "dashboard.html";
+                    }, 2000);
+                })
+                .catch((err) => {
+                    console.error("Cloud Save Failed:", err);
+                    alert("Database Sync Failed. Please check your internet connection.");
+                    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Retry Sync';
+                    btn.disabled = false;
+                });
+        }
+
         // --- 6. IMAGE CROPPER LOGIC (Cloud Wired) ---
         let cropper;
         const imgInput = document.getElementById('img-input');
@@ -575,13 +585,11 @@
 
         function saveCroppedImage() {
             const canvas = cropper.getCroppedCanvas({ width: 400, height: 400 });
-            // Compress heavily for real-time DB limits
             const url = canvas.toDataURL('image/jpeg', 0.6); 
             
             document.getElementById("profile-display").src = url;
             localStorage.setItem("portal-avatar", url); 
 
-            // Push avatar string to Firebase
             if (userDbKey) {
                 db.ref('users/' + userDbKey).update({ avatar: url })
                 .then(() => { console.log("Avatar synced to cloud."); })
