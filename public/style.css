@@ -427,94 +427,99 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   9. RESPONSIVE DESIGN
+   9. 📱 GLOBAL SMARTPHONE UI OPTIMIZATIONS (PREMIUM APP FEEL)
    ========================================================================== */
 @media (max-width: 900px) {
-    .sidebar { display: none; } /* Mobile Menu Logic handled via JS in real app */
-    .auth-grid { grid-template-columns: 1fr; }
-    .brand-side { display: none; }
-    .page-grid, .content-grid, .bottom-grid, .gpa-layout {
-        grid-template-columns: 1fr !important;
+    /* --- 1. CORE LAYOUT & VIEWPORT --- */
+    /* svh (Small Viewport Height) prevents the layout from jumping when the mobile browser address bar appears */
+    .wrapper, .dashboard-wrapper { 
+        flex-direction: column; 
+        height: 100svh; 
     }
-    .chat-layout { display: flex; flex-direction: column; }
-    .chat-sidebar { width: 100%; height: 100%; }
-    .chat-main { display: none; } /* Toggled via JS class */
-}
-
-/* ==========================================================================
-   🔥 ENTERPRISE GLOBAL UPGRADES (PRELOADER & NETWORK STATUS)
-   ========================================================================== */
-
-/* 1. Global Preloader */
-.global-preloader {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-color);
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
-}
-.global-preloader.fade-out {
-    opacity: 0;
-    visibility: hidden;
-}
-.loader-spinner {
-    width: 50px; height: 50px;
-    border: 4px solid rgba(37, 99, 235, 0.2);
-    border-top: 4px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 20px;
-}
-.loader-text {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700; color: var(--text-color);
-    letter-spacing: 2px; text-transform: uppercase; font-size: 0.85rem;
-    animation: pulse-text 1.5s infinite;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-@keyframes pulse-text { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-/* 2. Network Status Toast */
-.network-toast {
-    position: fixed;
-    top: -100px; left: 50%;
-    transform: translateX(-50%);
-    background: #ef4444; color: white;
-    padding: 12px 25px; border-radius: 50px;
-    font-family: 'Inter', sans-serif; font-weight: 700; font-size: 0.9rem;
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    z-index: 100000;
-    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.network-toast.show { top: 20px; }
-.network-toast.online { background: #10b981; }
-
-/* 3. Smooth Scrollbar (Webkit) */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--bg-color); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* =========================================
-   📱 GLOBAL SMARTPHONE UI OPTIMIZATIONS 
-   ========================================= */
-@media (max-width: 768px) {
-    /* General App Sizing */
-    .scroll-area { padding: 15px !important; }
-    .header h1 { font-size: 1.3rem !important; }
-    .header p { font-size: 0.8rem !important; }
-    .theme-wrapper select { padding: 8px 12px !important; font-size: 0.85rem !important; }
+    .sidebar { 
+        position: fixed; 
+        left: -100%; 
+        height: 100%; 
+        z-index: 9999; 
+        box-shadow: var(--shadow-lg); 
+    }
+    .sidebar.active { left: 0; } /* Triggers via your mobile JS */
     
-    /* Sleeker Modals & Buttons */
-    .modal-content { padding: 20px !important; width: 95% !important; }
-    .btn-action { padding: 10px !important; font-size: 0.85rem !important; }
+    /* --- 2. AUTH PAGES (Login / Signup) --- */
+    .auth-grid { 
+        display: flex; 
+        flex-direction: column; 
+        min-height: 100svh; 
+        height: auto; 
+    }
+    .brand-side { 
+        display: none !important; /* Hides quotes/branding completely on phones */
+    }
+    .form-side { 
+        width: 100% !important; 
+        padding: 30px 20px !important; 
+        justify-content: center; 
+        flex: 1; 
+    }
+
+    /* --- 3. INTERNAL PAGES & HEADER --- */
+    .main-content { width: 100%; }
+    .content-scrollable, .scroll-area { padding: 20px 15px !important; }
     
-    /* Global Card Adjustments */
-    .resource-grid, .counselor-grid { grid-template-columns: 1fr !important; gap: 15px !important; margin-bottom: 30px !important; }
-    .resource-card, .counselor-card { padding: 18px !important; }
+    .header, .top-header { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 12px; 
+        margin-bottom: 25px; 
+    }
+    .header h1 { font-size: 1.4rem !important; margin: 0; line-height: 1.2; }
+    .header p { font-size: 0.85rem !important; margin-top: 5px; }
+    
+    /* --- 4. GRIDS & CARDS --- */
+    /* Forces all multi-column layouts into a single, neat column */
+    .page-grid, .content-grid, .bottom-grid, .gpa-layout, .resource-grid, .counselor-grid { 
+        grid-template-columns: 1fr !important; 
+        gap: 15px !important; 
+    }
+    .card, .action-card, .feature-card, .premium-card, .resource-card, .counselor-card { 
+        padding: 20px !important; 
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    /* --- 5. TOUCH TARGETS (Apple & Google Standards) --- */
+    input[type="text"], input[type="email"], input[type="password"], 
+    input[type="number"], select, textarea {
+        padding: 15px 18px !important; /* Larger touch area for thumbs */
+        font-size: 16px !important; /* 16px strictly prevents iOS auto-zoom bug */
+    }
+    .btn, .btn-primary, .btn-gold, .btn-auth, .btn-action {
+        width: 100%; /* Buttons span the full width of the screen */
+        padding: 15px 20px !important;
+        justify-content: center;
+        font-size: 1rem !important;
+    }
+
+    /* --- 6. CHAT / CONNECT UI --- */
+    .chat-layout { 
+        display: flex; 
+        flex-direction: column; 
+        height: calc(100svh - 80px); 
+    }
+    .chat-sidebar { width: 100%; border-right: none; }
+    .chat-main { display: none; width: 100%; }
+    .chat-layout.mobile-chat-active .chat-sidebar { display: none; }
+    .chat-layout.mobile-chat-active .chat-main { display: flex; }
+
+    /* --- 7. DATA TABLES & MODALS --- */
+    .data-table, .timetable, .admin-table { 
+        display: block; 
+        overflow-x: auto;  /* Allows swiping left/right on wide tables */
+        white-space: nowrap; 
+    }
+    .modal-content { 
+        padding: 25px 20px !important; 
+        width: 92% !important; 
+        margin: 20px auto; 
+    }
 }

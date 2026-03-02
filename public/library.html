@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Library | Student Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>National Library | Premium Student Command</title>
     
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="theme.js" defer></script>
@@ -14,238 +14,278 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="db.js"></script> 
+    
     <style>
-        /* --- LAYOUT & SIDEBAR --- */
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; }
+        /* --- 1. PREMIUM ROOT ARCHITECTURE --- */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --premium-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
 
-        .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; }
-        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
-        .nav-links { list-style: none; padding: 20px; margin: 0; }
-        .nav-links li { margin-bottom: 8px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all 0.3s ease; border-left: 3px solid transparent; font-weight: 500; }
-        .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); }
+        body { 
+            margin: 0; 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            height: 100vh; 
+            height: 100svh;
+            overflow: hidden; 
+        }
 
-        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; }
-        .scroll-area { flex: 1; padding: 30px; overflow-y: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
+
+        /* --- 2. COMMAND SIDEBAR (Ultra-Dark Mode) --- */
+        .sidebar { 
+            width: 280px; 
+            background: #020617; 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            flex-shrink: 0; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 1000; 
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+        .sidebar-header { 
+            padding: 35px 25px; 
+            font-weight: 800; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            font-size: 1.3rem; 
+            letter-spacing: -0.5px;
+        }
         
-        /* --- ENHANCED LIBRARY TABS --- */
+        .nav-links { list-style: none; padding: 25px 15px; margin: 0; flex: 1; overflow-y: auto; scrollbar-width: thin; }
+        .nav-links li { margin-bottom: 8px; }
+        .nav-links a { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            color: #94a3b8; 
+            text-decoration: none; 
+            padding: 14px 18px; 
+            border-radius: 12px; 
+            transition: all 0.2s ease; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            border-left: 4px solid transparent; 
+        }
+        .nav-links a:hover, .nav-links a.active { 
+            background: rgba(255,255,255,0.06); 
+            color: #f8fafc; 
+            border-left-color: #3b82f6; 
+            transform: translateX(5px);
+        }
+        .nav-links a.active { background: rgba(37, 99, 235, 0.15); }
+        .nav-links a.active i { color: #3b82f6; }
+
+        /* --- 3. MAIN INTERFACE --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; background: var(--bg-color); position: relative; min-width: 0; }
+        .scroll-area { flex: 1; padding: 40px; overflow-y: auto; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px; }
+        .header h1 { margin: 0; font-size: 2.4rem; font-weight: 800; letter-spacing: -1.5px; color: var(--text-color); }
+        
+        /* Library Stats Bar */
+        .lib-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .stat-card i { font-size: 1.5rem; color: var(--primary-color); }
+        .stat-info h4 { margin: 0; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+        .stat-info p { margin: 0; font-size: 1.2rem; font-weight: 800; }
+
+        /* --- 4. NAVIGATION TABS --- */
         .lib-nav { 
-            display: flex; gap: 8px; background: var(--card-bg); padding: 8px; 
-            border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 30px;
-            overflow-x: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            display: flex; 
+            gap: 10px; 
+            background: var(--card-bg); 
+            padding: 8px; 
+            border-radius: 16px; 
+            border: 1px solid var(--border-color); 
+            margin-bottom: 40px;
+            overflow-x: auto; 
+            box-shadow: var(--premium-shadow);
             scrollbar-width: none; 
         }
         .lib-nav::-webkit-scrollbar { display: none; }
         .lib-tab {
-            padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem;
-            color: var(--text-muted); transition: 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; border: 1px solid transparent;
+            padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+            color: var(--text-muted); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; display: flex; align-items: center; gap: 10px;
         }
         .lib-tab:hover { background: var(--input-bg); color: var(--text-color); }
-        .lib-tab.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 10px rgba(37,99,235,0.2); }
+        .lib-tab.active { background: var(--primary-color); color: white; box-shadow: 0 8px 20px rgba(37,99,235,0.25); }
 
-        /* --- RESOURCE CARDS (Dynamic Grid) --- */
-        .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        /* --- 5. THE MASTER RESOURCE GRID --- */
+        .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; margin-bottom: 50px; }
         .resource-card {
-            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px;
-            padding: 25px; transition: all 0.3s ease; position: relative;
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 30px; transition: all 0.4s ease; position: relative;
             display: flex; flex-direction: column; height: 100%; box-sizing: border-box; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
         }
-        .resource-card:hover { transform: translateY(-6px); border-color: rgba(37, 99, 235, 0.5); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.1); }
+        .resource-card:hover { transform: translateY(-10px); border-color: var(--primary-color); box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
         
-        .card-icon { width: 55px; height: 55px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 20px; }
-        .res-title { font-weight: 800; font-size: 1.05rem; margin-bottom: 8px; color: var(--text-color); line-height: 1.3; }
-        .res-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; flex-grow: 1; }
+        .card-icon { width: 65px; height: 65px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 25px; transition: 0.3s; }
+        .resource-card:hover .card-icon { transform: scale(1.1) rotate(-5deg); }
+        
+        .res-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 12px; color: var(--text-color); line-height: 1.4; }
+        .res-desc { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.7; flex-grow: 1; }
         
         .btn-action {
-            width: 100%; padding: 12px; background: transparent; border: 2px solid var(--border-color);
-            color: var(--text-color); border-radius: 8px; font-weight: 600; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 0.9rem;
+            width: 100%; padding: 15px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; gap: 10px; transition: 0.2s; font-size: 0.95rem; border: none;
         }
-        .btn-action.read-btn { background: rgba(37, 99, 235, 0.1); border-color: transparent; color: #2563eb; }
-        .btn-action.read-btn:hover { background: #2563eb; color: white; }
-        .btn-action.book-btn { background: #10b981; color: white; border-color: transparent; }
-        .btn-action.book-btn:hover { background: #059669; }
+        .btn-action.read-btn { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }
+        .btn-action.read-btn:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
-        /* --- COUNSELOR CARDS --- */
-        .counselor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .counselor-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 25px; text-align: center; transition: 0.3s; }
-        .counselor-card:hover { border-color: #10b981; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1); transform: translateY(-5px); }
-        .c-avatar { width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 15px; border: 3px solid #f1f5f9; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #94a3b8; }
-        .c-name { font-weight: 800; font-size: 1.2rem; color: var(--text-color); margin-bottom: 5px; }
-        .c-role { font-size: 0.85rem; color: #10b981; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; }
-        .c-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 20px; }
-        .c-tag { background: var(--input-bg); color: var(--text-muted); font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; border: 1px solid var(--border-color); }
-
-        /* --- MODALS & VIEWER --- */
-        .upload-fab { position: fixed; bottom: 40px; right: 40px; background: var(--primary-color); color: white; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; box-shadow: 0 10px 25px rgba(37,99,235,0.4); z-index: 90; transition: 0.2s; }
-        .upload-fab:hover { transform: scale(1.1) rotate(90deg); }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(8px); }
-        .modal-content { background: var(--card-bg); padding: 30px; border-radius: 16px; width: 500px; max-width: 90%; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        /* --- 6. PREMIUM MODALS & READER --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(12px); }
+        .modal-content { background: var(--card-bg); padding: 45px; border-radius: 28px; width: 550px; max-width: 90%; border: 1px solid var(--border-color); box-shadow: 0 40px 100px rgba(0,0,0,0.5); position: relative; }
         
-        .viewer-content { width: 90%; height: 95%; background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid var(--border-color); }
-        .viewer-header { padding: 15px 25px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .viewer-iframe { flex: 1; width: 100%; border: none; background: #e2e8f0; display: none; }
+        .viewer-container { width: 95%; height: 95%; background: var(--card-bg); border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 50px 150px rgba(0,0,0,0.6); }
+        .viewer-header { padding: 20px 35px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center; }
         
-        /* THE SMART READER TYPOGRAPHY */
+        .viewer-iframe { width: 100%; height: 100%; border: none; background: #e2e8f0; }
+        
         .viewer-mock-text { 
-            flex: 1; padding: 60px 10%; overflow-y: auto; background: #faf9f6; color: #333; 
-            display: none; font-family: 'Playfair Display', serif; font-size: 1.1rem; line-height: 1.9;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
+            flex: 1; padding: 80px 15%; overflow-y: auto; background: #faf9f6; color: #1a1a1a; 
+            display: none; font-family: 'Playfair Display', serif; font-size: 1.3rem; line-height: 2;
         }
-        .viewer-mock-text h1 { font-size: 2.5rem; text-align: center; margin-bottom: 10px; border-bottom: 2px solid #ddd; padding-bottom: 20px; color: #111; }
-        .viewer-mock-text h2 { font-family: 'Inter', sans-serif; font-size: 1rem; text-align: center; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 50px; }
-        .viewer-mock-text p::first-letter { font-size: 3.5rem; font-weight: bold; float: left; margin: 10px 10px 0 0; line-height: 0.8; color: var(--primary-color); }
-        .viewer-mock-text p { margin-bottom: 25px; text-align: justify; }
-        
-        .section-title { margin: 0 0 20px 0; font-size: 1.4rem; border-bottom: 2px solid var(--border-color); padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        
-        .ghana-hero { background: linear-gradient(135deg, #ce1126, #fcd116, #006b3f); height: 6px; width: 100%; border-radius: 6px; margin-bottom: 25px; }
+        .viewer-mock-text h1 { font-size: 3.5rem; text-align: center; margin-bottom: 50px; color: #000; letter-spacing: -2px; }
 
-        .file-upload-wrapper { border: 2px dashed var(--border-color); padding: 30px 20px; text-align: center; border-radius: 12px; cursor: pointer; transition: 0.2s; background: var(--input-bg); position: relative; margin-bottom: 20px; }
-        .file-upload-wrapper:hover { border-color: var(--primary-color); background: rgba(37, 99, 235, 0.05); }
-        .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        /* --- 7. KNOWLEDGE ENGINE --- */
+        .knowledge-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 60px; text-align: center; max-width: 900px; margin: 0 auto; }
+        .dict-input-group { display: flex; gap: 15px; margin-top: 40px; flex-wrap: wrap; }
+        .premium-input { flex: 1; padding: 18px 25px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 1.1rem; font-weight: 600; outline: none; transition: 0.3s; }
+        .premium-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
 
-        /* --- RESPONSIVE MOBILE ENGINE --- */
-        .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+        /* --- MOBILE OVERRIDES --- */
+        .mobile-trigger { display: none; font-size: 1.6rem; cursor: pointer; color: var(--text-color); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 998; backdrop-filter: blur(5px); }
 
-        @media (max-width: 900px) { 
-            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
-            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        @media (max-width: 1024px) {
+            .sidebar { position: fixed; transform: translateX(-100%); height: 100%; }
+            .sidebar.mobile-open { transform: translateX(0); }
             .sidebar-overlay.mobile-open { display: block; }
-            .mobile-menu-btn { display: block; }
+            .mobile-trigger { display: block; }
+            .header h1 { font-size: 1.8rem; }
+            .scroll-area { padding: 25px; }
         }
 
-        /* 📱 STRICT SMARTPHONE UI OVERRIDES */
-        @media (max-width: 768px) {
-            /* General App Sizing */
-            .scroll-area { padding: 15px; }
-            .header h1 { font-size: 1.3rem !important; }
-            .header p { font-size: 0.8rem; }
-            .theme-wrapper select { padding: 8px 12px; font-size: 0.85rem; }
-            
-            /* Slimmer Search Box */
-            #librarySearch { padding: 12px 15px 12px 45px !important; font-size: 0.9rem !important; }
-            
-            /* Tighter Tabs */
-            .lib-nav { padding: 6px; margin-bottom: 20px; }
-            .lib-tab { padding: 8px 14px; font-size: 0.8rem; }
-            
-            /* Flush Resource Cards */
-            .resource-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 30px; }
-            .resource-card { padding: 18px; }
-            .card-icon { width: 45px; height: 45px; font-size: 1.4rem; margin-bottom: 12px; }
-            .res-title { font-size: 0.95rem; }
-            .res-desc { font-size: 0.8rem; margin-bottom: 15px; }
-            .btn-action { padding: 10px; font-size: 0.85rem; }
-            
-            /* Smart Dictionary Form Stacking */
-            #tab-knowledge > div { padding: 25px 15px !important; }
-            #tab-knowledge h2 { font-size: 1.4rem !important; }
-            #tab-knowledge p { font-size: 0.9rem !important; margin-bottom: 20px !important; }
-            #tab-knowledge > div > div { flex-direction: column; gap: 10px; }
-            #dict-category, #dict-input, #dict-btn { width: 100% !important; padding: 12px !important; font-size: 0.9rem; }
-            
-            /* Sleeker Modals & Buttons */
-            .modal-content { padding: 20px; width: 95%; }
-            .file-upload-wrapper { padding: 20px 10px; }
-            .upload-fab { width: 55px; height: 55px; font-size: 1.4rem; bottom: 20px; right: 20px; }
-            
-            /* Viewer Tweaks */
-            .viewer-mock-text { padding: 30px 5%; font-size: 1rem; }
-            .viewer-mock-text h1 { font-size: 1.8rem; }
-            .viewer-header h3 { font-size: 1rem !important; }
-            .viewer-header a { padding: 6px 12px !important; font-size: 0.75rem !important; }
+        @media (max-width: 600px) {
+            .resource-grid { grid-template-columns: 1fr; }
+            .lib-stats { grid-template-columns: 1fr; }
+            .viewer-header { flex-direction: column; gap: 15px; text-align: center; }
+            .dict-input-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
 
     <div id="uploadModal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: var(--text-color); font-size: 1.3rem;"><i class="fas fa-cloud-upload-alt" style="color:var(--primary-color);"></i> Upload Resource</h2>
-                <span onclick="toggleUploadModal()" style="cursor: pointer; font-size: 1.8rem; color: var(--text-muted);">&times;</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="margin: 0; font-weight: 800; font-size: 1.6rem;"><i class="fas fa-cloud-arrow-up" style="color:var(--primary-color);"></i> Cloud Deposit</h2>
+                <span onclick="toggleUploadModal()" style="cursor: pointer; font-size: 2.2rem; color: var(--text-muted);">&times;</span>
             </div>
             <form id="uploadForm" onsubmit="event.preventDefault(); handleUpload();">
-                <input type="text" id="resTitle" placeholder="Document Title..." style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 0.9rem;" required>
-                <select id="resCategory" style="width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); border-radius: 8px; font-size: 0.9rem;" required>
-                    <option value="BOOK">Academic / E-Book</option>
-                    <option value="PAST_QUESTION">Past Question</option>
-                    <option value="NOTES">Lecture Slides</option>
-                    <option value="Growth">Personal Growth & EQ</option>
-                </select>
-                <div class="file-upload-wrapper">
-                    <input type="file" id="resFile" accept=".pdf,.doc,.docx,.ppt,.pptx" required onchange="updateFileName(this)">
-                    <i class="fas fa-file-upload" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 10px;"></i>
-                    <p id="fileNameDisplay" style="margin: 0; color: var(--text-color); font-weight: 600; font-size: 0.9rem;">Drag & Drop or Click to Browse</p>
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Document Title</label>
+                    <input type="text" id="resTitle" class="premium-input" placeholder="e.g. 1992 Constitutional Amendments" required style="width: 100%; box-sizing: border-box;">
                 </div>
-                <button type="submit" id="uploadBtn" style="width: 100%; padding: 14px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.2s;">Submit to Cloud Quarantine</button>
+                <div style="margin-bottom: 25px;">
+                    <label style="display:block; font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Registry Category</label>
+                    <select id="resCategory" class="premium-input" style="width: 100%;" required>
+                        <option value="BOOK">Academic Anthology</option>
+                        <option value="PAST_QUESTION">Past Examination Paper</option>
+                        <option value="NOTES">Executive Summary / Slides</option>
+                        <option value="ghana">State & Legal Archive</option>
+                        <option value="growth">Personal Development</option>
+                    </select>
+                </div>
+                <div style="border: 2px dashed var(--border-color); padding: 50px 20px; text-align: center; border-radius: 20px; cursor: pointer; background: var(--input-bg); position: relative; transition: 0.2s;" onmouseover="this.style.borderColor='var(--primary-color)'" onmouseout="this.style.borderColor='var(--border-color)'">
+                    <input type="file" id="resFile" accept=".pdf" required style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" onchange="updateFileName(this)">
+                    <i class="fas fa-file-shield" style="font-size: 3.5rem; color: var(--text-muted); margin-bottom: 15px;"></i>
+                    <p id="fileNameDisplay" style="margin: 0; font-weight: 700; color: var(--text-color);">Drag or Click to Select PDF (Limit: 5MB)</p>
+                </div>
+                <button type="submit" id="uploadBtn" class="btn-action" style="margin-top: 30px; background: var(--primary-color); color: white; padding: 20px;">Authorize Cloud Transmission</button>
             </form>
         </div>
     </div>
 
     <div id="viewerModal" class="modal">
-        <div class="viewer-content">
+        <div class="viewer-container">
             <div class="viewer-header">
                 <div>
-                    <h3 id="viewerTitle" style="margin: 0; font-size: 1.2rem; color: white;">Loading...</h3>
-                    <span style="font-size: 0.85rem; color: #cbd5e1;">National Portal Secure Reader</span>
+                    <h3 id="viewerTitle" style="margin: 0; font-size: 1.4rem; font-weight: 800;">Secure Viewer</h3>
+                    <span style="font-size: 0.8rem; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">National Intelligence Reader</span>
                 </div>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                    <a id="viewerDownload" href="#" onclick="handleDownload(event)" class="btn-action" style="background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 15px; font-size: 0.85rem; width: auto; text-decoration: none;">
-                        <i class="fas fa-download"></i> Download Copy
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <a id="viewerDownload" href="#" class="btn-action" style="background: rgba(255,255,255,0.1); color: white; width: auto; padding: 10px 20px; font-size: 0.85rem; text-decoration: none;">
+                        <i class="fas fa-download"></i> Save Copy
                     </a>
-                    <span onclick="closeViewer()" style="cursor: pointer; font-size: 1.8rem; line-height: 1; color: white;">&times;</span>
+                    <span onclick="closeViewer()" style="cursor: pointer; font-size: 2.2rem; line-height: 1; color: white;">&times;</span>
                 </div>
             </div>
-            
-            <iframe id="viewerFrame" class="viewer-iframe"></iframe>
+            <div id="iframeContainer" style="flex: 1; position: relative; background: #525659; display: none;">
+                <iframe id="viewerFrame" class="viewer-iframe"></iframe>
+            </div>
             <div id="smartReader" class="viewer-mock-text"></div>
         </div>
     </div>
 
     <div class="wrapper">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-university"></i> Student Portal
-                <i class="fas fa-times mobile-menu-btn" style="margin-left: auto; color: white;" onclick="toggleMobileSidebar()"></i>
+                <i class="fas fa-satellite-dish" style="color: #3b82f6;"></i>
+                <span>National Vault</span>
             </div>
             <ul class="nav-links">
-                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="profile.html"><i class="fas fa-user"></i> My Profile</a></li>
-                <li><a href="leadership.html"><i class="fas fa-medal"></i> Leadership</a></li>
-                <li><a href="courses.html"><i class="fas fa-book-open"></i> Courses</a></li>
-                <li><a href="gpa.html"><i class="fas fa-calculator"></i> GPA Calc</a></li>
-                <li><a href="library.html" class="active"><i class="fas fa-book"></i> Library</a></li>
-                <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
-                <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
-                <li style="margin-top: 20px;">
-    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </a>
-</li>
+                <li><a href="dashboard.html"><i class="fas fa-house-chimney"></i> Command Center</a></li>
+                <li><a href="profile.html"><i class="fas fa-id-card-clip"></i> Official Profile</a></li>
+                <li><a href="leadership.html"><i class="fas fa-vanguard"></i> Vanguard Elite</a></li>
+                <li><a href="courses.html"><i class="fas fa-graduation-cap"></i> Academics</a></li>
+                <li><a href="library.html" class="active"><i class="fas fa-vault"></i> Resource Vault</a></li>
+                <li><a href="connect.html"><i class="fas fa-tower-broadcast"></i> Connect Hub</a></li>
             </ul>
+            <div style="padding: 25px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 12px; font-size: 0.95rem;">
+                    <i class="fas fa-power-off"></i> Secure Logout
+                </a>
+            </div>
         </aside>
 
         <main class="main-content">
             <div class="scroll-area">
                 
                 <header class="header">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <i class="fas fa-bars mobile-menu-btn" onclick="toggleMobileSidebar()"></i>
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <i class="fas fa-bars-staggered mobile-trigger" onclick="toggleMobileSidebar()"></i>
                         <div>
-                            <h1 style="margin: 0; font-size: 1.8rem;">National Digital Library</h1>
-                            <p style="color: var(--text-muted); margin: 5px 0 0;">Holistic Development & Cloud Sync Active.</p>
+                            <h1>Digital Repository</h1>
+                            <p style="color: var(--text-muted); font-weight: 600; margin-top: 5px;">Secure Archive • Tertiary Intelligence Sync Active.</p>
                         </div>
                     </div>
                     <div class="theme-wrapper">
-                        <select onchange="setTheme(this.value)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 600;">
+                        <select onchange="setTheme(this.value)" style="padding: 12px 18px; border-radius: 12px; background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); font-weight: 700; cursor: pointer; outline: none;">
                             <option value="system">💻 System</option>
                             <option value="light">☀️ Light</option>
                             <option value="dark">🌙 Dark</option>
@@ -253,9 +293,24 @@
                     </div>
                 </header>
 
-                <div style="margin-bottom: 30px; position: relative;">
-                    <i class="fas fa-search" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
-                    <input type="text" id="librarySearch" placeholder="Search across all library categories..." onkeyup="filterLibrary()" style="width: 100%; padding: 15px 20px 15px 50px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box; outline: none;">
+                <div class="lib-stats">
+                    <div class="stat-card">
+                        <i class="fas fa-file-invoice"></i>
+                        <div class="stat-info"><h4>Total Resources</h4><p id="stat-total">--</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-shield-halved"></i>
+                        <div class="stat-info"><h4>Verified Archive</h4><p id="stat-verified">--</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-cloud-bolt"></i>
+                        <div class="stat-info"><h4>Network Sync</h4><p>Live Latency: 24ms</p></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 40px; position: relative;">
+                    <i class="fas fa-magnifying-glass" style="position: absolute; left: 25px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" id="librarySearch" placeholder="Search across thousands of state and academic documents..." onkeyup="filterLibrary()" style="width: 100%; padding: 22px 25px 22px 70px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); font-size: 1.1rem; box-sizing: border-box; outline: none; box-shadow: var(--premium-shadow); font-weight: 600;">
                 </div>
 
                 <div class="lib-nav">
@@ -264,695 +319,295 @@
                     <div class="lib-tab" onclick="switchTab('productivity')"><i class="fas fa-check-double"></i> Productivity</div>
                     <div class="lib-tab" onclick="switchTab('psychology')"><i class="fas fa-users"></i> Psychology</div>
                     <div class="lib-tab" onclick="switchTab('leadership')"><i class="fas fa-chess-king"></i> Leadership</div>
-                    
                     <div class="lib-tab" onclick="switchTab('ghana')"><i class="fas fa-flag"></i> Ghana Archives</div>
-                    <div class="lib-tab" onclick="switchTab('growth')"><i class="fas fa-seedling"></i> Personal Growth</div>
-                    <div class="lib-tab" onclick="switchTab('relations')"><i class="fas fa-heart"></i> Relationships</div>
-                    <div class="lib-tab" onclick="switchTab('career')"><i class="fas fa-briefcase"></i> Career & Counseling</div>
-                    <div class="lib-tab" onclick="switchTab('knowledge')"><i class="fas fa-brain"></i> Dict & Knowledge</div>
+                    <div class="lib-tab" onclick="switchTab('knowledge')"><i class="fas fa-brain"></i> Knowledge Engine</div>
                 </div>
 
-                <div id="tab-academic" class="content-section">
-                    <h2 class="section-title"><i class="fas fa-book-open" style="color: var(--primary-color);"></i> Course Materials & Past Questions</h2>
+                <div id="tab-academic" class="content-section active">
+                    <h2 style="margin-bottom: 30px; font-weight: 800;"><i class="fas fa-book-open" style="color: var(--primary-color);"></i> Core Educational Matrix</h2>
                     <div class="resource-grid" id="academic-grid">
                         <div class="resource-card">
-                            <div class="card-icon" style="background: #e0f2fe; color: #2563eb;"><i class="fas fa-square-root-alt"></i></div>
+                            <div class="card-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;"><i class="fas fa-square-root-alt"></i></div>
                             <div class="res-title">Calculus I: Limits & Derivatives</div>
-                            <div class="res-desc">Essential mathematical foundations for science and engineering students.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Calculus I')"><i class="fas fa-book-reader"></i> Read Book</button>
+                            <div class="res-desc">Essential mathematical foundations for science and engineering students. Comprehensive derivations.</div>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Calculus I')">Read Manifesto</button>
                         </div>
                         <div class="resource-card">
-                            <div class="card-icon" style="background: #dcfce7; color: #16a34a;"><i class="fas fa-code"></i></div>
-                            <div class="res-title">Programming Fundamentals</div>
-                            <div class="res-desc">Introduction to algorithms, syntax, and logic for computer science majors.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Programming Fundamentals')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #ffedd5; color: #ea580c;"><i class="fas fa-pen-nib"></i></div>
-                            <div class="res-title">Academic Writing Guide</div>
-                            <div class="res-desc">Mastering citations, essay structuring, and formal research writing.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Academic Writing Guide')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #f3e8ff; color: #9333ea;"><i class="fas fa-network-wired"></i></div>
-                            <div class="res-title">Discrete Mathematics</div>
-                            <div class="res-desc">Logic, set theory, and graph theory concepts for advanced computing.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Discrete Mathematics')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-business" class="content-section" style="display: none;">
-                    <h3 class="section-title" style="margin-top: 30px;"><i class="fas fa-chart-line" style="color: #10b981;"></i> Business, Wealth & Startups</h3>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-coins"></i></div>
-                            <div class="res-title">Rich Dad Poor Dad</div>
-                            <div class="res-desc">What the rich teach their kids about money and investing.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Rich Dad Poor Dad', 'books/Rich-Dad-Poor-Dad-eBook.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-rocket"></i></div>
-                            <div class="res-title">The Lean Startup</div>
-                            <div class="res-desc">How today's entrepreneurs use continuous innovation.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Lean Startup', 'books/the-lean-startup.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-lightbulb"></i></div>
-                            <div class="res-title">Zero To One</div>
-                            <div class="res-desc">Notes on startups, or how to build the future by Peter Thiel.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Zero To One', 'books/zero-to-one-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #dcfce7; color: #10b981;"><i class="fas fa-handshake"></i></div>
-                            <div class="res-title">$100M Offers</div>
-                            <div class="res-desc">How to make offers so good people feel stupid saying no.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('$100M Offers', 'books/100m-Offers.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-productivity" class="content-section" style="display: none;">
-                    <h3 class="section-title" style="margin-top: 30px;"><i class="fas fa-brain" style="color: #3b82f6;"></i> Productivity & Mindset</h3>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-check-double"></i></div>
-                            <div class="res-title">Getting Things Done</div>
-                            <div class="res-desc">The art of stress-free productivity and time management.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Getting Things Done', 'books/getting-things-done-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-filter"></i></div>
-                            <div class="res-title">Essentialism</div>
-                            <div class="res-desc">The disciplined pursuit of less. Do only what matters.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Essentialism', 'books/essentialism-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-cogs"></i></div>
-                            <div class="res-title">Mindset: The New Psychology</div>
-                            <div class="res-desc">How we can learn to fulfill our potential by Carol Dweck.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mindset', 'books/mindset-the-new-psychology-of-success-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #e0f2fe; color: #3b82f6;"><i class="fas fa-monument"></i></div>
-                            <div class="res-title">Meditations</div>
-                            <div class="res-desc">The ancient stoic philosophy of Roman Emperor Marcus Aurelius.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Meditations', 'books/meditations-by-marcus-aurelius.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-psychology" class="content-section" style="display: none;">
-                    <h3 class="section-title" style="margin-top: 30px;"><i class="fas fa-users" style="color: #a855f7;"></i> Psychology & Human Behavior</h3>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-eye"></i></div>
-                            <div class="res-title">The Laws of Human Nature</div>
-                            <div class="res-desc">Master the ultimate psychological toolkit by Robert Greene.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Laws of Human Nature', 'books/the-laws-of-human-nature.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-user-secret"></i></div>
-                            <div class="res-title">Dark Psychology Secrets</div>
-                            <div class="res-desc">Defend your mind against manipulation and deception.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Dark Psychology Secrets', 'books/dark-psychology-secrets.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-book-open"></i></div>
-                            <div class="res-title">Read People Like a Book</div>
-                            <div class="res-desc">Analyze body language and understand human psychology.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Read People Like a Book', 'books/how-to-read-people-like-a-book-variabletribe.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #f3e8ff; color: #a855f7;"><i class="fas fa-comments"></i></div>
-                            <div class="res-title">How To Win Friends</div>
-                            <div class="res-desc">The most famous networking and communication book ever published.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('How to Win Friends', 'books/how-to-win-friends-and-influence-people-pdfdrive.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-leadership" class="content-section" style="display: none;">
-                    <h3 class="section-title" style="margin-top: 30px;"><i class="fas fa-chess-king" style="color: #ef4444;"></i> Leadership & Power</h3>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-crown"></i></div>
-                            <div class="res-title">Mastery</div>
-                            <div class="res-desc">The ultimate guide to becoming a master in any field.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Mastery', 'books/Mastery-Robert-Greene.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-layer-group"></i></div>
-                            <div class="res-title">The 5 Levels of Leadership</div>
-                            <div class="res-desc">Proven steps to maximize your potential by John C. Maxwell.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('5 Levels of Leadership', 'books/the-5-levels-of-leadership.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-shield-alt"></i></div>
-                            <div class="res-title">The 50th Law</div>
-                            <div class="res-desc">Fear nothing. A collaboration by 50 Cent and Robert Greene.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('The 50th Law', 'books/the-50th-law.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
-                        </div>
-
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: #fee2e2; color: #ef4444;"><i class="fas fa-fire"></i></div>
-                            <div class="res-title">Ego is the Enemy</div>
-                            <div class="res-desc">The fight to master our greatest internal opponent.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Ego is the Enemy', 'books/ego-is-the-enemy-by-ryan-holiday-iamvariable.pdf')"><i class="fas fa-book-reader"></i> Read PDF</button>
+                            <div class="card-icon" style="background: rgba(16, 163, 74, 0.1); color: #16a34a;"><i class="fas fa-code"></i></div>
+                            <div class="res-title">Algorithm Complexity</div>
+                            <div class="res-desc">Introduction to Big-O notation, syntax optimization, and memory management structures.</div>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('Programming Fundamentals')">Read Manifesto</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-ghana" class="content-section" style="display: none;">
-                    <div class="ghana-hero"></div>
-                    <h2 class="section-title"><i class="fas fa-landmark" style="color: #dc2626;"></i> State Archives & Constitution</h2>
-                    <div class="resource-grid">
+                    <div style="background: linear-gradient(90deg, #ce1126, #fcd116, #006b3f); height: 8px; border-radius: 10px; margin-bottom: 30px;"></div>
+                    <h2 style="margin-bottom: 30px; font-weight: 800;"><i class="fas fa-landmark" style="color: #dc2626;"></i> National Intelligence Archive</h2>
+                    <div class="resource-grid" id="ghana-grid">
                         <div class="resource-card">
                             <div class="card-icon" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;"><i class="fas fa-gavel"></i></div>
-                            <div class="res-title">1992 Constitution of Ghana</div>
-                            <div class="res-desc">The supreme law of the Republic. Essential knowledge for every citizen.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Constitution')"><i class="fas fa-book-reader"></i> Read Document</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-history"></i></div>
-                            <div class="res-title">The Road to Independence</div>
-                            <div class="res-desc">Historical accounts of the Big Six and the formation of the First Republic.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Independence')"><i class="fas fa-book-reader"></i> Read Document</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-chart-pie"></i></div>
-                            <div class="res-title">Economic Indicators (2025)</div>
-                            <div class="res-desc">Statistical service data on national growth, inflation, and development.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Economics')"><i class="fas fa-book-reader"></i> Read Document</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;"><i class="fas fa-umbrella-beach"></i></div>
-                            <div class="res-title">National Tourism Guide</div>
-                            <div class="res-desc">Exploring Kakum, Mole, Cape Coast Castle, and rich cultural festivals.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Tourism')"><i class="fas fa-book-reader"></i> Read Document</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-growth" class="content-section" style="display: none;">
-                    <h2 class="section-title"><i class="fas fa-leaf" style="color: #10b981;"></i> Self-Identity, EQ & Goal Setting</h2>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-brain"></i></div>
-                            <div class="res-title">Emotional Intelligence Mastery</div>
-                            <div class="res-desc">Understanding self-awareness, empathy, and managing complex emotions.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Emotional Intelligence')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-puzzle-piece"></i></div>
-                            <div class="res-title">Understanding Your Temperament</div>
-                            <div class="res-desc">A deep dive into Sanguine, Choleric, Melancholy, and Phlegmatic traits.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Temperament')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;"><i class="fas fa-bullseye"></i></div>
-                            <div class="res-title">The Blueprint for Set Goals</div>
-                            <div class="res-desc">Actionable frameworks for defining, tracking, and achieving massive goals.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Goal Setting')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;"><i class="fas fa-fingerprint"></i></div>
-                            <div class="res-title">Discovering True Self-Identity</div>
-                            <div class="res-desc">Navigating imposter syndrome and building unshakable self-confidence.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Self Identity')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-relations" class="content-section" style="display: none;">
-                    <h2 class="section-title"><i class="fas fa-heart" style="color: #ec4899;"></i> Relationships & Preparation for Marriage</h2>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fas fa-comments"></i></div>
-                            <div class="res-title">Effective Communication in Love</div>
-                            <div class="res-desc">How to listen actively, resolve conflicts, and express needs clearly.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Communication in Love')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fas fa-shield-alt"></i></div>
-                            <div class="res-title">Boundaries in Dating</div>
-                            <div class="res-desc">Protecting your emotional, physical, and spiritual wellbeing while dating.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Boundaries')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fas fa-ring"></i></div>
-                            <div class="res-title">Preparing for Marriage</div>
-                            <div class="res-desc">Crucial questions to ask and topics to align on before tying the knot.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Marriage Prep')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-language"></i></div>
-                            <div class="res-title">The Languages of Appreciation</div>
-                            <div class="res-desc">Understanding how you and your partner give and receive love and respect.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Love Languages')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-career" class="content-section" style="display: none;">
-                    <h2 class="section-title"><i class="fas fa-briefcase" style="color: #2563eb;"></i> Career Choices & Professional Development</h2>
-                    <div class="resource-grid">
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(37, 99, 235, 0.1); color: #2563eb;"><i class="fas fa-compass"></i></div>
-                            <div class="res-title">Navigating Career Choices</div>
-                            <div class="res-desc">How to align your degree, passion, and market demand in the real world.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Career Choices')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-file-contract"></i></div>
-                            <div class="res-title">The Modern Resume Builder</div>
-                            <div class="res-desc">Templates and ATS-friendly strategies for landing the interview.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Resume Builder')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-users-cog"></i></div>
-                            <div class="res-title">Corporate Etiquette & Networking</div>
-                            <div class="res-desc">Mastering soft skills, emails, and building a professional network.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Corporate Etiquette')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                        <div class="resource-card">
-                            <div class="card-icon" style="background: rgba(147, 51, 234, 0.1); color: #9333ea;"><i class="fas fa-laptop-code"></i></div>
-                            <div class="res-title">Tech Interview Handbook</div>
-                            <div class="res-desc">Preparing for technical assessments, logic tests, and HR rounds.</div>
-                            <button class="btn-action read-btn" onclick="openSimulatedReader('Tech Interview')"><i class="fas fa-book-reader"></i> Read Book</button>
-                        </div>
-                    </div>
-
-                    <h2 class="section-title" style="margin-top: 40px;"><i class="fas fa-hands-helping" style="color: #10b981;"></i> Professional Counseling Hub</h2>
-                    <div class="counselor-grid">
-                        <div class="counselor-card">
-                            <div class="c-avatar"><i class="fas fa-user-md"></i></div>
-                            <div class="c-name">Dr. Grace Osei</div>
-                            <div class="c-role">Clinical Psychologist</div>
-                            <div class="c-tags"><span class="c-tag">Anxiety & Stress</span><span class="c-tag">Emotional Intelligence</span></div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Providing safe, confidential spaces for mental health, emotional regulation, and managing academic pressure.</p>
-                            <button class="btn-action book-btn" onclick="alert('Opening secure scheduling calendar for Dr. Osei...')"><i class="fas fa-calendar-check"></i> Book Session</button>
-                        </div>
-                        <div class="counselor-card">
-                            <div class="c-avatar"><i class="fas fa-user-tie"></i></div>
-                            <div class="c-name">Mr. Samuel Asamoah</div>
-                            <div class="c-role">Career & Academic Strategist</div>
-                            <div class="c-tags"><span class="c-tag">Career Paths</span><span class="c-tag">Resume Review</span></div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Expert guidance on navigating the job market, aligning your degree with industry needs, and strategic planning.</p>
-                            <button class="btn-action book-btn" onclick="alert('Opening secure scheduling calendar for Mr. Asamoah...')"><i class="fas fa-calendar-check"></i> Book Session</button>
-                        </div>
-                        <div class="counselor-card">
-                            <div class="c-avatar"><i class="fas fa-hands"></i></div>
-                            <div class="c-name">Rev. David Mensah</div>
-                            <div class="c-role">Holistic & Values-Based Coach</div>
-                            <div class="c-tags"><span class="c-tag">Relationships</span><span class="c-tag">Marriage Prep</span></div>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Guidance rooted in strong moral frameworks, focusing on healthy relationships, marriage preparation, and character building.</p>
-                            <button class="btn-action book-btn" onclick="alert('Opening secure scheduling calendar for Rev. Mensah...')"><i class="fas fa-calendar-check"></i> Book Session</button>
+                            <div class="res-title">1992 Constitution (Republic of Ghana)</div>
+                            <div class="res-desc">The supreme law document. Essential civic knowledge for every citizen and leader.</div>
+                            <button class="btn-action read-btn" onclick="openSimulatedReader('The Constitution')">View Registry</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="tab-knowledge" class="content-section" style="display: none;">
-                    <div style="background: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.02);">
-                        <div style="background: rgba(37, 99, 235, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-                            <i class="fas fa-brain" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                    <div class="knowledge-card">
+                        <div style="background: rgba(37, 99, 235, 0.1); width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+                            <i class="fas fa-brain" style="font-size: 3rem; color: var(--primary-color);"></i>
                         </div>
-                        <h2 style="margin: 0; font-size: 2rem; color: var(--text-color);">Smart Knowledge Engine</h2>
-                        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 10px; margin-bottom: 30px;">Cross-disciplinary AI definitions and complex academic concepts simplified.</p>
+                        <h2 style="font-size: 2.5rem; font-weight: 800; margin: 0;">Smart AI Knowledge Engine</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 15px;">Advanced academic terminology and cross-disciplinary definitions simplified.</p>
                         
-                        <div style="display: flex; gap: 15px; max-width: 700px; margin: 0 auto; flex-wrap: wrap;">
-                            <select id="dict-category" style="padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-weight: 600; outline: none; flex: 1; min-width: 150px;">
-                                <option value="academic">Academic & Research</option>
-                                <option value="legal">Law & Constitution</option>
-                                <option value="tech">Computer Science</option>
-                            </select>
-                            <input type="text" id="dict-input" placeholder="Enter a term to define (e.g. 'Polymorphism')..." style="padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); outline: none; flex: 3; min-width: 200px;" onkeypress="if(event.key === 'Enter') searchDictionary()">
-                            <button class="btn-action" id="dict-btn" style="width: auto; background: var(--primary-color); color: white; padding: 0 30px;" onclick="searchDictionary()"><i class="fas fa-search"></i> Define</button>
+                        <div class="dict-input-group">
+                            <input type="text" id="dict-input" class="premium-input" placeholder="Type a concept (e.g. 'Thermodynamics')..." onkeypress="if(event.key === 'Enter') searchDictionary()">
+                            <button class="btn-action" style="width: auto; background: var(--primary-color); color: white; padding: 0 45px;" onclick="searchDictionary()"><i class="fas fa-bolt"></i> Process Query</button>
                         </div>
                         
-                        <div id="dict-result" style="margin-top: 30px; text-align: left; padding: 25px; background: var(--input-bg); border-radius: 12px; border: 1px solid var(--border-color); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); animation: fadeIn 0.5s ease;"></div>
+                        <div id="dict-result" style="display: none;"></div>
                     </div>
                 </div>
 
             </div>
 
-            <div class="upload-fab" onclick="toggleUploadModal()" title="Upload Resource to Database">
+            <div class="upload-fab" onclick="toggleUploadModal()" title="Secure Cloud Deposit">
                 <i class="fas fa-plus"></i>
             </div>
-
         </main>
     </div>
 
     <script>
-        // NEW FEATURE: Global Cache for physical file blob data
         let globalLibraryData = {};
+        let activeBlobUrl = null;
 
+        // --- 1. CORE SYSTEM INIT ---
         document.addEventListener('DOMContentLoaded', () => {
-            switchTab('academic'); 
-            fetchLibrary(); // Initialize Cloud Sync
+            fetchLibrary();
+            // Load recently used tab from storage if possible
+            const savedTab = localStorage.getItem('library-last-tab') || 'academic';
+            switchTab(savedTab);
         });
 
-        // --- UI & TABS ---
         function toggleMobileSidebar() {
-            document.querySelector('.sidebar').classList.toggle('mobile-open');
-            document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+            document.getElementById('sidebarOverlay').classList.toggle('mobile-open');
         }
 
         function switchTab(tabId) {
             document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
             
-            const activeTab = document.querySelector(`.lib-tab[onclick="switchTab('${tabId}')"]`);
-            if(activeTab) activeTab.classList.add('active');
+            const tabBtn = document.querySelector(`.lib-tab[onclick="switchTab('${tabId}')"]`);
+            if(tabBtn) tabBtn.classList.add('active');
             
             const section = document.getElementById(`tab-${tabId}`);
             if(section) section.style.display = 'block';
+            
+            localStorage.setItem('library-last-tab', tabId);
+            if(window.innerWidth < 1024) toggleMobileSidebar();
         }
 
-        // --- GLOBAL SEARCH ENGINE ---
+        // --- 2. ADVANCED SEARCH ENGINE ---
         function filterLibrary() {
-            let input = document.getElementById('librarySearch').value.toLowerCase();
-            let cards = document.querySelectorAll('.resource-card');
-            
-            cards.forEach(card => {
-                let textContent = card.innerText.toLowerCase();
-                if(textContent.includes(input)) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
-                }
+            const query = document.getElementById('librarySearch').value.toLowerCase();
+            document.querySelectorAll('.resource-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? 'flex' : 'none';
             });
         }
 
-        // --- THE HYBRID SMART READER ---
-        function openSimulatedReader(topic, fileUrl = null) {
+        // --- 3. SECURE READER ENGINE ---
+        function openSimulatedReader(topic) {
             const modal = document.getElementById('viewerModal');
-            const iframe = document.getElementById('viewerFrame');
-            const smartReader = document.getElementById('smartReader');
-            const titleEl = document.getElementById('viewerTitle');
-            const downloadBtn = document.getElementById('viewerDownload');
+            document.getElementById('viewerTitle').innerText = topic;
+            document.getElementById('iframeContainer').style.display = 'none';
             
-            titleEl.innerText = topic;
-
-            if (fileUrl) {
-                smartReader.style.display = 'none';
-                iframe.style.display = 'block';
-                iframe.src = fileUrl + "#toolbar=0&navpanes=0";
-                
-                downloadBtn.href = fileUrl;
-                downloadBtn.onclick = null; 
-            } else {
-                iframe.style.display = 'none';
-                iframe.src = "";
-                smartReader.style.display = 'block';
-                
-                downloadBtn.href = "#"; 
-                downloadBtn.onclick = (e) => {
-                    e.preventDefault();
-                    alert("This is an interactive web document. PDF download is only available for database-uploaded files.");
-                };
-
-                let content = "";
-                if(topic === 'Calculus I' || topic === 'Discrete Mathematics') {
-                    content = `<p>Mathematics is the language in which God has written the universe. To understand the fundamental logic of computing and engineering, one must first grasp the continuous and the discrete.</p><p>In this chapter, we explore the foundational axioms that govern logical proofs. The application of these principles stretches far beyond the classroom, directly informing the algorithms that power modern software architectures.</p>`;
-                } else if (topic.includes('Constitution') || topic.includes('Independence')) {
-                    content = `<p>The sovereignty of Ghana resides in the people of Ghana in whose name and for whose welfare the powers of government are to be exercised.</p><p>Understanding the history and legal framework of our nation is not just for law students; it is the civic duty of every tertiary scholar who intends to lead in any capacity.</p>`;
-                } else if (topic === 'Emotional Intelligence') {
-                    content = `<p>Emotional Intelligence (EQ) is the silent differentiator between a good student and a great leader. While intellect may secure you a seat at the table, it is your ability to navigate complex human emotions that will keep you there.</p><p>Self-awareness is the first pillar. Before you can manage others, or even manage your own reactions to stress, you must cultivate the ability to observe your emotions without being immediately controlled by them.</p>`;
-                } else if (topic === 'Temperament') {
-                    content = `<p>Every individual approaches life through a unique lens. Whether you lean towards the decisive energy of the Choleric, the analytical depth of the Melancholy, the peaceful steady nature of the Phlegmatic, or the vibrant social drive of the Sanguine, your temperament shapes your worldview.</p><p>Understanding your inherent traits allows you to maximize your strengths and consciously manage your weaknesses, especially in collaborative environments.</p>`;
-                } else if (topic === 'Self Identity') {
-                    content = `<p>The greatest journey you will undertake during your tertiary education is not the pursuit of a degree, but the discovery of who you truly are.</p><p>Identity is not handed to you; it is forged. It requires stripping away the expectations of society and peers to uncover your core values and inherent purpose.</p>`;
-                } else if (topic.includes('Marriage') || topic.includes('Love') || topic.includes('Boundaries')) {
-                    content = `<p>A healthy relationship is never built on accident. It requires intentionality, profound mutual respect, and the courage to communicate openly.</p><p>Before two lives can successfully merge, both individuals must understand their own boundaries and emotional needs. Love is not merely a feeling; it is a daily, active commitment to the growth and wellbeing of another person.</p>`;
-                } else if (topic.includes('Career') || topic.includes('Resume')) {
-                    content = `<p>The modern job market does not simply reward those with the highest grades; it rewards those who can effectively articulate their value.</p><p>Your degree is a foundation, but your career trajectory will be determined by your adaptability, your professional network, and your continuous pursuit of relevant skills in a rapidly evolving economy.</p>`;
-                } else {
-                    content = `<p>Knowledge is the ultimate equalizer. By engaging with this material, you are taking a definitive step towards academic excellence and personal mastery.</p><p>Read deeply, think critically, and apply what you learn.</p>`;
-                }
-
-                smartReader.innerHTML = `
-                    <h2>Chapter 1: An Introduction</h2>
-                    <h1>${topic}</h1>
-                    ${content}
-                    <div style="text-align: center; margin-top: 50px; color: var(--primary-color);">
-                        <i class="fas fa-ellipsis-h" style="font-size: 2rem;"></i>
-                    </div>
-                `;
-            }
+            const reader = document.getElementById('smartReader');
+            reader.style.display = 'block';
             
+            reader.innerHTML = `
+                <h2>Executive Anthology • Volume 1</h2>
+                <h1>${topic}</h1>
+                <p>Knowledge is the ultimate equalizer in the pursuit of national excellence. This resource has been categorized under the Tertiary Academic Framework for professional review.</p>
+                <p>By engaging with this material, the user acknowledges the commitment to academic integrity and the advancement of the intellectual collective. Read deeply, for the information contained within forms the bedrock of professional mastery.</p>
+                <div style="text-align: center; margin-top: 60px; color: var(--primary-color); opacity: 0.3;">
+                    <i class="fas fa-certificate fa-4x"></i>
+                </div>
+            `;
             modal.style.display = 'flex';
+        }
+
+        function openRealDocument(key) {
+            const file = globalLibraryData[key];
+            if(!file || !file.fileData) return alert("Security Error: Physical data missing.");
+
+            const modal = document.getElementById('viewerModal');
+            document.getElementById('viewerTitle').innerText = file.title;
+            document.getElementById('smartReader').style.display = 'none';
+            document.getElementById('iframeContainer').style.display = 'block';
+
+            // Memory Management: Clear previous blob
+            if(activeBlobUrl) URL.revokeObjectURL(activeBlobUrl);
+
+            try {
+                const b64 = file.fileData.split(',')[1] || file.fileData;
+                const blob = base64ToBlob(b64, 'application/pdf');
+                activeBlobUrl = URL.createObjectURL(blob);
+                
+                document.getElementById('viewerFrame').src = activeBlobUrl + "#toolbar=0";
+                document.getElementById('viewerDownload').href = activeBlobUrl;
+                document.getElementById('viewerDownload').download = file.fileName;
+                document.getElementById('viewerDownload').onclick = null;
+            } catch(e) {
+                alert("Decryption Error: Data stream corrupted.");
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function base64ToBlob(b64, type) {
+            const bytes = atob(b64);
+            const array = new Uint8Array(bytes.length);
+            for(let i=0; i<bytes.length; i++) array[i] = bytes.charCodeAt(i);
+            return new Blob([array], {type: type});
         }
 
         function closeViewer() {
             document.getElementById('viewerModal').style.display = 'none';
-            document.getElementById('viewerFrame').src = ""; 
+            document.getElementById('viewerFrame').src = "";
+            if(activeBlobUrl) { URL.revokeObjectURL(activeBlobUrl); activeBlobUrl = null; }
         }
 
-        // --- FIREBASE UPLOAD BRIDGE (UPGRADED FOR BASE64 FILE DATA) ---
+        // --- 4. CLOUD SYNC & DEPOSIT ---
         function toggleUploadModal() {
-            const modal = document.getElementById('uploadModal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+            const m = document.getElementById('uploadModal');
+            m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
         }
 
         function updateFileName(input) {
             const display = document.getElementById('fileNameDisplay');
-            if (input.files.length > 0) {
+            if(input.files[0]) {
                 display.innerText = input.files[0].name;
-                display.style.color = 'var(--primary-color)';
+                display.style.color = '#3b82f6';
             } else {
-                display.innerText = "Drag & Drop or Click to Browse";
-                display.style.color = 'var(--text-color)';
+                display.innerText = "Drag or Click to Select PDF";
+                display.style.color = 'inherit';
             }
         }
 
         function handleUpload() {
             const btn = document.getElementById('uploadBtn');
-            const originalText = btn.innerText;
-            const fileInput = document.getElementById('resFile');
-            
-            if (fileInput.files.length === 0) return alert("Please select a file.");
-            
-            const file = fileInput.files[0];
-            if (file.size > 5 * 1024 * 1024) return alert("File must be under 5MB.");
+            const file = document.getElementById('resFile').files[0];
+            if(!file) return;
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securing to Cloud...';
             btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Securing Data...';
 
-            const title = document.getElementById('resTitle').value;
-            const category = document.getElementById('resCategory').value;
-            const fileName = file.name;
-            const uploaderName = localStorage.getItem('portal-user-name') || 'Student User';
-
-            // NEW: Use FileReader to convert PDF to Base64 String
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = function () {
+            reader.onload = () => {
                 const payload = {
-                    title: title,
-                    category: category,
-                    fileName: fileName,
-                    fileData: reader.result, // THE MAGIC: Save the actual file content
-                    uploaded_by: uploaderName,
+                    title: document.getElementById('resTitle').value,
+                    category: document.getElementById('resCategory').value,
+                    fileName: file.name,
+                    fileData: reader.result,
+                    uploaded_by: localStorage.getItem('portal-user-name') || 'External Scholar',
                     status: 'PENDING',
                     date: new Date().toISOString()
                 };
 
-                // Push directly to Firebase
-                db.ref('library_quarantine').push(payload)
-                .then(() => {
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Sent to Admin Quarantine';
-                    btn.style.background = '#10b981';
-
-                    setTimeout(() => {
-                        toggleUploadModal();
-                        btn.innerHTML = originalText;
-                        btn.style.background = 'var(--primary-color)';
-                        btn.disabled = false;
-                        document.getElementById('uploadForm').reset();
-                        document.getElementById('fileNameDisplay').innerText = "Drag & Drop or Click to Browse";
-                        document.getElementById('fileNameDisplay').style.color = 'var(--text-color)';
-                    }, 1500);
-                })
-                .catch(err => {
-                    alert("Upload failed: " + err.message);
-                    btn.innerHTML = originalText;
+                db.ref('library_quarantine').push(payload).then(() => {
+                    alert("Transmission Successful. Document held in quarantine for vetting.");
+                    toggleUploadModal();
+                    document.getElementById('uploadForm').reset();
+                    btn.disabled = false;
+                    btn.innerText = 'Authorize Cloud Transmission';
+                }).catch(e => {
+                    alert("Sync Error: " + e.message);
                     btn.disabled = false;
                 });
             };
         }
 
-        // --- FIREBASE LIVE SYNC ---
         function fetchLibrary() {
-            const currentUser = localStorage.getItem('portal-user-name') || 'Student User';
-            const grid = document.getElementById('academic-grid');
+            const currentUser = localStorage.getItem('portal-user-name');
+            
+            db.ref('library_quarantine').on('value', snap => {
+                document.querySelectorAll('.cloud-item').forEach(e => e.remove());
+                let total = 0; let verified = 0;
 
-            db.ref('library_quarantine').on('value', (snapshot) => {
-                // Clear previously injected cloud cards to avoid duplicates on update
-                document.querySelectorAll('.cloud-injected-card').forEach(el => el.remove());
-                globalLibraryData = {}; // NEW: Reset cache on update
-                
-                if (snapshot.exists()) {
-                    let items = [];
-                    snapshot.forEach(child => {
-                        const fileObj = { key: child.key, ...child.val() };
-                        items.push(fileObj);
-                        globalLibraryData[child.key] = fileObj; // NEW: Save to global dictionary
-                    });
-                    
-                    // Sort to show newest first
-                    items.reverse();
-
-                    items.forEach(fileObj => {
-                        // Only show globally APPROVED items, OR items uploaded by this specific user that are still PENDING
-                        if (fileObj.status === 'APPROVED' || (fileObj.status === 'PENDING' && fileObj.uploaded_by === currentUser)) {
-                            renderCloudFile(fileObj, grid);
-                        }
-                    });
+                if(!snap.exists()) {
+                    document.getElementById('stat-total').innerText = '0';
+                    document.getElementById('stat-verified').innerText = '0';
+                    return;
                 }
+
+                snap.forEach(child => {
+                    total++;
+                    const f = child.val();
+                    globalLibraryData[child.key] = f;
+                    
+                    if(f.status === 'APPROVED') {
+                        verified++;
+                        renderVerifiedCard(f, child.key);
+                    } else if(f.status === 'PENDING' && f.uploaded_by === currentUser) {
+                        renderVerifiedCard(f, child.key, true);
+                    }
+                });
+
+                document.getElementById('stat-total').innerText = total;
+                document.getElementById('stat-verified').innerText = verified;
             });
         }
 
-        function renderCloudFile(fileObj, grid) {
-            let icon = 'fa-file-pdf'; let color = '#ef4444'; let bg = 'rgba(239, 68, 68, 0.1)';
-            if(fileObj.category === 'PAST_QUESTION') { icon = 'fa-file-alt'; color = '#10b981'; bg = 'rgba(16, 185, 129, 0.1)'; }
-            if(fileObj.category === 'NOTES') { icon = 'fa-file-powerpoint'; color = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
+        function renderVerifiedCard(f, key, isPending = false) {
+            const target = f.category === 'ghana' ? 'ghana-grid' : 'academic-grid';
+            const grid = document.getElementById(target);
             
-            let badgeHtml = '';
-            let actionHtml = '';
-            let borderStyle = '';
+            const card = document.createElement('div');
+            card.className = 'resource-card cloud-item';
+            if(isPending) card.style.borderColor = '#f59e0b';
 
-            if (fileObj.status === 'PENDING') {
-                borderStyle = 'border-color: #f59e0b; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.1);';
-                badgeHtml = `<div style="position:absolute; top:15px; right:15px; background:#f59e0b; color:white; font-size:0.65rem; padding:4px 8px; border-radius:12px; font-weight:800; letter-spacing:0.5px;">PENDING QUARANTINE</div>`;
-                actionHtml = `<button class="btn-action read-btn" onclick="alert('File is currently locked in quarantine awaiting Directorate Admin approval.')" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fas fa-shield-alt"></i> Locked</button>`;
-            } else {
-                badgeHtml = `<div style="position:absolute; top:15px; right:15px; background:#10b981; color:white; font-size:0.65rem; padding:4px 8px; border-radius:12px; font-weight:800; letter-spacing:0.5px;">VERIFIED</div>`;
-                // NEW: Call the Real Document Reader instead of the mock reader!
-                actionHtml = `<button class="btn-action read-btn" onclick="openRealDocument('${fileObj.key}')"><i class="fas fa-book-reader"></i> Open Document</button>`;
-            }
-
-            const newCard = `
-                <div class="resource-card cloud-injected-card" style="${borderStyle}">
-                    ${badgeHtml}
-                    <div class="card-icon" style="background: ${bg}; color: ${color};"><i class="fas ${icon}"></i></div>
-                    <div class="res-title">${fileObj.title}</div>
-                    <div class="res-desc">Uploaded by: <strong>${fileObj.uploaded_by}</strong><br><span style="font-size:0.75rem; color:#94a3b8;">${fileObj.fileName}</span></div>
-                    ${actionHtml}
-                </div>
+            card.innerHTML = `
+                ${isPending ? '<span style="position:absolute; top:15px; right:15px; background:#f59e0b; color:white; font-size:0.65rem; padding:4px 10px; border-radius:10px; font-weight:900;">IN QUARANTINE</span>' : ''}
+                <div class="card-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fas fa-file-pdf"></i></div>
+                <div class="res-title">${f.title}</div>
+                <div class="res-desc">Authoritative Archive • Deposited by ${f.uploaded_by}. Verified for tertiary use.</div>
+                <button class="btn-action read-btn" onclick="${isPending ? "alert('Document restricted until verification complete.')" : `openRealDocument('${key}')`}">
+                    <i class="fas ${isPending ? 'fa-lock' : 'fa-folder-open'}"></i> ${isPending ? 'Locked' : 'Open Vault'}
+                </button>
             `;
-            grid.insertAdjacentHTML('afterbegin', newCard);
+            grid.insertAdjacentElement('afterbegin', card);
         }
 
-        // ==========================================
-        // 🔥 NEW FEATURE: BASE-64 PDF CONVERSION ENGINE
-        // ==========================================
-
-        // Converts the saved Firebase string back into a real PDF file
-        function base64ToBlob(base64Data, contentType='') {
-            const b64 = base64Data.indexOf(',') !== -1 ? base64Data.split(',')[1] : base64Data;
-            const sliceSize = 512;
-            const byteCharacters = atob(b64);
-            const byteArrays = [];
-
-            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                const slice = byteCharacters.slice(offset, offset + sliceSize);
-                const byteNumbers = new Array(slice.length);
-                for (let i = 0; i < slice.length; i++) {
-                    byteNumbers[i] = slice.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                byteArrays.push(byteArray);
-            }
-            return new Blob(byteArrays, {type: contentType});
-        }
-
-        // Opens the Modal with the actual generated PDF
-        function openRealDocument(dbKey) {
-            const fileObj = globalLibraryData[dbKey];
-            if(!fileObj) return alert("File data could not be retrieved from the cloud.");
-
-            const modal = document.getElementById('viewerModal');
-            const iframe = document.getElementById('viewerFrame');
-            const smartReader = document.getElementById('smartReader');
-            const titleEl = document.getElementById('viewerTitle');
-            const downloadBtn = document.getElementById('viewerDownload');
-
-            titleEl.innerText = fileObj.title;
-
-            // Failsafe for documents uploaded before you added this new base64 feature
-            if (!fileObj.fileData) {
-                alert("ERROR: This file was uploaded using the older version of the portal. It does not contain physical PDF data. Please delete it from the Admin panel and re-upload it with this new version!");
-                return;
-            }
-
-            smartReader.style.display = 'none';
-            iframe.style.display = 'block';
-            
-            try {
-                let mime = 'application/pdf';
-                if(fileObj.fileData.includes('data:')) {
-                    mime = fileObj.fileData.split(';')[0].split(':')[1];
-                }
-                const blob = base64ToBlob(fileObj.fileData, mime);
-                const blobUrl = URL.createObjectURL(blob);
-                
-                iframe.src = blobUrl + "#toolbar=0";
-                
-                // Configure Download Button to pull the real file
-                downloadBtn.href = blobUrl;
-                downloadBtn.download = fileObj.fileName || "National_Portal_Document.pdf";
-                downloadBtn.onclick = null; // Remove the preventDefault block
-                
-            } catch (e) {
-                alert("Failed to render the document. The file data may be corrupted.");
-            }
-            
-            modal.style.display = 'flex';
-        }
-
-
-        // --- PREMIUM AI DICTIONARY LOGIC ---
+        // --- 5. AI KNOWLEDGE ENGINE ---
         function searchDictionary() {
-            const term = document.getElementById('dict-input').value;
-            const resBox = document.getElementById('dict-result');
-            const btn = document.getElementById('dict-btn');
-            
-            if(!term) return;
-            
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Analyzing...';
-            btn.disabled = true;
-            resBox.style.display = 'none';
+            const q = document.getElementById('dict-input').value;
+            const res = document.getElementById('dict-result');
+            if(!q) return;
 
+            res.style.display = 'block';
+            res.innerHTML = '<i class="fas fa-atom fa-spin"></i> Decrypting Concept...';
+            
             setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-search"></i> Define';
-                btn.disabled = false;
-                resBox.style.display = 'block';
-                resBox.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <h3 style="margin: 0; font-size: 1.8rem; color: var(--primary-color);"><i class="fas fa-quote-left" style="color: #cbd5e1; margin-right: 10px; font-size: 1.2rem;"></i>${term.toUpperCase()}</h3>
-                        <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-check-circle"></i> AI Verified</span>
+                res.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
+                        <h3 style="margin:0; font-size: 2rem; color: var(--primary-color); font-weight:900;">${q.toUpperCase()}</h3>
+                        <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-check-circle"></i> AI VERIFIED</span>
                     </div>
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:15px 0;">
-                    <p style="font-size: 1.1rem; line-height: 1.6; color: var(--text-color);">
-                        <strong>Definition:</strong> In academic and professional contexts, <strong>${term}</strong> refers to the foundational methodologies, frameworks, or systemic principles relative to its domain. It is characterized by its critical role in advanced analytical modeling and structural evaluation within tertiary studies.
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin-bottom: 25px;">
+                    <p style="font-size: 1.2rem; line-height: 1.8; color: var(--text-color);">
+                        <strong>Executive Definition:</strong> Within advanced tertiary frameworks, <strong>${q}</strong> is identified as a multi-modal paradigm involving the strategic integration of domain-specific methodologies to achieve high-fidelity outcomes.
                     </p>
-                    <div style="margin-top: 15px; padding: 15px; background: var(--bg-color); border-left: 3px solid var(--primary-color); font-size: 0.95rem; color: var(--text-muted); border-radius: 0 8px 8px 0;">
-                        <strong>Related Concepts:</strong> Core principle, Primary dynamic, Systemic function.
+                    <div style="background: var(--bg-color); padding: 25px; border-radius: 16px; border-left: 5px solid var(--primary-color); margin-top: 30px;">
+                        <strong style="color:var(--text-muted); font-size: 0.8rem; text-transform:uppercase;">Network Associations</strong><br>
+                        <span style="font-weight:700;">Systemic Logic • Structural Framework • Operative Excellence</span>
                     </div>
                 `;
-            }, 1200); // 1.2s delay for realism
+            }, 900);
         }
     </script>
 </body>

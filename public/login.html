@@ -72,15 +72,26 @@
         
         .theme-float { position: absolute; top: 30px; right: 30px; z-index: 10; }
 
-        @media (max-width: 900px) { .auth-grid { grid-template-columns: 1fr; } .brand-side { display: none; } }
+        /* --- PREMIUM SMARTPHONE OPTIMIZATION --- */
+        @media (max-width: 900px) { 
+            body { height: 100svh; overflow-y: auto; }
+            .auth-grid { display: flex; flex-direction: column; height: 100svh; } 
+            .brand-side { display: none !important; } 
+            .form-side { width: 100%; padding: 30px 20px; align-items: center; flex: 1; }
+            .auth-card { width: 100%; max-width: 100%; padding: 10px; box-sizing: border-box; }
+            
+            /* Prevent iOS Safari Auto-Zoom */
+            .input-group input { padding: 15px 18px; font-size: 16px !important; } 
+            
+            h2 { font-size: 1.8rem; }
+            .theme-float { top: 15px; right: 15px; }
+        }
     </style>
 </head>
 <body>
 
     <div class="auth-grid">
         <div class="brand-side">
-            <div class="brand-content">
-                <div class="brand-icon">🎓</div>
                 <div class="brand-quote">"True education enables one to develop the ability to think and to do."</div>
                 <div class="brand-author">Louis B-T</div>
             </div>

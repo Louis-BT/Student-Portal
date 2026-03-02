@@ -120,6 +120,11 @@
             border: 1px dashed var(--border-color);
         }
 
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-box { background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: bold; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--text-color); }
+
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 25px; }
         
         .btn-save {
@@ -148,17 +153,40 @@
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
 
+        /* ==========================================================================
+           📱 PREMIUM SMARTPHONE UI OPTIMIZATIONS
+           ========================================================================== */
         @media (max-width: 1000px) { 
-            .gpa-layout { grid-template-columns: 1fr; } 
-            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            body, .wrapper { height: 100svh; flex-direction: column; overflow: hidden; }
+            .main-content { padding: 20px 15px !important; }
+            .gpa-layout { grid-template-columns: 1fr; gap: 20px; } 
+
+            /* Header Re-flow */
+            .main-content > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+            .theme-wrapper { width: 100%; border-top: 1px solid var(--border-color); padding-top: 15px; }
+            .theme-wrapper select { width: 100%; }
+            .header-row { flex-direction: column; gap: 15px; align-items: stretch; }
+
+            /* iOS Anti-Zoom & Touch Targets */
+            input, select { font-size: 16px !important; padding: 15px !important; }
+
+            /* Advanced Course Row Stacking */
+            .course-header { display: none; } 
+            .course-row { grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; align-items: stretch; }
+            .c-code { grid-column: 1 / 2; }
+            .c-credit { grid-column: 2 / -1; }
+            .c-name { grid-column: 1 / -1; } 
+            .c-score { grid-column: 1 / 2; }
+            .btn-remove { grid-column: 2 / -1; width: 100%; height: auto; padding: 12px; }
+
+            /* Stat Blocks Stack */
+            .stats-grid { grid-template-columns: 1fr !important; gap: 15px; }
+
+            /* Sidebar Slide-in Logic */
+            .sidebar { position: fixed; height: 100svh; left: -280px; width: 280px; box-shadow: none; z-index: 1000; }
             .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .sidebar-overlay.mobile-open { display: block; }
             .mobile-menu-btn { display: block; }
-            .course-header { display: none; } 
-            .course-row { grid-template-columns: 1fr 1fr; }
-            .c-code { grid-column: 1 / 2; }
-            .c-name { grid-column: 2 / -1; } 
-            .btn-remove { grid-column: 1 / -1; width: 100%; }
         }
 
         /* ========================================================= */
@@ -168,7 +196,7 @@
 
         @media print {
             @page { size: A4 portrait; margin: 15mm; }
-            body { background: white !important; color: black !important; font-family: 'Inter', Helvetica, Arial, sans-serif; }
+            body { background: white !important; color: black !important; font-family: 'Inter', Helvetica, Arial, sans-serif; display: block; height: auto; overflow: visible; }
             
             /* Hide entire web UI */
             .wrapper, .sidebar, .mobile-menu-btn, .theme-wrapper, .gpa-layout { display: none !important; }
@@ -216,17 +244,17 @@
             
             /* Summary */
             .t-summary { 
-    font-size: 12pt; 
-    font-weight: 900; 
-    margin-bottom: 50px; 
-    background: #f9f9f9 !important; 
-    -webkit-print-color-adjust: exact; 
-    print-color-adjust: exact; 
-    padding: 10px; 
-    border: 1px solid #000; 
-    text-align: center; 
-    letter-spacing: 1px;
-}
+                font-size: 12pt; 
+                font-weight: 900; 
+                margin-bottom: 50px; 
+                background: #f9f9f9 !important; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                padding: 10px; 
+                border: 1px solid #000; 
+                text-align: center; 
+                letter-spacing: 1px;
+            }
             
             /* Signatures */
             .t-signatures { display: flex; justify-content: space-between; margin-bottom: 50px; }
@@ -392,14 +420,14 @@
 
                     <div id="gpaRemarks" class="gpa-remarks">Input your scores and hit calculate to see your academic standing.</div>
                   
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                        <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TOTAL CREDITS</div>
-                            <div id="totalCredits" style="font-size:1.5rem; font-weight:bold; color: var(--text-color);">0</div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">TOTAL CREDITS</div>
+                            <div id="totalCredits" class="stat-value">0</div>
                         </div>
-                        <div style="background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TOTAL POINTS</div>
-                            <div id="totalPoints" style="font-size:1.5rem; font-weight:bold; color: var(--text-color);">0</div>
+                        <div class="stat-box">
+                            <div class="stat-label">TOTAL POINTS</div>
+                            <div id="totalPoints" class="stat-value">0</div>
                         </div>
                     </div>
 

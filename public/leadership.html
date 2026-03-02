@@ -11,101 +11,141 @@
     <script src="theme.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    
+    <style>
         /* --- 1. CORE LAYOUT & SIDEBAR --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
         .wrapper { display: flex; width: 100%; height: 100%; position: relative;}
 
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;}
-        .sidebar-header { padding: 25px; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
-        .nav-links { list-style: none; padding: 20px; margin: 0; }
+        .sidebar-header { padding: 25px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; letter-spacing: -0.5px; }
+        .nav-links { list-style: none; padding: 20px; margin: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .nav-links li { margin-bottom: 8px; }
-        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all 0.3s ease; border-left: 3px solid transparent; font-weight: 500; }
-        .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); }
+        .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-left: 3px solid transparent; font-weight: 500; }
+        .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(251, 191, 36, 0.15) 0%, transparent 100%); border-left: 3px solid #fbbf24; color: white; transform: translateX(4px); }
 
-        .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); position: relative; display: flex; flex-direction: column; }
+        .main-content { flex: 1; overflow-y: auto; background: var(--bg-color); position: relative; display: flex; flex-direction: column; -webkit-overflow-scrolling: touch; }
         
         /* --- 2. HEADER & NOTIFICATIONS --- */
         .top-header { padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--border-color); }
         .header-title { display: flex; align-items: center; gap: 15px; }
-        .header-title h2 { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+        .header-title h2 { margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
         
         .header-tools { display: flex; align-items: center; gap: 20px; }
-        .notify-bell { position: relative; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; padding: 8px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
-        .notify-bell:hover { color: var(--primary-color); background: var(--input-bg); }
-        .bell-dot { position: absolute; top: 8px; right: 10px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 0 2px var(--card-bg); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .notify-bell { position: relative; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; padding: 8px; border-radius: 50%; background: var(--card-bg); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .notify-bell:hover { color: var(--primary-color); background: var(--input-bg); transform: translateY(-2px); }
+        
+        /* Toast Notifications */
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 8px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 9999; transform: translateY(100px); opacity: 0; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; align-items: center; gap: 10px; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Premium Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-content { background: var(--card-bg); padding: 40px; border-radius: 16px; position: relative; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .btn-secondary { background: transparent; border: 2px solid var(--border-color); color: var(--text-color); padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-secondary:hover { background: var(--input-bg); border-color: var(--text-muted); }
 
         /* --- 3. VANGUARD HERO SECTION --- */
-        .vanguard-hero { background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%); color: white; padding: 60px 40px; text-align: center; border-bottom: 4px solid #fbbf24; position: relative; overflow: hidden; box-shadow: inset 0 -10px 30px rgba(0,0,0,0.5); }
+        .vanguard-hero { background: linear-gradient(135deg, #0f172a 0%, #1e1e2f 100%); color: white; padding: 70px 40px; text-align: center; border-bottom: 4px solid #fbbf24; position: relative; overflow: hidden; box-shadow: inset 0 -10px 30px rgba(0,0,0,0.5); }
         .vanguard-hero::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.15) 0%, transparent 70%); }
-        .vanguard-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0; letter-spacing: 1px; position: relative; z-index: 2; }
-        .gold-text { color: #fbbf24; text-shadow: 0 2px 15px rgba(251, 191, 36, 0.4); }
+        .vanguard-title { font-family: 'Playfair Display', serif; font-size: 3.8rem; margin: 0; letter-spacing: 1px; position: relative; z-index: 2; font-weight: 700; }
+        .gold-text { color: #fbbf24; text-shadow: 0 2px 20px rgba(251, 191, 36, 0.5); }
         .hero-sub { font-size: 1.15rem; color: #cbd5e1; max-width: 750px; margin: 20px auto 0; line-height: 1.6; position: relative; z-index: 2; font-family: 'Playfair Display', serif; font-style: italic; }
 
         /* --- 4. MAIN GRID & CARDS --- */
         .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; max-width: 1200px; margin: 40px auto; padding: 0 40px; width: 100%; box-sizing: border-box; }
 
-        .premium-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
-        .premium-card h3 { margin-top: 0; color: var(--text-color); font-size: 1.3rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
+        .premium-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 35px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative; overflow: hidden; }
+        .premium-card h3 { margin-top: 0; color: var(--text-color); font-size: 1.3rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; font-weight: 800; }
 
         /* --- 5. APPLICATION FORM UI --- */
         .form-group { margin-bottom: 25px; }
-        .form-label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-label { display: block; font-weight: 800; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         .form-control { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 1rem; box-sizing: border-box; transition: 0.2s; }
-        .form-control:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15); }
+        .form-control:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.15); }
         
         .textarea-wrapper { position: relative; }
-        .char-counter { position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--input-bg); padding: 2px 8px; border-radius: 10px; }
+        .char-counter { position: absolute; bottom: 15px; right: 15px; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; background: var(--input-bg); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--border-color); }
 
-        .btn-gold { width: 100%; padding: 16px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #0f172a; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3); }
+        .btn-gold { width: 100%; padding: 16px; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); color: #0f172a; border: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; font-size: 1.05rem; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); }
 
         /* --- 6. PROGRESS TRACKER (VISA STYLE) --- */
         .status-card { display: none; padding: 20px 0; }
         .tracker-container { margin: 40px 0; position: relative; }
-        .tracker-line { position: absolute; top: 20px; left: 10%; width: 80%; height: 4px; background: var(--border-color); z-index: 1; border-radius: 2px; }
-        .tracker-progress { position: absolute; top: 20px; left: 10%; width: 50%; height: 4px; background: #fbbf24; z-index: 2; border-radius: 2px; transition: 1s ease-in-out; }
+        .tracker-line { position: absolute; top: 22px; left: 10%; width: 80%; height: 4px; background: var(--border-color); z-index: 1; border-radius: 2px; }
+        .tracker-progress { position: absolute; top: 22px; left: 10%; width: 50%; height: 4px; background: #fbbf24; z-index: 2; border-radius: 2px; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .tracker-steps { display: flex; justify-content: space-between; position: relative; z-index: 3; }
         .step { display: flex; flex-direction: column; align-items: center; width: 33%; }
-        .step-icon { width: 45px; height: 45px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--text-muted); font-weight: bold; transition: 0.3s; }
-        .step.active .step-icon { border-color: #fbbf24; background: #fbbf24; color: #0f172a; box-shadow: 0 0 15px rgba(251,191,36,0.4); }
+        .step-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--card-bg); border: 4px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-muted); font-weight: bold; transition: 0.3s; }
+        .step.active .step-icon { border-color: #fbbf24; background: #fbbf24; color: #0f172a; box-shadow: 0 0 20px rgba(251,191,36,0.5); }
         .step.completed .step-icon { border-color: #10b981; background: #10b981; color: white; }
         
-        .step-label { margin-top: 15px; font-weight: 700; font-size: 0.9rem; color: var(--text-muted); text-align: center; }
+        .step-label { margin-top: 15px; font-weight: 800; font-size: 0.9rem; color: var(--text-muted); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
         .step.active .step-label { color: var(--text-color); }
 
-        .application-receipt { background: var(--input-bg); border: 1px dashed var(--border-color); padding: 25px; border-radius: 12px; margin-top: 30px; text-align: left; }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
-        .btn-withdraw { background: transparent; color: #ef4444; border: 1px solid #ef4444; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin-top: 25px; font-weight: 600; width: 100%; transition: 0.2s; }
-        .btn-withdraw:hover { background: rgba(239, 68, 68, 0.1); }
+        .application-receipt { background: var(--input-bg); border: 2px dashed var(--border-color); padding: 30px; border-radius: 12px; margin-top: 30px; text-align: left; position: relative; }
+        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.95rem; }
+        .btn-withdraw { background: transparent; color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.3); padding: 14px 20px; border-radius: 8px; cursor: pointer; margin-top: 25px; font-weight: 700; width: 100%; transition: 0.2s; font-size: 1rem; }
+        .btn-withdraw:hover { background: #ef4444; color: white; border-color: #ef4444; }
 
         /* --- 7. INDUCTED LEADERS DIRECTORY --- */
-        .leader-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 15px; transition: 0.2s; }
-        .leader-item:hover { border-color: #fbbf24; transform: translateX(5px); background: var(--card-bg); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .leader-avatar { width: 55px; height: 55px; border-radius: 50%; background: #0f172a; color: #fbbf24; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; border: 2px solid rgba(251,191,36,0.2); flex-shrink: 0;}
+        .leader-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 15px; transition: 0.2s; cursor: default; }
+        .leader-item:hover { border-color: #fbbf24; transform: translateX(5px); background: var(--card-bg); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .leader-avatar { width: 55px; height: 55px; border-radius: 50%; background: #0f172a; color: #fbbf24; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; border: 2px solid rgba(251,191,36,0.3); flex-shrink: 0; font-family: 'Playfair Display', serif;}
 
         /* Mobile specific */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(5px); }
 
         @media (max-width: 900px) { 
-            .content-grid { grid-template-columns: 1fr; padding: 0 20px; } 
-            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
+            body { height: 100svh; overflow: hidden; }
+            .wrapper { height: 100svh; flex-direction: column; }
+            .main-content { width: 100%; height: 100svh; }
+            
+            .content-grid { grid-template-columns: 1fr; padding: 0 20px; margin: 20px auto; gap: 20px; } 
+            
+            .sidebar { position: fixed; height: 100svh; left: -280px; box-shadow: none; z-index: 1000; }
             .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
             .sidebar-overlay.mobile-open { display: block; }
             .mobile-menu-btn { display: block; }
-            .vanguard-title { font-size: 2.5rem; }
-            .step-label { font-size: 0.75rem; }
+            
+            .vanguard-hero { padding: 40px 20px; }
+            .vanguard-title { font-size: 2.2rem; line-height: 1.2; }
+            .hero-sub { font-size: 1rem; }
+            
+            .step-label { font-size: 0.7rem; margin-top: 10px; }
+            .step-icon { width: 40px; height: 40px; font-size: 1rem; }
             .top-header { padding: 20px; }
+            .premium-card { padding: 25px 20px; }
+            
+            /* Anti-Zoom */
+            textarea, input, select { font-size: 16px !important; }
+            .modal-content { width: 95% !important; padding: 30px 20px !important; margin: 10px auto; }
         }
     </style>
 </head>
 <body>
 
     <div class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+    
+    <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg">Action Successful</span></div>
+
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3.5rem; color: #ef4444; margin-bottom: 20px;"></i>
+            <h3 style="margin: 0 0 10px; color: var(--text-color); font-weight: 800; font-size: 1.4rem;">Retract Application?</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px;">This will permanently erase your manifesto and remove your dossier from the Directorate Vetting Queue.</p>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-secondary" style="flex: 1;" onclick="closeConfirmModal()">Cancel</button>
+                <button style="flex: 1; padding: 14px; background: #ef4444; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'" onclick="executeWithdraw()">Retract</button>
+            </div>
+        </div>
+    </div>
 
     <div class="wrapper">
         <aside class="sidebar">
@@ -123,10 +163,10 @@
                 <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
                 <li style="margin-top: 20px;">
-    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </a>
-</li>
+                    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
             </ul>
         </aside>
 
@@ -138,12 +178,12 @@
                     <h2 style="color: var(--text-color);">Leadership Command</h2>
                 </div>
                 <div class="header-tools">
-                    <div class="notify-bell" title="Vanguard Alerts" onclick="alert('Live Sync Active: Connection to Command Center is encrypted.')">
+                    <div class="notify-bell" title="Vanguard Alerts" onclick="showToast('Live Sync Active: Connection to Command Center is encrypted.', 'info')">
                         <i class="fas fa-bell"></i>
                         <span class="bell-dot"></span>
                     </div>
                     <div class="theme-wrapper">
-                        <select onchange="setTheme(this.value)" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 500;">
+                        <select onchange="setTheme(this.value)" style="padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; font-weight: 600;">
                             <option value="system">💻 System</option>
                             <option value="light">☀️ Light</option>
                             <option value="dark">🌙 Dark</option>
@@ -196,7 +236,7 @@
                     </div>
 
                     <div id="application-tracker" class="status-card">
-                        <h3 style="margin-top: 0; justify-content: center; border: none; font-size: 1.6rem;" id="tracker-headline">Application Under Review</h3>
+                        <h3 style="margin-top: 0; justify-content: center; border: none; font-size: 1.6rem; font-weight: 800;" id="tracker-headline">Application Under Review</h3>
                         
                         <div class="tracker-container">
                             <div class="tracker-line"></div>
@@ -219,31 +259,31 @@
                         </div>
 
                         <div class="application-receipt">
-                            <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
-                                <strong style="color: var(--text-color); font-size: 1.1rem;">Application Receipt</strong>
+                            <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+                                <strong style="color: var(--text-color); font-size: 1.15rem; font-weight: 800;">Digital Receipt</strong>
                             </div>
                             <div class="receipt-row">
-                                <span style="color: var(--text-muted);">Tracking ID:</span>
-                                <strong style="font-family: monospace; color: var(--primary-color);">VG-2026-<span id="receipt-id">PENDING</span></strong>
+                                <span style="color: var(--text-muted); font-weight: 600;">Tracking ID:</span>
+                                <strong style="font-family: monospace; color: var(--primary-color); font-size: 1.1rem;">VG-2026-<span id="receipt-id">PENDING</span></strong>
                             </div>
                             <div class="receipt-row">
-                                <span style="color: var(--text-muted);">Position:</span>
+                                <span style="color: var(--text-muted); font-weight: 600;">Target Position:</span>
                                 <strong id="receipt-pos" style="color: var(--text-color);">...</strong>
                             </div>
                             <div class="receipt-row">
-                                <span style="color: var(--text-muted);">Date Submitted:</span>
+                                <span style="color: var(--text-muted); font-weight: 600;">Date Submitted:</span>
                                 <strong id="receipt-date" style="color: var(--text-color);">...</strong>
                             </div>
                         </div>
 
                         <div id="pending-actions">
-                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 25px;">Your dossier is currently locked in the Administrative Console. Vetting typically takes 24-48 hours.</p>
-                            <button onclick="withdrawApp()" class="btn-withdraw"><i class="fas fa-times-circle"></i> Retract Application</button>
+                            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 25px; text-align: center;">Your dossier is currently locked in the Administrative Console. Vetting typically takes 24-48 hours.</p>
+                            <button onclick="openConfirmModal()" class="btn-withdraw"><i class="fas fa-times-circle"></i> Retract Application</button>
                         </div>
 
                         <div id="approved-actions" style="display: none;">
-                            <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #10b981; color: white; padding: 15px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 25px; transition: 0.2s;">
-                                <i class="fab fa-whatsapp" style="font-size: 1.2rem; margin-right: 8px;"></i> Access The Vanguard Hub
+                            <a href="https://chat.whatsapp.com/IYFaOYoyrnmGhiZN80LC0K" target="_blank" style="display: flex; align-items: center; justify-content: center; background: #10b981; color: white; padding: 18px; border-radius: 8px; text-decoration: none; font-weight: 800; margin-top: 25px; transition: 0.2s; font-size: 1.05rem; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                                <i class="fab fa-whatsapp" style="font-size: 1.4rem; margin-right: 10px;"></i> Access The Vanguard Hub
                             </a>
                         </div>
                     </div>
@@ -252,13 +292,13 @@
 
                 <div>
                     <div class="premium-card" style="padding: 25px; margin-bottom: 30px;">
-                        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.1rem;"><i class="fas fa-users" style="color: var(--primary-color);"></i> Active Vanguard</h3>
+                        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.15rem;"><i class="fas fa-users" style="color: var(--primary-color);"></i> Active Vanguard</h3>
                         
                         <div class="leader-item">
                             <div class="leader-avatar">FO</div>
                             <div>
                                 <div style="font-weight: 800; color: var(--text-color);">Frank Owusu</div>
-                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">SRC President (KNUST)</div>
+                                <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 700; text-transform: uppercase;">SRC President (KNUST)</div>
                             </div>
                         </div>
 
@@ -266,7 +306,7 @@
                             <div class="leader-avatar">RC</div>
                             <div>
                                 <div style="font-weight: 800; color: var(--text-color);">Richester Colthy</div>
-                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">WOCOM (VVU)</div>
+                                <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 700; text-transform: uppercase;">WOCOM (VVU)</div>
                             </div>
                         </div>
 
@@ -274,15 +314,15 @@
                             <div class="leader-avatar">MA</div>
                             <div>
                                 <div style="font-weight: 800; color: var(--text-color);">Mariam Ali Titiaka</div>
-                                <div style="font-size: 0.8rem; color: #fbbf24; font-weight: 600;">WAIMM Pres. (UMaT)</div>
+                                <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 700; text-transform: uppercase;">WAIMM Pres. (UMaT)</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="premium-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: none; padding: 25px;">
-                        <h4 style="margin-top: 0; color: #fbbf24; font-size: 1.1rem;"><i class="fas fa-book-reader"></i> Executive Resources</h4>
-                        <p style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 20px; line-height: 1.5;">Download the official national constitution and operational leadership frameworks.</p>
-                        <button style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px 15px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    <div class="premium-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border: none; padding: 30px;">
+                        <h4 style="margin: 0 0 10px 0; color: #fbbf24; font-size: 1.2rem; font-weight: 800;"><i class="fas fa-book-reader"></i> Executive Resources</h4>
+                        <p style="font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5;">Download the official national constitution and operational leadership frameworks.</p>
+                        <button style="width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 14px 15px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; font-size: 1rem;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'" onclick="location.href='library.html'">
                             <i class="fas fa-download"></i> Access Library
                         </button>
                     </div>
@@ -294,21 +334,51 @@
 
     <script>
         // --- 1. GLOBAL STATE & FIREBASE ---
-        let userEmail = localStorage.getItem('portal-user-email');
-        let userName = localStorage.getItem('portal-user-name') || 'Student';
+        let userEmail = null;
+        let userName = 'Student';
         let userAppKey = null; // Tracks the specific application ID in the cloud
 
+        // Ensure security: Wait for Firebase Auth before loading data
         document.addEventListener('DOMContentLoaded', () => {
-            fetchApplicationStatus();
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    userEmail = user.email;
+                    userName = localStorage.getItem('portal-user-name') || 'Student';
+                    fetchApplicationStatus();
+                } else {
+                    window.location.href = 'login.html'; 
+                }
+            });
         });
 
-        // --- 2. MOBILE MENU LOGIC ---
+        // --- 2. TOAST NOTIFICATION LOGIC ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = toast.querySelector('i');
+            document.getElementById('toast-msg').innerText = message;
+            
+            if(type === 'error') {
+                toast.style.background = '#ef4444';
+                icon.className = 'fas fa-exclamation-circle';
+            } else if (type === 'info') {
+                toast.style.background = '#3b82f6';
+                icon.className = 'fas fa-info-circle';
+            } else {
+                toast.style.background = '#10b981';
+                icon.className = 'fas fa-check-circle';
+            }
+
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // --- 3. MOBILE MENU LOGIC ---
         function toggleMobileSidebar() {
             document.querySelector('.sidebar').classList.toggle('mobile-open');
             document.querySelector('.sidebar-overlay').classList.toggle('mobile-open');
         }
 
-        // --- 3. CHARACTER COUNTER ---
+        // --- 4. CHARACTER COUNTER ---
         function countChars(obj) {
             document.getElementById('char-count').innerHTML = obj.value.length;
             if(obj.value.length > 5000) {
@@ -317,26 +387,25 @@
             }
         }
 
-        // --- 4. CLOUD LIVE LISTENER (The Magic Sync) ---
+        // --- 5. CLOUD LIVE LISTENER (The Magic Sync) ---
         function fetchApplicationStatus() {
             if (!userEmail) return;
 
-            // This creates a LIVE connection to the vanguard_apps node in Firebase
             db.ref('vanguard_apps').orderByChild('email').equalTo(userEmail).on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     snapshot.forEach(child => {
-                        userAppKey = child.key; // Store the unique key so we can withdraw later
+                        userAppKey = child.key; 
                         const data = child.val();
                         renderState(data.status, data.position, data.date, child.key);
                     });
                 } else {
                     userAppKey = null;
-                    renderState(null, null, null, null); // No application found, show form
+                    renderState(null, null, null, null); 
                 }
             });
         }
 
-        // --- 5. UI STATE MANAGEMENT ---
+        // --- 6. UI STATE MANAGEMENT ---
         function renderState(status, position, dateStr, dbKey) {
             const form = document.getElementById('application-form');
             const tracker = document.getElementById('application-tracker');
@@ -357,7 +426,7 @@
                 
                 document.getElementById('tracker-headline').innerText = "Vetting In Progress";
                 document.getElementById('tracker-headline').style.color = "#d97706";
-                document.getElementById('receipt-id').innerText = dbKey.substring(1, 6).toUpperCase(); // Make a clean ID from firebase key
+                document.getElementById('receipt-id').innerText = dbKey.substring(1, 6).toUpperCase(); 
                 
                 progressBar.style.width = '50%';
                 step2.className = 'step active';
@@ -385,11 +454,9 @@
                 approvedActions.style.display = 'block';
 
             } else if (status === 'REJECTED') {
-                // If rejected, let them know and allow them to resubmit
                 form.style.display = 'block';
                 tracker.style.display = 'none';
-                alert("Your previous application was reviewed and rejected. You may submit a new manifesto.");
-                // Delete the rejected one so they can start over
+                showToast("Your previous application was reviewed and rejected. You may submit a new manifesto.", "error");
                 if(userAppKey) db.ref('vanguard_apps/' + userAppKey).remove();
             } else {
                 form.style.display = 'block';
@@ -397,7 +464,7 @@
             }
         }
 
-        // --- 6. SUBMIT TO ADMIN CLOUD ---
+        // --- 7. SUBMIT TO ADMIN CLOUD ---
         function submitApp() {
             const btn = document.getElementById('submit-btn');
             const pos = document.getElementById('target-pos').value;
@@ -410,7 +477,7 @@
 
             const payload = { 
                 name: userName,
-                email: userEmail, // Crucial for identifying the user in the cloud
+                email: userEmail,
                 institution: localStorage.getItem('portal-institution') || 'National DB',
                 position: pos, 
                 experience: exp, 
@@ -419,30 +486,39 @@
                 date: new Date().toISOString()
             };
 
-            // Push directly to Firebase. 
-            // We do NOT need to update the UI manually here because our live listener (.on) 
-            // will detect this new data in 0.1 seconds and trigger renderState() automatically!
             db.ref('vanguard_apps').push(payload)
             .then(() => {
+                showToast("Manifesto transmitted to Administration.", "success");
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             })
             .catch(err => {
-                alert("Submission failed. Check your internet connection.");
+                showToast("Submission failed. Check your connection.", "error");
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit to Admin Queue';
                 btn.style.opacity = '1';
                 btn.disabled = false;
             });
         }
 
-        // --- 7. WITHDRAW FROM CLOUD ---
-        function withdrawApp() {
-            if(!confirm("⚠️ Are you sure you want to retract your manifesto? This action will permanently remove your dossier from the Admin Vetting Queue.")) return;
-            
+        // --- 8. WITHDRAWAL LOGIC ---
+        function openConfirmModal() {
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').style.display = 'none';
+        }
+
+        function executeWithdraw() {
             if (userAppKey) {
                 db.ref('vanguard_apps/' + userAppKey).remove()
-                .catch(err => alert("Retraction failed: " + err.message));
-                // Again, no manual UI update needed. The .on listener will detect the deletion 
-                // and switch the view back to the empty form instantly.
+                .then(() => {
+                    closeConfirmModal();
+                    showToast("Application successfully retracted.", "success");
+                })
+                .catch(err => {
+                    closeConfirmModal();
+                    showToast("Retraction failed: " + err.message, "error");
+                });
             }
         }
     </script>

@@ -12,10 +12,11 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-    <script src="db.js"></script> <style>
+    <script src="db.js"></script> 
+    <style>
         /* --- WEB LAYOUT --- */
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
-        .wrapper { display: flex; width: 100%; height: 100%; }
+        .wrapper { display: flex; width: 100%; height: 100%; position: relative; }
 
         /* --- SIDEBAR NAVIGATION --- */
         .sidebar { width: 260px; background: #0f172a; color: white; display: flex; flex-direction: column; flex-shrink: 0; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;}
@@ -43,12 +44,12 @@
 
         .input-group { position: relative; width: 100%; }
 
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], select {
             width: 100%; padding: 12px 15px; border: 1px solid var(--border-color);
             border-radius: 8px; background: var(--input-bg); color: var(--text-color);
             font-family: inherit; font-size: 0.9rem; box-sizing: border-box; transition: 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        input:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .manual-entry-grid { display: grid; grid-template-columns: 1fr 2fr 0.5fr; gap: 10px; margin-bottom: 10px; }
 
         .suggestions-list {
@@ -73,10 +74,10 @@
         .course-code { font-weight: 700; color: var(--primary-color); font-size: 0.85rem; }
         .course-credits { font-size: 0.75rem; color: var(--text-muted); background: var(--input-bg); padding: 4px 8px; border-radius: 4px; margin-top: 6px; width: fit-content; font-weight: 600; }
 
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn { padding: 12px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--primary-color); color: white; width: 100%; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
         .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3); }
-        .btn-delete { background: #fee2e2; color: #ef4444; padding: 8px 12px; border-radius: 6px; }
+        .btn-delete { background: #fee2e2; color: #ef4444; padding: 10px; border-radius: 6px; }
         .btn-delete:hover { background: #fecaca; transform: scale(1.05); }
         .btn-print { background: #1e293b; color: white; }
         .btn-print:hover { background: #0f172a; transform: translateY(-2px); }
@@ -84,19 +85,22 @@
         .btn-success:hover { background: #059669; transform: translateY(-2px); }
 
         /* --- SMART AI TIMETABLE ENGINE UI --- */
-        .ai-sync-box { background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border: 1px dashed #8b5cf6; padding: 20px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
+        .ai-sync-box { background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%); border: 1px dashed #8b5cf6; padding: 25px; border-radius: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;}
         .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; cursor: pointer; }
         .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        .btn-outline-purple { background: transparent; border: 2px solid #8b5cf6; color: #8b5cf6; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-outline-purple { background: transparent; border: 2px solid #8b5cf6; color: #8b5cf6; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-outline-purple:hover { background: #8b5cf6; color: white; }
 
         .timetable-section { margin-top: 30px; background: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); }
         .timetable-controls { display: flex; gap: 15px; align-items: center; }
-        .view-toggle { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.85rem; cursor: pointer; font-weight: 600; }
+        .view-toggle { padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-family: inherit; font-size: 0.9rem; cursor: pointer; font-weight: 600; }
         
-        .timetable { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .timetable th { background: #0f172a; color: white; padding: 12px; text-align: center; font-size: 0.9rem; }
-        .timetable td { padding: 12px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; transition: 0.2s; }
+        /* Table Responsive Wrapper */
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); }
+        
+        .timetable { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .timetable th { background: #0f172a; color: white; padding: 15px; text-align: center; font-size: 0.9rem; white-space: nowrap; }
+        .timetable td { padding: 15px; border: 1px solid var(--border-color); text-align: center; font-size: 0.85rem; transition: 0.2s; }
         .timetable td:hover { background: rgba(0,0,0,0.02); }
         
         .cell-class { background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2) !important; }
@@ -106,6 +110,47 @@
         /* Mobile Adjustments */
         .mobile-menu-btn { display: none; font-size: 1.5rem; cursor: pointer; color: var(--text-color); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 998; backdrop-filter: blur(3px); }
+
+        /* ==========================================================================
+           📱 PREMIUM SMARTPHONE UI OPTIMIZATIONS
+           ========================================================================== */
+        @media (max-width: 900px) { 
+            body, .wrapper { height: 100svh; flex-direction: column; overflow: hidden; }
+            .main-content { width: 100%; height: 100svh; padding: 20px 15px !important; }
+            
+            /* Header Re-flow */
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; margin-bottom: 25px; }
+            .theme-wrapper { width: 100%; border-top: 1px solid var(--border-color); padding-top: 15px; }
+            .theme-wrapper select { width: 100%; }
+            
+            /* Grid Stacking & Padding */
+            .page-grid { grid-template-columns: 1fr; gap: 20px; } 
+            .action-card { padding: 20px 15px; }
+
+            /* iOS Anti-Zoom & Stacked Form */
+            input[type="text"], input[type="number"], select { font-size: 16px !important; padding: 15px !important; }
+            .manual-entry-grid { grid-template-columns: 1fr; gap: 15px; }
+            
+            /* Full-Width Buttons Stack */
+            .course-card > div:last-child { flex-direction: column; gap: 15px; }
+            .course-card > div:last-child button { width: 100%; justify-content: center; }
+
+            /* AI Sync Box Alignments */
+            .ai-sync-box { flex-direction: column; text-align: left; align-items: stretch; padding: 20px 15px; gap: 20px; }
+            .file-upload-wrapper, .btn-outline-purple { width: 100%; display: block; text-align: center; box-sizing: border-box; }
+
+            /* Timetable Controls Alignments */
+            .timetable-controls { flex-direction: column; align-items: stretch; width: 100%; }
+            .timetable-controls select, .timetable-controls button { width: 100%; text-align: center; }
+            .timetable-section { padding: 20px 15px; }
+            .timetable-section > div { flex-direction: column; align-items: flex-start; }
+
+            /* Sidebar Slide-in Logic */
+            .mobile-menu-btn { display: block; }
+            .sidebar { position: fixed; height: 100svh; left: -280px; width: 280px; box-shadow: none; z-index: 1000; }
+            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+            .sidebar-overlay.mobile-open { display: block; }
+        }
 
         /* ========================================================= */
         /* --- ENTERPRISE PRINT/PDF ARCHITECTURE (Strict Formatting) --- */
@@ -119,6 +164,9 @@
             /* Hide Web UI Elements */
             .wrapper, .sidebar, .navbar, .theme-wrapper, .page-grid, .btn, .view-toggle, .btn-delete, .suggestions-list, .action-card h2, .timetable-controls, .ai-sync-box { display: none !important; }
             
+            /* Force Tables to render without scrolling constraints in print */
+            .table-responsive { overflow: visible !important; border: none !important; }
+
             /* Reveal Print Elements */
             .print-only-wrapper { display: block !important; width: 100%; padding: 20px; box-sizing: border-box; position: relative; }
             
@@ -164,16 +212,6 @@
             body.print-reg .p-timetable { display: none; }
             body.print-time .p-reg-list { display: none; }
             body.print-time .p-doc-title { content: "Official Class Timetable"; }
-        }
-
-        @media (max-width: 900px) { 
-            .page-grid { grid-template-columns: 1fr; } 
-            .mobile-menu-btn { display: block; }
-            .sidebar { position: fixed; height: 100%; left: -280px; box-shadow: none; }
-            .sidebar.mobile-open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
-            .sidebar-overlay.mobile-open { display: block; }
-            .timetable-controls { flex-direction: column; align-items: stretch;}
-            .timetable { display: block; overflow-x: auto; white-space: nowrap; }
         }
     </style>
 </head>
@@ -256,10 +294,10 @@
                 <li><a href="opportunities.html"><i class="fas fa-briefcase"></i> Opportunities Hub</a></li>
                 <li><a href="connect.html"><i class="fas fa-comments"></i> Connect</a></li>
                 <li style="margin-top: 20px;">
-    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </a>
-</li>
+                    <a href="#" onclick="executeSecureLogout(event)" style="color: #ef4444; border-left-color: transparent;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
             </ul>
         </aside>
 
@@ -273,7 +311,7 @@
                     </div>
                 </div>
                 <div class="theme-wrapper">
-                    <select onchange="setTheme(this.value)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-color); cursor: pointer; transition: 0.2s;">
+                    <select onchange="setTheme(this.value)">
                         <option value="system">💻 System</option>
                         <option value="light">☀️ Light</option>
                         <option value="dark">🌙 Dark</option>
@@ -348,10 +386,12 @@
                     </div>
                 </div>
                 
-                <table class="timetable">
-                    <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
-                    <tbody id="timetable-body"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="timetable">
+                        <thead><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
+                        <tbody id="timetable-body"></tbody>
+                    </table>
+                </div>
             </div>
 
         </main>
