@@ -180,7 +180,7 @@
     
     <div id="toast" class="toast"><i class="fas fa-check-circle"></i> <span id="toast-msg">Action Successful</span></div>
 
-    <div class="wrapper">
+    <div class="wrapper" id="main-app-wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-university"></i> Student Portal
@@ -428,7 +428,7 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; position: absolute; left: 0; top: 0; box-sizing: border-box; border: 8px double #1f2937;">
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; box-sizing: border-box; border: 8px double #1f2937; margin: 0 auto;">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
             <div style="flex: 1; text-align: left;">
@@ -533,7 +533,7 @@
             "University of Mines and Technology (UMaT)", "University of Health and Allied Sciences (UHAS)", "University of Energy and Natural Resources (UENR)", 
             "Ashesi University", "Central University", "Valley View University", "Pentecost University", "Accra Technical University (ATU)", "Kumasi Technical University (KsTU)", 
             "Takoradi Technical University (TTU)", "Koforidua Technical University (KTU)", "Ho Technical University (HTU)", "Tamale Technical University (TaTU)"
-        ]; // Truncated for brevity, kept major ones
+        ]; // Truncated for brevity
 
         // --- 2. FIREBASE INITIALIZATION & SYNC ---
         let userDbKey = null; 
@@ -758,7 +758,7 @@
             showToast("Device access revoked successfully.", "success");
         }
 
-        // --- 8. 💎 PREMIUM PDF EXPORT ENGINE (Fixed Engine Architecture) ---
+        // --- 8. 💎 BULLETPROOF PDF EXPORT ENGINE ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             const originalText = btn.innerHTML;
@@ -789,38 +789,40 @@
             document.getElementById('print-emergency').innerText = (emName || "N/A") + " | " + (emPhone || "N/A");
 
             const element = document.getElementById('official-print-template');
+            const mainAppWrapper = document.getElementById('main-app-wrapper');
             
-            // Step 3: THE FIX - Temporarily bypass the browser's overflow locks
+            // Step 3: THE FIX - Hide the dashboard entirely so html2canvas isn't trapped
             const originalBodyOverflow = document.body.style.overflow;
-            const originalBodyHeight = document.body.style.height;
-            
             document.body.style.overflow = 'visible';
-            document.body.style.height = 'auto';
             
+            // Turn off the main UI
+            mainAppWrapper.style.display = 'none';
+            
+            // Turn ON the print template (positioned normally, NOT absolute)
             element.style.display = 'block';
-            element.style.zIndex = '999999';
+            element.style.position = 'relative';
 
             const opt = {
                 margin: 10,
                 filename: 'Official_NTS_BioData.pdf',
                 image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 3, useCORS: true, logging: false }, 
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
+            // Step 4: Add a tiny delay so the browser fully renders the template before screenshotting
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Restore original web UI constraints
+                    // Step 5: Restore Original Dashboard State
                     element.style.display = 'none'; 
-                    element.style.zIndex = '-1';
+                    mainAppWrapper.style.display = 'flex';
                     document.body.style.overflow = originalBodyOverflow;
-                    document.body.style.height = originalBodyHeight;
                     
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showToast("Bio-Data PDF Downloaded Successfully.");
                 });
-            }, 300);
+            }, 500);
         }
     </script>
 </body>
