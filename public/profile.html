@@ -428,17 +428,20 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; position: absolute; left: 0; top: 0; z-index: -1; box-sizing: border-box; border: 8px double #1f2937;">
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; position: absolute; left: 0; top: 0; box-sizing: border-box; border: 8px double #1f2937;">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
-            <div style="text-align: left;">
+            <div style="flex: 1; text-align: left;">
                 <h1 style="margin: 0; font-size: 26px; text-transform: uppercase; color: #111; font-weight: 800;">National Portal</h1>
                 <h2 style="margin: 5px 0 0; font-size: 16px; color: #4b5563; letter-spacing: 1px;">Office of the Registrar</h2>
+                <div style="margin-top: 15px; border: 1px solid #111; padding: 5px 10px; font-family: monospace; font-size: 14px; letter-spacing: 2px; display: inline-block;">REF: <span id="print-ref"></span></div>
             </div>
-            <div style="text-align: right;">
-                <h2 style="margin: 0; font-size: 20px; color: #111;">OFFICIAL BIO-DATA</h2>
+            <div style="flex: 1; text-align: center;">
+                <h2 style="margin: 0; font-size: 22px; color: #111; text-transform: uppercase; letter-spacing: 1px;">Official Bio-Data</h2>
                 <p style="margin: 5px 0 0; font-size: 12px; font-family: 'Inter', sans-serif;">Generated: <span id="print-date"></span></p>
-                <div style="margin-top: 10px; border: 1px solid #111; padding: 5px 10px; font-family: monospace; font-size: 14px; letter-spacing: 2px;">REF: <span id="print-ref"></span></div>
+            </div>
+            <div style="flex: 1; display: flex; justify-content: flex-end;">
+                <img id="print-avatar" src="" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 3px solid #1f2937; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
             </div>
         </div>
 
@@ -755,14 +758,18 @@
             showToast("Device access revoked successfully.", "success");
         }
 
-        // --- 8. PREMIUM PDF EXPORT ENGINE ---
+        // --- 8. 💎 PREMIUM PDF EXPORT ENGINE (Fixed Engine Architecture) ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
             btn.disabled = true;
 
-            // Map standard & new fields to PDF
+            // Step 1: Transfer image to PDF template
+            const currentAvatar = document.getElementById('profile-display').src;
+            document.getElementById('print-avatar').src = currentAvatar;
+
+            // Step 2: Map standard & new fields to PDF
             document.getElementById('print-date').innerText = new Date().toLocaleDateString();
             document.getElementById('print-ref').innerText = "NTS-" + Math.floor(Math.random() * 900000 + 100000);
             document.getElementById('print-name').innerText = document.getElementById('name').value || "Not Provided";
@@ -783,7 +790,13 @@
 
             const element = document.getElementById('official-print-template');
             
-            // Bring into view for rendering
+            // Step 3: THE FIX - Temporarily bypass the browser's overflow locks
+            const originalBodyOverflow = document.body.style.overflow;
+            const originalBodyHeight = document.body.style.height;
+            
+            document.body.style.overflow = 'visible';
+            document.body.style.height = 'auto';
+            
             element.style.display = 'block';
             element.style.zIndex = '999999';
 
@@ -797,11 +810,15 @@
             
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
+                    // Restore original web UI constraints
                     element.style.display = 'none'; 
                     element.style.zIndex = '-1';
+                    document.body.style.overflow = originalBodyOverflow;
+                    document.body.style.height = originalBodyHeight;
+                    
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    showToast("Bio-Data PDF Downloaded.");
+                    showToast("Bio-Data PDF Downloaded Successfully.");
                 });
             }, 300);
         }
