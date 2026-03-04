@@ -31,7 +31,7 @@
         .nav-links a { display: flex; align-items: center; gap: 12px; color: #94a3b8; text-decoration: none; padding: 12px 15px; border-radius: 8px; transition: 0.2s; font-weight: 500; border-left: 3px solid transparent; }
         .nav-links a:hover, .nav-links a.active { background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, transparent 100%); border-left: 3px solid #3b82f6; color: white; transform: translateX(4px); }
 
-        /* Momentum Touch Scroll */
+        /* Momentum Touch Scroll Enabled */
         .main-content { flex: 1; padding: 30px; overflow: auto; background: var(--bg-color); position: relative; -webkit-overflow-scrolling: touch; overscroll-behavior: auto; }
         
         /* --- 2. HEADER & NOTIFICATIONS --- */
@@ -435,7 +435,7 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 794px; box-sizing: border-box; border: 8px double #1f2937; margin: 0 auto;">
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 794px; box-sizing: border-box; border: 8px double #1f2937;">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
             <div style="flex: 1; text-align: left;">
@@ -696,7 +696,7 @@
                 });
         }
 
-        // --- 6. IMAGE CROPPER LOGIC (Circular Mask Upgrade) ---
+        // --- 6. IMAGE CROPPER LOGIC ---
         let cropper;
         const imgInput = document.getElementById('img-input');
         const cropTarget = document.getElementById('crop-target');
@@ -710,7 +710,6 @@
                     cropTarget.src = e.target.result;
                     modal.style.display = 'flex';
                     if(cropper) cropper.destroy();
-                    // Enforce circular/square aspect ratio
                     cropper = new Cropper(cropTarget, { 
                         aspectRatio: 1, 
                         viewMode: 1,
@@ -767,7 +766,7 @@
             showToast("Device access revoked successfully.", "success");
         }
 
-        // --- 8. 💎 BULLETPROOF PDF EXPORT ENGINE (Fixed Blank Page Issue) ---
+        // --- 8. 💎 ULTIMATE BULLETPROOF PDF EXPORT ENGINE ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             const originalText = btn.innerHTML;
@@ -800,13 +799,12 @@
             const element = document.getElementById('official-print-template');
             const mainAppWrapper = document.getElementById('main-app-wrapper');
             
-            // Step 3: THE ULTIMATE FIX - Save and remove all constraints from both body AND html tags
+            // Step 3: UNLOCK DOM & FORCE ABSOLUTE POSITIONING
             const originalBodyOverflow = document.body.style.overflow;
             const originalBodyHeight = document.body.style.height;
             const originalHtmlOverflow = document.documentElement.style.overflow;
             const originalHtmlHeight = document.documentElement.style.height;
 
-            // Completely unlock the page dimensions so the PDF engine isn't trapped
             document.body.style.overflow = 'visible';
             document.body.style.height = 'auto';
             document.documentElement.style.overflow = 'visible';
@@ -815,19 +813,22 @@
             // Hide main UI
             mainAppWrapper.style.display = 'none';
             
-            // Turn ON the print template (Positioned normally, centered)
+            // Turn ON print template and STRICTLY anchor it to the absolute top-left of the viewport with zero margins
             element.style.display = 'block';
-            element.style.position = 'relative';
+            element.style.position = 'absolute';
+            element.style.top = '0px';
+            element.style.left = '0px';
+            element.style.margin = '0'; // Completely overriding auto-margins
 
             // Scroll to the very top to prevent generation shifts
             window.scrollTo(0, 0);
 
-            // Fixed windowWidth parameter handles the right-side cut-off
+            // Removing windowWidth because hard-pinning the element to left:0x is the proper way
             const opt = {
                 margin: 10,
                 filename: 'Official_NTS_BioData.pdf',
                 image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, windowWidth: 800 }, 
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
