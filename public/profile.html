@@ -435,7 +435,7 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; box-sizing: border-box; border: 8px double #1f2937; margin: 0 auto;">
+    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; box-sizing: border-box; border: 8px double #1f2937; position: absolute; top: 0; left: 0; z-index: 99999;">
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
             <div style="flex: 1; text-align: left;">
@@ -766,7 +766,7 @@
             showToast("Device access revoked successfully.", "success");
         }
 
-        // --- 8. 💎 BULLETPROOF PDF EXPORT ENGINE ---
+        // --- 8. 💎 THE ULTIMATE BULLETPROOF PDF EXPORT ENGINE ---
         function downloadPDF() {
             const btn = document.querySelector('button[onclick="downloadPDF()"]');
             const originalText = btn.innerHTML;
@@ -797,47 +797,37 @@
             document.getElementById('print-emergency').innerText = (emName || "N/A") + " | " + (emPhone || "N/A");
 
             const element = document.getElementById('official-print-template');
-            const mainAppWrapper = document.getElementById('main-app-wrapper');
             
-            // Step 3: THE FIX - Hide the dashboard entirely so html2canvas isn't trapped
+            // 🚨 THE UNBREAKABLE FIX 🚨
+            // 1. We completely UNLOCK the body so nothing gets cut off if your screen is small.
             const originalBodyOverflow = document.body.style.overflow;
             document.body.style.overflow = 'visible';
             
-            // Turn off the main UI
-            mainAppWrapper.style.display = 'none';
-            
-            // Turn ON the print template (positioned normally, NOT absolute)
-            element.style.display = 'block';
-            element.style.position = 'relative';
-
-            // 🚨 THE CRITICAL ALIGNMENT FIX 🚨
-            // We temporarily strip the auto-margin so the canvas doesn't shift right!
-            const originalMargin = element.style.margin;
-            element.style.margin = '0'; 
+            // 2. We DO NOT hide the dashboard! We just put the PDF exactly on top of it.
             window.scrollTo(0, 0);
+            element.style.display = 'block';
 
+            // By using windowWidth: 800, html2canvas renders perfectly aligned to the left edge every single time.
             const opt = {
                 margin: 10,
                 filename: 'Official_NTS_BioData.pdf',
                 image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, windowWidth: 800 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            // Step 4: Add a tiny delay so the browser fully renders the template before screenshotting
+            // 3. Give the browser 800ms to perfectly paint the UI, then capture it.
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Step 5: Restore Original Dashboard State EXACTLY as it was
+                    // 4. Put everything back to normal.
                     element.style.display = 'none'; 
-                    element.style.margin = originalMargin; // Put margin back
-                    mainAppWrapper.style.display = 'flex';
                     document.body.style.overflow = originalBodyOverflow;
                     
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                     showToast("Bio-Data PDF Downloaded Successfully.");
                 });
-            }, 500);
+            }, 800);
         }
     </script>
 </body>
