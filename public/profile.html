@@ -435,78 +435,79 @@
         </div>
     </div>
 
-    <div id="official-print-template" style="display: none; padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; box-sizing: border-box; border: 8px double #1f2937; position: absolute; top: 0; left: 0; z-index: 99999;">
-        
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
-            <div style="flex: 1; text-align: left;">
-                <h1 style="margin: 0; font-size: 16px; text-transform: uppercase; color: #111; font-weight: 800; line-height: 1.3;">
-                    NATIONAL<br>TERTIARY<br>STUDENTS<br>PORTAL
-                </h1>
-                <h2 style="margin: 8px 0 0; font-size: 12px; color: #4b5563; letter-spacing: 1px;">Office of the Registrar</h2>
-                <div style="margin-top: 15px; border: 1px solid #111; padding: 4px 8px; font-family: monospace; font-size: 12px; letter-spacing: 2px; display: inline-block;">REF: <span id="print-ref"></span></div>
-            </div>
-            <div style="flex: 1; text-align: center;">
-                <h2 style="margin: 0; font-size: 16px; color: #111; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">Official Bio-Data</h2>
-                <p style="margin: 5px 0 0; font-size: 11px; font-family: 'Inter', sans-serif;">Generated: <span id="print-date"></span></p>
-            </div>
-            <div style="flex: 1; display: flex; justify-content: flex-end;">
-                <img id="print-avatar" src="" style="width: 110px; height: 110px; object-fit: cover; border-radius: 8px; border: 3px solid #1f2937; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-            </div>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-family: 'Inter', sans-serif; font-size: 13px;">
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; width: 30%; background: #f9fafb; text-transform: uppercase;">Full Legal Name</td>
-                <td style="padding: 12px; border: 1px solid #ccc; font-size: 15px; font-weight: 600;" id="print-name"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Index / Student ID</td>
-                <td style="padding: 12px; border: 1px solid #ccc; font-family: monospace; font-size: 15px;" id="print-id"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Date of Birth</td>
-                <td style="padding: 12px; border: 1px solid #ccc;" id="print-dob"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Primary Contact</td>
-                <td style="padding: 12px; border: 1px solid #ccc;" id="print-phone"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Institution</td>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 600;" id="print-inst"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Program & Dept.</td>
-                <td style="padding: 12px; border: 1px solid #ccc;" id="print-prog"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Academic Level</td>
-                <td style="padding: 12px; border: 1px solid #ccc;" id="print-level"></td>
-            </tr>
-            <tr>
-                <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Emergency Contact</td>
-                <td style="padding: 12px; border: 1px solid #ccc;" id="print-emergency"></td>
-            </tr>
-        </table>
-
-        <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-family: 'Inter', sans-serif; font-size: 13px;">
-            <div style="width: 220px;">
-                <div style="border-bottom: 1px solid #111; height: 40px; margin-bottom: 8px;"></div>
-                <strong>Student Signature</strong>
-            </div>
-            <div style="width: 220px;">
-                <div style="border-bottom: 1px solid #111; height: 40px; margin-bottom: 8px; display: flex; align-items: flex-end; justify-content: center;">
-                    <span style="font-size: 26px; font-family: 'Playfair Display', serif; font-style: italic; opacity: 0.6; color: #1d4ed8; transform: rotate(-5deg);">NTS-VERIFIED</span>
+    <<div id="pdf-export-container" style="position: absolute; top: -10000px; left: -10000px; width: 800px; background: transparent; z-index: -1;">
+        <div id="official-print-template" style="padding: 40px; font-family: 'Times New Roman', serif; color: #111; background: #fff; width: 800px; box-sizing: border-box; border: 8px double #1f2937;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1f2937; padding-bottom: 20px; margin-bottom: 30px;">
+                <div style="flex: 1; text-align: left;">
+                    <h1 style="margin: 0; font-size: 16px; text-transform: uppercase; color: #111; font-weight: 800; line-height: 1.3;">
+                        NATIONAL<br>TERTIARY<br>STUDENTS<br>PORTAL
+                    </h1>
+                    <h2 style="margin: 8px 0 0; font-size: 12px; color: #4b5563; letter-spacing: 1px;">Office of the Registrar</h2>
+                    <div style="margin-top: 15px; border: 1px solid #111; padding: 4px 8px; font-family: monospace; font-size: 12px; letter-spacing: 2px; display: inline-block;">REF: <span id="print-ref"></span></div>
                 </div>
-                <strong>Official Registry Authorization</strong>
+                <div style="flex: 1; text-align: center;">
+                    <h2 style="margin: 0; font-size: 16px; color: #111; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;">Official Bio-Data</h2>
+                    <p style="margin: 5px 0 0; font-size: 11px; font-family: 'Inter', sans-serif;">Generated: <span id="print-date"></span></p>
+                </div>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                    <img id="print-avatar" src="" style="width: 110px; height: 110px; object-fit: cover; border-radius: 8px; border: 3px solid #1f2937; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                </div>
             </div>
-        </div>
-        
-        <div style="margin-top: 50px; text-align: center; font-size: 10px; color: #6b7280; font-family: 'Inter', sans-serif;">
-            This document is securely generated by the National Portal. Alteration of this document is strictly prohibited.
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-family: 'Inter', sans-serif; font-size: 13px;">
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; width: 30%; background: #f9fafb; text-transform: uppercase;">Full Legal Name</td>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-size: 15px; font-weight: 600;" id="print-name"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Index / Student ID</td>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-family: monospace; font-size: 15px;" id="print-id"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Date of Birth</td>
+                    <td style="padding: 12px; border: 1px solid #ccc;" id="print-dob"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Primary Contact</td>
+                    <td style="padding: 12px; border: 1px solid #ccc;" id="print-phone"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Institution</td>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 600;" id="print-inst"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Program & Dept.</td>
+                    <td style="padding: 12px; border: 1px solid #ccc;" id="print-prog"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Academic Level</td>
+                    <td style="padding: 12px; border: 1px solid #ccc;" id="print-level"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border: 1px solid #ccc; font-weight: 700; background: #f9fafb; text-transform: uppercase;">Emergency Contact</td>
+                    <td style="padding: 12px; border: 1px solid #ccc;" id="print-emergency"></td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-family: 'Inter', sans-serif; font-size: 13px;">
+                <div style="width: 220px;">
+                    <div style="border-bottom: 1px solid #111; height: 40px; margin-bottom: 8px;"></div>
+                    <strong>Student Signature</strong>
+                </div>
+                <div style="width: 220px;">
+                    <div style="border-bottom: 1px solid #111; height: 40px; margin-bottom: 8px; display: flex; align-items: flex-end; justify-content: center;">
+                        <span style="font-size: 26px; font-family: 'Playfair Display', serif; font-style: italic; opacity: 0.6; color: #1d4ed8; transform: rotate(-5deg);">NTS-VERIFIED</span>
+                    </div>
+                    <strong>Official Registry Authorization</strong>
+                </div>
+            </div>
+            
+            <div style="margin-top: 50px; text-align: center; font-size: 10px; color: #6b7280; font-family: 'Inter', sans-serif;">
+                This document is securely generated by the National Portal. Alteration of this document is strictly prohibited.
+            </div>
         </div>
     </div>
-
    <script>
         // --- MOBILE MENU LOGIC ---
         function toggleMobileSidebar() {
@@ -796,38 +797,29 @@
             const emPhone = document.getElementById('emergency-phone').value;
             document.getElementById('print-emergency').innerText = (emName || "N/A") + " | " + (emPhone || "N/A");
 
+            // Step 3: Target the fully rendered off-screen element
             const element = document.getElementById('official-print-template');
             
-            // 🚨 THE UNBREAKABLE FIX 🚨
-            // 1. We completely UNLOCK the body so nothing gets cut off if your screen is small.
-            const originalBodyOverflow = document.body.style.overflow;
-            document.body.style.overflow = 'visible';
-            
-            // 2. We DO NOT hide the dashboard! We just put the PDF exactly on top of it.
-            window.scrollTo(0, 0);
-            element.style.display = 'block';
-
-            // By using windowWidth: 800, html2canvas renders perfectly aligned to the left edge every single time.
+            // Step 4: Set options. windowWidth set to 800 locks the scale perfectly.
             const opt = {
                 margin: 10,
                 filename: 'Official_NTS_BioData.pdf',
                 image: { type: 'jpeg', quality: 1.0 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, windowWidth: 800 }, 
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 800 }, 
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
             
-            // 3. Give the browser 800ms to perfectly paint the UI, then capture it.
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    // 4. Put everything back to normal.
-                    element.style.display = 'none'; 
-                    document.body.style.overflow = originalBodyOverflow;
-                    
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    showToast("Bio-Data PDF Downloaded Successfully.");
-                });
-            }, 800);
+            // Step 5: Capture and save
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast("Bio-Data PDF Downloaded Successfully.");
+            }).catch(err => {
+                console.error("PDF Generation Error: ", err);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showToast("Failed to generate PDF.", "error");
+            });
         }
     </script>
 </body>
